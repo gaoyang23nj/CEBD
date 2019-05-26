@@ -42,7 +42,7 @@ class DTNNode(object):
                 tmp_remaintime = self.waittime_Have - self.waittime_Target
                 self.choose_dest()
                 self.moveonestep(tmp_remaintime, 'still_remainmove')
-        return
+
 
     def choose_dest(self):
         # 元素相乘法
@@ -50,4 +50,11 @@ class DTNNode(object):
         self.speed = np.random.rand() * (self.maxspeed - self.minspeed) + self.minspeed
         self.waittime_Target = np.random.rand() * (self.maxwaittime - self.minwaittime) + self.minwaittime
         self.waittime_Have = 0
-        return
+
+
+    def getNodeId(self):
+        return self.node_id
+
+
+    def getNodeDest(self):
+        return self.dest
