@@ -2,18 +2,19 @@ import tkinter as tk
 import numpy as np
 import threading
 import os
+from DTNSimBase import DTNSimBase
 from WKTPathReader import WKTPathReader
-from DTNNodeMap import DTNNodeMap
+from DTNNode import DTNNode
 
-class DTNSimGUIMap(object):
-    def __init__(self):
-        self.MaxSize = 800
+class DTNSimGUIMap(DTNSimBase):
+    def __init__(self, maxsize, pathreader):
+        self.MaxSize = maxsize
+        self.pathreader = pathreader
         self.node_list = []
         self.oval_size = 3
         self.window = tk.Tk()
         self.window.title('my win')
         self.window.geometry('1000x1000')
-
         frm_canvas = tk.Frame(self.window)
         frm_canvas.pack(side='left')
         frm_button = tk.Frame(self.window)
@@ -24,14 +25,12 @@ class DTNSimGUIMap(object):
         self.canvas.pack()
         self.drawmap()
 
-    def attach(self, node):
+    def attachDTNNode(self, node):
         self.node_list.append(node)
-
 
     # 画出地图 作为背景
     def drawmap(self):
-        self.thePathReader = WKTPathReader(self.MaxSize)
-        alllines, allpoints, self.MinXY, self.scale = self.thePathReader.getParams()
+        alllines, allpoints, self.MinXY, self.scale = self.pathreader.getParams()
         # draw the lines （the roads in the map）
         for locs in alllines:
             # each two ad
@@ -42,23 +41,10 @@ class DTNSimGUIMap(object):
                 dest[1] = self.MaxSize - dest[1]
                 # 上下方位
                 self.canvas.create_line(loc[0], loc[1], dest[0], dest[1], fill="white")
-        # draw the points （the POIs in the map）
-        # for poi in allpoints:
-        #     loc = (poi - self.MinXY) * self.scale
-        #     loc[1] = self.MaxSize - loc[1]
-        #     self.canvas.create_oval(loc[1] - self.oval_size, loc[0] - self.oval_size,
-        #                             loc[1] + self.oval_size, loc[0] + self.oval_size,
-        #                             fill='red')
-        # self.canvas.create_oval( - 5, - 5, + 5, + 5, fill='black')
 
-
-    def run(self):
-        self.t = threading.Timer(0.1, self.update)
-        self.t.start()
-        self.window.mainloop()
-
-    def drawPointandLine(self, loc, src, dest, node_id):
+    def drawPointandLine(self, node_id, loc, src, dest):
         # 坐标转换  绘图坐标系
+        node_id = str(node_id)
         newloc = (loc - self.MinXY) * self.scale
         newloc[1] = self.MaxSize - newloc[1]
         newdest = (dest[0] - self.MinXY) * self.scale
@@ -92,7 +78,6 @@ class DTNSimGUIMap(object):
         tmp_line = self.canvas.create_line(newloc[0], newloc[1], newdest[0], newdest[1], fill="red",
                                            tags='line' + '_' + node_id)
 
-
     def drawPath(self, locs):
         # each two ad
         for loc_id in range(len(locs) - 1):
@@ -103,14 +88,16 @@ class DTNSimGUIMap(object):
             # 上下方位
             self.canvas.create_line(loc[0], loc[1], dest[0], dest[1], fill="blue",  dash=(4, 4))
 
+    def run(self):
+        self.t = threading.Timer(0.1, self.update)
+        self.t.start()
+        self.window.mainloop()
 
     def update(self):
-        # print('update ******************************************************************')
-        loc, id, src, dest, path = self.runonetimestep()
+        tunple_list = self.runonetimestep()
         # for node in tunple_list:
         node_id = id
         node_id = str(node_id)
-
         # delete the old symbols
         for node in self.node_list:
             node_id = node.node_id
@@ -118,9 +105,9 @@ class DTNSimGUIMap(object):
             self.canvas.delete('oval' + '_' + node_id, 'doval' + '_' + node_id, 'line' + '_' + node_id)
             # self.canvas.delete('text' + '_' + node_id, 'oval'+'_'+node_id, 'dtext' + '_' + node_id, 'doval'+'_'+node_id, 'line'+'_'+node_id)
 
-        # create the new symbols
-        self.drawPointandLine(loc, src, dest, node_id)
-        # self.drawPath(path)
+        for tmp_tunple in tunple_list:
+            (node_id, loc, src, dest, path) = tmp_tunple
+            self.drawPointandLine(node_id, loc, src, dest)
 
         self.t = threading.Timer(0.1, self.update)
         self.t.start()
@@ -130,20 +117,9 @@ class DTNSimGUIMap(object):
         for node in self.node_list:
             loc = node.run()
             path = node.getPath()
-            id, src, dest = node.getSrcDest()
+            src, dest = node.getSrcDestPair()
+            tmp_tunple = (node.getNodeId(), loc, src, dest, path)
+            tunple_list.append(tmp_tunple)
             # 坐标转换
-        return loc, id, src, dest, path
-
-
-
-
-
-
-if __name__ == "__main__":
-    theGUI = DTNSimGUIMap()
-    theNodes = []
-    for node_id in range(1):
-        node = DTNNodeMap(node_id, 0.1*100, theGUI.thePathReader)
-        theNodes.append(node)
-        theGUI.attach(node)
-    theGUI.run()
+        # print(tunple_list)
+        return tunple_list

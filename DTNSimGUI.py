@@ -1,14 +1,16 @@
 import tkinter as tk
 import threading
-# from DTNNode import DTNNode
+from DTNSimBase import DTNSimBase
+from DTNNode import DTNNode
 
-class DTNSimGUI(object):
-    def __init__(self):
+class DTNSimGUI(DTNSimBase):
+    def __init__(self, maxsizeofCanvas):
+        self.MaxSize = maxsizeofCanvas
         self.node_list = []
         self.oval_size = 3
         self.window = tk.Tk()
         self.window.title('my win')
-        self.window.geometry('700x600')
+        self.window.geometry('1000x1000')
 
         frm_canvas = tk.Frame(self.window)
         frm_canvas.pack(side='left')
@@ -16,13 +18,10 @@ class DTNSimGUI(object):
         frm_button.pack(side='right')
         # canvas
         tk.Label(frm_canvas, text='frm_canvas').pack()
-        self.canvas = tk.Canvas(frm_canvas, bg='gray', height=500, width=500)
+        self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.MaxSize, width=self.MaxSize)
         self.canvas.pack()
-        # self.t = threading.Timer(0.1, self.run)
-        # self.t.start()
-        # self.window.mainloop()
 
-    def attach(self, node):
+    def attachDTNNode(self, node):
         self.node_list.append(node)
 
     def run(self):
@@ -31,13 +30,13 @@ class DTNSimGUI(object):
         self.window.mainloop()
 
     def update(self):
-        print('hello')
+        tunple_list = self.runonetimestep()
+
         for node in self.node_list:
             node_id = node.node_id
             node_id = str(node_id)
             self.canvas.delete('text' + '_' + node_id, 'oval'+'_'+node_id, 'dtext' + '_' + node_id, 'doval'+'_'+node_id, 'line'+'_'+node_id)
 
-        tunple_list = self.runonetimestep()
         for node in tunple_list:
             node_id = node[0]
             node_id = str(node_id)
@@ -62,13 +61,12 @@ class DTNSimGUI(object):
 
 
     def runonetimestep(self):
-        # node_list = []
         tunple_list = []
         for node in self.node_list:
             node_id = node.node_id
             loc = node.run()
-            tmp_tunple = (node_id, loc, node.dest)
+            tmp_tunple = (node.getNodeId(), loc, node.getNodeDest())
             # node_list.append(node_id)
             tunple_list.append(tmp_tunple)
-        print(tunple_list)
+        # print(tunple_list)
         return tunple_list
