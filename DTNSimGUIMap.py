@@ -42,16 +42,20 @@ class DTNSimGUIMap(DTNSimBase):
                 # 上下方位
                 self.canvas.create_line(loc[0], loc[1], dest[0], dest[1], fill="white")
 
-    def drawPointandLine(self, node_id, loc, src, dest):
-        # 坐标转换  绘图坐标系
+    def __drawPointandLine(self, node_id, loc, src, dest):
         node_id = str(node_id)
+        # 坐标转换 到 绘图坐标系
         newloc = (loc - self.MinXY) * self.scale
         newloc[1] = self.MaxSize - newloc[1]
         newdest = (dest[0] - self.MinXY) * self.scale
         newdest[1] = self.MaxSize - newdest[1]
+        # 删去canvas里面 之前的标识
+        self.canvas.delete('oval' + '_' + node_id, 'text' + '_' + node_id, 'doval' + '_' + node_id, 'line' + '_' + node_id)
+        # 绘制新的标识
         tmp_oval = self.canvas.create_oval(newloc[0] - self.oval_size, newloc[1] - self.oval_size,
                                            newloc[0] + self.oval_size, newloc[1] + self.oval_size,
                                            tag='oval' + '_' + node_id, fill='red')
+        tmp_label = self.canvas.create_text(newloc[0], newloc[1] - (self.oval_size * 3), text=node_id, tag='text' + '_' + node_id)
         # src_a = (src[1] - self.MinXY) * self.scale
         # src_b = (src[2] - self.MinXY) * self.scale
         # src_a[1] = self.MaxSize - src_a[1]
@@ -78,7 +82,7 @@ class DTNSimGUIMap(DTNSimBase):
         tmp_line = self.canvas.create_line(newloc[0], newloc[1], newdest[0], newdest[1], fill="red",
                                            tags='line' + '_' + node_id)
 
-    def drawPath(self, locs):
+    def __drawPath(self, locs):
         # each two ad
         for loc_id in range(len(locs) - 1):
             loc = (locs[loc_id] - self.MinXY) * self.scale
@@ -95,19 +99,10 @@ class DTNSimGUIMap(DTNSimBase):
 
     def update(self):
         tunple_list = self.runonetimestep()
-        # for node in tunple_list:
-        node_id = id
-        node_id = str(node_id)
-        # delete the old symbols
-        for node in self.node_list:
-            node_id = node.node_id
-            node_id = str(node_id)
-            self.canvas.delete('oval' + '_' + node_id, 'doval' + '_' + node_id, 'line' + '_' + node_id)
-            # self.canvas.delete('text' + '_' + node_id, 'oval'+'_'+node_id, 'dtext' + '_' + node_id, 'doval'+'_'+node_id, 'line'+'_'+node_id)
 
         for tmp_tunple in tunple_list:
             (node_id, loc, src, dest, path) = tmp_tunple
-            self.drawPointandLine(node_id, loc, src, dest)
+            self.__drawPointandLine(node_id, loc, src, dest)
 
         self.t = threading.Timer(0.1, self.update)
         self.t.start()
