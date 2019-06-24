@@ -4,8 +4,9 @@ from DTNSimBase import DTNSimBase
 from DTNNode import DTNNode
 
 class DTNSimGUI(DTNSimBase):
-    def __init__(self, maxsizeofCanvas):
+    def __init__(self, maxsizeofCanvas, showtimes=100):
         self.MaxSize = maxsizeofCanvas
+        self.showtimes = showtimes
         self.node_list = []
         self.oval_size = 3
         self.window = tk.Tk()
@@ -45,6 +46,8 @@ class DTNSimGUI(DTNSimBase):
 
     def update(self):
         tunple_list = self.runonetimestep()
+        for i in range(self.showtimes-1):
+            tunple_list = self.runonetimestep()
 
         for tunple in tunple_list:
             node_id, loc, dest = tunple
