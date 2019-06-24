@@ -17,10 +17,10 @@ MAX_TIME_INDEX = 10000
 
 def runRandomWalk():
     size = 800
-    theGUI = DTNSimGUI(size)
+    theGUI = DTNSimGUI(size,1)
     theNodes = []
     for node_id in range(MAX_NODE_NUM):
-        node = DTNNode('RandomWalk', node_id, 0.1*100, size, size)
+        node = DTNNode('RandomWalk', node_id, 0.1, size, size)
         theNodes.append(node)
         theGUI.attachDTNNode(node)
     theGUI.run()
@@ -28,10 +28,12 @@ def runRandomWalk():
 def runHelsinkSPM():
     size = 800
     pathreader = WKTPathReader(size)
-    theGUI = DTNSimGUIMap(size, pathreader)
+    # 100倍速度执行
+    theGUI = DTNSimGUIMap(size, pathreader, 100)
     theNodes = []
     for node_id in range(MAX_NODE_NUM):
-        node = DTNNode('SPM', node_id, 0.1*100, size, pathreader)
+        # 0.1s 一个间隔
+        node = DTNNode('SPM', node_id, 0.1, size, pathreader)
         theNodes.append(node)
         theGUI.attachDTNNode(node)
     theGUI.run()
