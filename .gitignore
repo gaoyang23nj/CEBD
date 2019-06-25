@@ -1,2 +1,4 @@
-
 *.pyc
+.idea/misc.xml
+.idea/Simulation_ONE.iml
+.idea/workspace.xml

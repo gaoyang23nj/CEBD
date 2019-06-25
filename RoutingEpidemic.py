@@ -23,8 +23,19 @@ class RoutingEpidemic(RoutingBase):
 
 
     # routing接到指令aid和bid相遇，开始进行消息交换
+    # 如果a和b正在传输某个pkt, 则此时间间隔内应该帮助接着传
+    # 否则 选择新的pkt开始传输
     def swappkt(self, a_id, b_id):
+        if self.__isTransferring(a_id, b_id):
+            pass
+        else:
+            pass
+        pass
 
+
+    # 建立一个hashmap
+    def __isTransferring(self, a_id, b_id):
+        return False
         pass
 
 
