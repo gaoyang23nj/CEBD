@@ -1,13 +1,25 @@
 import tkinter as tk
 import threading
+import numpy as np
 from DTNSimBase import DTNSimBase
 from DTNNode import DTNNode
+from RoutingEpidemic import RoutingEpidemic
 
 class DTNSimGUI(DTNSimBase):
-    def __init__(self, maxsizeofCanvas, showtimes=100):
+    def __init__(self, maxsizeofCanvas, showtimes=100, com_range=100, genfreq_cnt=6000):
         self.MaxSize = maxsizeofCanvas
         self.showtimes = showtimes
+        self.com_range = com_range
+        self.genfreq_max = genfreq_cnt
         self.node_list = []
+        self.__routinginit()
+        # 全部生成报文的list
+        self.genfreq_pktlist = []
+        # 下一个pkt的id
+        self.genfreq_pktid = 1
+        # 生成报文的时间计数器
+        self.genfreq_cnt = genfreq_cnt
+
         self.oval_size = 3
         self.window = tk.Tk()
         self.window.title('my win')
@@ -45,20 +57,29 @@ class DTNSimGUI(DTNSimBase):
         self.window.mainloop()
 
     def update(self):
+        # 完成 self.showtimes 个 timestep的位置更新变化
         tunple_list = self.runonetimestep()
         for i in range(self.showtimes-1):
             tunple_list = self.runonetimestep()
-
+        # 显示
         for tunple in tunple_list:
             node_id, loc, dest = tunple
             self.__drawPointandLine(node_id, loc, dest)
-
+        # 下次更新视图
         self.t = threading.Timer(0.1, self.update)
         self.t.start()
 
 
     def runonetimestep(self):
+        if self.genfreq_cnt == self.genfreq_max:
+            # 报文生成
+            self.__routinggenpkt()
+            self.genfreq_cnt = 1
+        else:
+            self.genfreq_cnt =  self.genfreq_cnt + 1
+
         tunple_list = []
+        # 节点移动一个timestep
         for node in self.node_list:
             node_id = node.node_id
             loc = node.run()
@@ -66,4 +87,42 @@ class DTNSimGUI(DTNSimBase):
             # node_list.append(node_id)
             tunple_list.append(tmp_tunple)
         # print(tunple_list)
+        # 按照移动后的位置查找相遇
+        for i in range(len(tunple_list)):
+            a_id, a_loc, a_dest = tunple_list[i]
+            for j in range(i+1, len(tunple_list), step=1):
+                b_id, b_loc, b_dest = tunple_list[j]
+                # 如果在通信范围内 交换信息
+                # 同时完成a->b b->a
+                if np.multiply(a_loc-b_loc, a_loc-b_loc)<self.com_range:
+                    self.__routingswap(a_id, b_id)
         return tunple_list
+
+
+    def __routinginit(self):
+        self.epidemicrouting = RoutingEpidemic(len(self.node_list))
+
+
+    def __routinggenpkt(self):
+        src_index = np.random.randint(len(self.node_list))
+        dst_index = np.random.randint(len(self.node_list))
+        while dst_index==src_index:
+            dst_index = np.random.randint(len(self.node_list))
+        newpkt = (self.genfreq_pktid, src_index, dst_index)
+        self.node_list.append(newpkt)
+
+        # 各routing生成pkt
+        self.epidemicrouting.gennewpkt(self.genfreq_pktid, src_index, dst_index, 0, 100)
+
+        self.genfreq_pktid = self.genfreq_pktid + 1
+        return
+
+
+    def __routingswap(self, a_id, b_id):
+        self.epidemicrouting.swappkt(a_id, b_id)
+
+
+
+
+
+

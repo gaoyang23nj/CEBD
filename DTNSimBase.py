@@ -1,7 +1,7 @@
 
 class DTNSimBase(object):
     @classmethod
-    def attachDTNNode(cls):
+    def attachDTNNode(cls, node):
         '''
 
         :return:
