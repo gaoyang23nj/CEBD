@@ -17,7 +17,7 @@ MAX_TIME_INDEX = 10000
 
 def runRandomWalk():
     size = 800
-    theGUI = DTNSimGUI(size,1)
+    theGUI = DTNSimGUI(size, 100)
     theNodes = []
     for node_id in range(MAX_NODE_NUM):
         node = DTNNode('RandomWalk', node_id, 0.1, size, size)

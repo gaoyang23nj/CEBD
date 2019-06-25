@@ -24,13 +24,13 @@ class DTNSimGUIMap(DTNSimBase):
         tk.Label(frm_canvas, text='frm_canvas').pack()
         self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.MaxSize, width=self.MaxSize)
         self.canvas.pack()
-        self.drawmap()
+        self.__drawmap()
 
     def attachDTNNode(self, node):
         self.node_list.append(node)
 
     # 画出地图 作为背景
-    def drawmap(self):
+    def __drawmap(self):
         alllines, allpoints, self.MinXY, self.scale = self.pathreader.getParams()
         # draw the lines （the roads in the map）
         for locs in alllines:
@@ -57,29 +57,10 @@ class DTNSimGUIMap(DTNSimBase):
                                            newloc[0] + self.oval_size, newloc[1] + self.oval_size,
                                            tag='oval' + '_' + node_id, fill='red')
         tmp_label = self.canvas.create_text(newloc[0], newloc[1] - (self.oval_size * 3), text=node_id, tag='text' + '_' + node_id)
-        # src_a = (src[1] - self.MinXY) * self.scale
-        # src_b = (src[2] - self.MinXY) * self.scale
-        # src_a[1] = self.MaxSize - src_a[1]
-        # src_b[1] = self.MaxSize - src_b[1]
-        # tmp_oval = self.canvas.create_oval(src_a[0] - 2, src_a[1] - 2,
-        #                                    src_a[0] + 2, src_a[1] + 2,
-        #                                    tag='oval' + '_' + node_id, fill='black')
-        # tmp_oval = self.canvas.create_oval(src_b[0] - 2, src_b[1] - 2,
-        #                                    src_b[0] + 2, src_b[1] + 2,
-        #                                    tag='oval' + '_' + node_id, fill='black')
+
         tmp_oval = self.canvas.create_oval(newdest[0] - self.oval_size/2, newdest[1] - self.oval_size/2,
                                            newdest[0] + self.oval_size/2, newdest[1] + self.oval_size/2,
                                            tag='doval' + '_' + node_id, fill='blue')
-        # dest_a = (dest[1] - self.MinXY) * self.scale
-        # dest_b = (dest[2] - self.MinXY) * self.scale
-        # dest_a[1] = self.MaxSize - dest_a[1]
-        # dest_b[1] = self.MaxSize - dest_b[1]
-        # tmp_oval = self.canvas.create_oval(dest_a[0] - 2, dest_a[1] - 2,
-        #                                    dest_a[0] + 2, dest_a[1] + 2,
-        #                                    tag='oval' + '_' + node_id, fill='black')
-        # tmp_oval = self.canvas.create_oval(dest_b[0] - 2, dest_b[1] - 2,
-        #                                    dest_b[0] + 2, dest_b[1] + 2,
-        #                                    tag='oval' + '_' + node_id, fill='black')
         tmp_line = self.canvas.create_line(newloc[0], newloc[1], newdest[0], newdest[1], fill="red",
                                            tags='line' + '_' + node_id)
 
