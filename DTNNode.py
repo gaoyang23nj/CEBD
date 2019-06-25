@@ -37,6 +37,9 @@ class DTNNode(object):
     def getNodeDest(self):
         return self.MovementModel.get_dest()
 
+    def getNodeLoc(self):
+        return self.MovementModel.get_loc()
+
     def run(self):
         loc = self.MovementModel.moveOneStep()
         return loc
