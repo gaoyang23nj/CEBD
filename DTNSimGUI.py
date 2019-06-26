@@ -186,7 +186,3 @@ class DTNSimGUI(DTNSimBase):
     # 各个routing显示结果
     def __routingshowres(self):
         self.epidemicrouting.showres()
-
-
-
-

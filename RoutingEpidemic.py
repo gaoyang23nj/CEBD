@@ -1,8 +1,8 @@
 import numpy as np
+import copy
 from DTNNodeBuffer import DTNNodeBuffer
 from DTNPkt import DTNPkt
 from RoutingBase import RoutingBase
-
 
 class RoutingEpidemic(RoutingBase):
     def __init__(self, numofnodes):
@@ -11,11 +11,19 @@ class RoutingEpidemic(RoutingBase):
         self.transmitspeed = 500
         # 时间间隔 0.1s
         self.timestep = 0.1
-        self.listofnodebuffer = []
+
         # <虚拟>生成node的内存空间
+        self.listofnodebuffer = []
         for i in range(numofnodes):
             nodebuffer = DTNNodeBuffer(i, 100*1000)
             self.listofnodebuffer.append(nodebuffer)
+
+        # 为了记录和对照方便 为每个节点记录成功投递的pkt list
+        self.listofsuccpkt = []
+        for i in range(numofnodes):
+            tmppktlist = []
+            self.listofsuccpkt.append(tmppktlist)
+
         # 建立正在传输的pkt_id 和 传输进度 的矩阵
         self.link_transmitpktid = np.zeros((self.numofnodes, self.numofnodes), dtype = 'int')
         self.link_transmitprocess = np.zeros((self.numofnodes,  self.numofnodes), dtype = 'int')
@@ -47,9 +55,9 @@ class RoutingEpidemic(RoutingBase):
                 if target_pkt.pkt_id == tmp_pktid:
                     isfound = True
                     break
-            if isfound == False:
-                print('ERROR!!!!!!!!!RoutingEpidemic.swappkt()')
-                return
+            # 既然正在传输的标志位(link_transmitpktid[a_id][b_id])存在
+            # 就一定有传输量(link_transmitprocess[a_id][b_id])存在
+            assert(isfound == True)
             resumevolume = target_pkt.pkt_size-self.link_transmitprocess[a_id][b_id]
             if transmitvolume > resumevolume:
                 transmitvolume = transmitvolume - resumevolume
@@ -64,7 +72,25 @@ class RoutingEpidemic(RoutingBase):
                 self.link_transmitprocess[a_id][b_id] = 0
                 self.copypkttobid(b_id, target_pkt)
                 return
-        # 从a的buffer里找 b的buffer里没有的pkt
+
+        # 从a的buffer里 顺序查找 b的buffer里没有的pkt
+        # 建立准备传输的pkt列表
+        totran_pktlist = self.__gettranpktlist(a_id, b_id)
+        for i_pkt in totran_pktlist:
+            # 开始传输i_pkt 可传输量消耗
+            if i_pkt.pkt_size <= transmitvolume:
+                transmitvolume = transmitvolume - i_pkt.pkt_size
+                # 把报文复制给b_id
+                self.copypkttobid(b_id, i_pkt)
+            else:
+                self.link_transmitpktid[a_id][b_id] = i_pkt.pkt_id
+                self.link_transmitprocess[a_id][b_id] = i_pkt.pkt_size - transmitvolume
+                break
+        return
+
+    # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
+    def __gettranpktlist(self, a_id, b_id):
+        totran_pktlist = []
         src_nodebuffer = self.listofnodebuffer[a_id]
         dst_nodebuffer = self.listofnodebuffer[b_id]
         for i_pkt in src_nodebuffer.listofpkt:
@@ -75,21 +101,26 @@ class RoutingEpidemic(RoutingBase):
                     isiexist = True
                     break
             if isiexist == False:
-                # 开始传输i_pkt 可传输量消耗
-                if i_pkt.pkt_size <= transmitvolume:
-                    transmitvolume = transmitvolume - i_pkt.pkt_size
-                    # 把报文复制给b_id
-                    self.copypkttobid(b_id, i_pkt)
+                # 如果pkt的dst_id就是b, 找到目的 应该优先传输
+                totran_pkt = copy.deepcopy(i_pkt)
+                if totran_pkt.dst_id == b_id:
+                    totran_pktlist.insert(0, totran_pkt)
                 else:
-                    self.link_transmitpktid[a_id][b_id] = i_pkt.pkt_id
-                    self.link_transmitprocess[a_id][b_id] = i_pkt.pkt_size - transmitvolume
-                    break
-        return
-
+                    totran_pktlist.append(totran_pkt)
+        return totran_pktlist
 
     # EpidemicRouter复制报文给b_id
     def copypkttobid(self, b_id, i_pkt):
-        self.listofnodebuffer[b_id].addpkt(i_pkt)
+        if i_pkt.dst_id == b_id:
+            # 去重复
+            isduplicate = False
+            for j_pkt in self.listofsuccpkt[b_id]:
+                if i_pkt.pkt_id == j_pkt.pkt_id:
+                    isduplicate = True
+                    break
+            self.listofsuccpkt[b_id].append(i_pkt)
+        else:
+            self.listofnodebuffer[b_id].addpkt(i_pkt)
 
 
     def linkdown(self, a_id, b_id):
@@ -98,7 +129,11 @@ class RoutingEpidemic(RoutingBase):
         return
 
     def showres(self):
-        pass
+        # 获取成功投递的个数
+        succnum = 0
+        for inode_pktlist in self.listofsuccpkt:
+            succnum = succnum + len(inode_pktlist)
+        return succnum
 
     # 建立一个hashmap
     def __isTransferring(self, a_id, b_id):
