@@ -97,6 +97,9 @@ class RoutingEpidemic(RoutingBase):
         self.link_transmitprocess[a_id][b_id] = 0
         return
 
+    def showres(self):
+        pass
+
     # 建立一个hashmap
     def __isTransferring(self, a_id, b_id):
         return False
