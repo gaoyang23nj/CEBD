@@ -17,8 +17,8 @@ class RoutingEpidemic(RoutingBase):
             nodebuffer = DTNNodeBuffer(i, 100*1000)
             self.listofnodebuffer.append(nodebuffer)
         # 建立正在传输的pkt_id 和 传输进度 的矩阵
-        self.link_transmitpktid = np.zeros(self.numofnodes, self.numofnodes)
-        self.link_transmitprocess = np.zeros(self.numofnodes,  self.numofnodes)
+        self.link_transmitpktid = np.zeros((self.numofnodes, self.numofnodes), dtype = 'int')
+        self.link_transmitprocess = np.zeros((self.numofnodes,  self.numofnodes), dtype = 'int')
 
 
     # routing接到指令 在srcid生成一个pkt(srcid->dstid),并记录生成时间
@@ -95,6 +95,7 @@ class RoutingEpidemic(RoutingBase):
     def linkdown(self, a_id, b_id):
         self.link_transmitpktid[a_id][b_id] = 0
         self.link_transmitprocess[a_id][b_id] = 0
+        return
 
     # 建立一个hashmap
     def __isTransferring(self, a_id, b_id):

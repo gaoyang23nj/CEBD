@@ -11,8 +11,9 @@ class DTNSimGUI(DTNSimBase):
         self.showtimes = showtimes
         self.com_range = com_range
         self.genfreq_max = genfreq_cnt
+        # 保留node的list
         self.node_list = []
-        self.__routinginit()
+
         # 全部生成报文的list
         self.genfreq_pktlist = []
         # 下一个pkt的id
@@ -55,8 +56,10 @@ class DTNSimGUI(DTNSimBase):
         # 节点个数
         self.numofnodes = len(self.node_list)
         # 记录任何两个node之间的link状态
-        self.link_state = np.zeros(self.numofnodes,  self.numofnodes)
-
+        self.link_state = np.zeros((self.numofnodes,  self.numofnodes),dtype='int')
+        # 初始化各个routing
+        self.__routinginit()
+        # 启动定时刷新机制
         self.t = threading.Timer(0.1, self.update)
         self.t.start()
         self.window.mainloop()
@@ -75,20 +78,20 @@ class DTNSimGUI(DTNSimBase):
         self.t.start()
 
     def runonetimestep(self):
+        # 报文生成记时器
         if self.genfreq_cnt == self.genfreq_max:
             # 报文生成
             self.__routinggenpkt()
             self.genfreq_cnt = 1
         else:
             self.genfreq_cnt =  self.genfreq_cnt + 1
-
+        # 更新node位置的移动
         tunple_list = []
         # 节点移动一个timestep
         for node in self.node_list:
             node_id = node.node_id
             loc = node.run()
             tmp_tunple = (node.getNodeId(), loc, node.getNodeDest())
-            # node_list.append(node_id)
             tunple_list.append(tmp_tunple)
         # print(tunple_list)
         # 是否有传输事件被中断
@@ -96,20 +99,18 @@ class DTNSimGUI(DTNSimBase):
             a_loc = self.node_list[a_id].getNodeLoc()
             for b_id in range(self.numofnodes):
                 b_loc = self.node_list[b_id].getNodeLoc()
-                if (self.link_state[a_id][b_id] == 1) and \
-                        (np.multiply(a_loc - b_loc, a_loc - b_loc) > self.com_range):
-                    self.link_state[a_id][b_id] == 0
-                    self.__routinglinkdown(a_id, b_id)
-
-
+                if self.link_state[a_id][b_id] == 1:
+                    if np.sqrt(np.dot(a_loc-b_loc, a_loc-b_loc)) > self.com_range:
+                        self.link_state[a_id][b_id] = 0
+                        self.__routinglinkdown(a_id, b_id)
         # 按照移动后的位置查找相遇事件
         for i in range(len(tunple_list)):
             a_id, a_loc, a_dest = tunple_list[i]
-            for j in range(i+1, len(tunple_list), step=1):
+            for j in range(i+1, len(tunple_list), 1):
                 b_id, b_loc, b_dest = tunple_list[j]
                 # 如果在通信范围内 交换信息
                 # 同时完成a->b b->a
-                if np.multiply(a_loc-b_loc, a_loc-b_loc) < self.com_range:
+                if np.sqrt(np.dot(a_loc-b_loc, a_loc-b_loc)) < self.com_range:
                     self.link_state[a_id][b_id] = 1
                     self.link_state[b_id][a_id] = 1
                     self.__routingswap(a_id, b_id)
@@ -127,7 +128,7 @@ class DTNSimGUI(DTNSimBase):
         while dst_index==src_index:
             dst_index = np.random.randint(len(self.node_list))
         newpkt = (self.genfreq_pktid, src_index, dst_index)
-        self.node_list.append(newpkt)
+        self.genfreq_pktlist.append(newpkt)
 
         # 各routing生成pkt, pkt大小为100k
         self.epidemicrouting.gennewpkt(self.genfreq_pktid, src_index, dst_index, 0, 100)
