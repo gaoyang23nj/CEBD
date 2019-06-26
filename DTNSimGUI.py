@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import messagebox
 import threading
 import numpy as np
 from DTNSimBase import DTNSimBase
@@ -11,10 +10,6 @@ class DTNSimGUI(DTNSimBase):
         self.MaxSize = maxsizeofCanvas
         self.showtimes = showtimes
         self.com_range = com_range
-
-        # 定时器界面刷新相关
-        self.timerisrunning = False
-
         self.genfreq_max = genfreq_cnt
         # 保留node的list
         self.node_list = []
@@ -31,8 +26,6 @@ class DTNSimGUI(DTNSimBase):
         self.window.title('my win')
         self.window.geometry('1000x1000')
 
-        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
-
         frm_canvas = tk.Frame(self.window)
         frm_canvas.pack(side='left')
         frm_button = tk.Frame(self.window)
@@ -42,18 +35,8 @@ class DTNSimGUI(DTNSimBase):
         self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.MaxSize, width=self.MaxSize)
         self.canvas.pack()
 
-
-    def on_closing(self):
-        if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            # 停止定时器
-            self.timerisrunning = False
-            # 删除窗口
-            self.window.destroy()
-
-
     def attachDTNNode(self, node):
         self.node_list.append(node)
-
 
     def __drawPointandLine(self, node_id, loc, dest):
         node_id = str(node_id)
@@ -69,31 +52,20 @@ class DTNSimGUI(DTNSimBase):
                                             tag='doval' + '_' + node_id, fill='blue')
         tmp_line = self.canvas.create_line(loc[0], loc[1], dest[0], dest[1], fill="red", tags='line' + '_' + node_id)
 
-    def run(self, totaltime = 36000):
+    def run(self):
         # 节点个数
         self.numofnodes = len(self.node_list)
         # 记录任何两个node之间的link状态
         self.link_state = np.zeros((self.numofnodes,  self.numofnodes),dtype='int')
         # 初始化各个routing
         self.__routinginit()
-        # 定时器刷新位
-        self.timerisrunning = True
-
-        # 总的执行时长
-        self.totaltime = totaltime
-        self.curtime = 0
         # 启动定时刷新机制
         self.t = threading.Timer(0.1, self.update)
         self.t.start()
         self.window.mainloop()
 
     def update(self):
-        # 是否收到停止的命令
-        if not self.timerisrunning:
-            self.__routingshowres()
-            return
-
-        # 完成 self.showtimes 个 timestep的位置更新变化，routing变化
+        # 完成 self.showtimes 个 timestep的位置更新变化
         tunple_list = self.runonetimestep()
         for i in range(self.showtimes-1):
             tunple_list = self.runonetimestep()
@@ -101,18 +73,9 @@ class DTNSimGUI(DTNSimBase):
         for tunple in tunple_list:
             node_id, loc, dest = tunple
             self.__drawPointandLine(node_id, loc, dest)
-        # 如果执行到最后的时刻，则停止下一次执行
-        self.curtime = self.curtime + 1
-        if self.curtime < self.totaltime:
-            # 没有到结束的时候, 下次更新视图
-            self.t = threading.Timer(0.1, self.update)
-            self.t.start()
-            return
-        else:
-            # 到结束的时候, 打印routing结果
-            self.__routingshowres()
-            return
-
+        # 下次更新视图
+        self.t = threading.Timer(0.1, self.update)
+        self.t.start()
 
     def runonetimestep(self):
         # 报文生成记时器
@@ -178,14 +141,10 @@ class DTNSimGUI(DTNSimBase):
         self.epidemicrouting.swappkt(a_id, b_id)
         self.epidemicrouting.swappkt(b_id, a_id)
 
-    # 各个routing收到linkdown事件
     def __routinglinkdown(self, a_id, b_id):
         self.epidemicrouting.linkdown(a_id, b_id)
         self.epidemicrouting.linkdown(b_id, a_id)
 
-    # 各个routing显示结果
-    def __routingshowres(self):
-        self.epidemicrouting.showres()
 
 
 

@@ -25,7 +25,7 @@ def runRandomWalk():
         node = DTNNode('RandomWalk', node_id, 0.1, size, size)
         theNodes.append(node)
         theGUI.attachDTNNode(node)
-    theGUI.run(totaltime=36000)
+    theGUI.run()
 
 def runHelsinkSPM():
     size = 800
