@@ -1,36 +1,14 @@
 
 class DTNSimBase(object):
     @classmethod
-    def attachDTNNode(cls, node):
+    def updateshow(cls, listtunple):
         '''
 
         :return:
         '''
 
     @classmethod
-    def run(cls):
-        '''
-
-        :return:
-        '''
-
-
-    @classmethod
-    def update(cls):
-        '''
-
-        :return:
-        '''
-
-    @classmethod
-    def runonetimestep(cls):
-        '''
-
-        :return:
-        '''
-
-    @classmethod
-    def draw(cls):
+    def initshow(cls):
         '''
 
         :return:

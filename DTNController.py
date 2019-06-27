@@ -1,8 +1,10 @@
 import numpy as np
+import threading
 from RoutingEpidemic import RoutingEpidemic
 
 class DTNController(object):
-    def __init__(self, showtimes=100, com_range=100, genfreq_cnt=6000):
+    def __init__(self, dtnview, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000):
+        self.DTNView = dtnview
         # 一次刷新view 内部更新的timstep个数
         self.times_showtstep = showtimes
         # 通信范围
@@ -22,7 +24,11 @@ class DTNController(object):
         self.cnt_genpkt = genfreq_cnt
         self.thr_genpkt = genfreq_cnt
         # 下一个pkt的id
-        self.id_nextgenpkt = 1
+        self.pktid_nextgen = 1
+        # 总的执行次数 设置
+        self.runtimes_total = totaltimes
+        self.runtimes_cur = 0
+        self.timerisrunning = False
 
     # attach node_list
     def attachnodelist(self, nodelist):
@@ -33,9 +39,48 @@ class DTNController(object):
         self.mt_linkstate = np.zeros((self.nr_nodes,  self.nr_nodes),dtype='int')
         self.mt_tranprocess = np.zeros((self.nr_nodes,  self.nr_nodes),dtype='int')
 
-    # View定时刷新机制
 
-    #
+    def closetimer(self):
+        # 停止定时器
+        self.timerisrunning = False
+
+    # View定时刷新机制
+    def run(self, totaltime=36000):
+        # 初始化各个routing
+        self.__routinginit()
+        # 定时器刷新位
+        self.timerisrunning = True
+        # 启动定时刷新机制
+        self.t = threading.Timer(0.1, self.updateViewer)
+        self.t.start()
+        self.DTNView.initshow()
+
+    def updateViewer(self):
+        # 是否收到停止的命令
+        if not self.timerisrunning:
+            self.__routingshowres()
+            return
+        # 完成 self.showtimes 个 timestep的位置更新变化，routing变化
+        for i in range(self.times_showtstep):
+            self.run_onetimestep()
+        tunple_list = []
+        for node in self.list_node:
+            tunple = (node.getNodeId(), node.getNodeLoc(), node.getNodeDest())
+            tunple_list.append(tunple)
+        # 显示
+        self.DTNView.updateshow(tunple_list)
+        # 如果执行到最后的时刻，则停止下一次执行
+        self.runtimes_cur = self.runtimes_cur + 1
+        if self.runtimes_cur < self.runtimes_total:
+            # 没有到结束的时候, 设置定时器 下次更新视图
+            self.t = threading.Timer(0.1, self.updateViewer)
+            self.t.start()
+            return
+        else:
+            # 到结束的时候, 打印routing结果
+            self.__routingshowres()
+            return
+
     def run_onetimestep(self):
         # 报文生成计数器
         if self.cnt_genpkt == self.thr_genpkt:
@@ -43,7 +88,6 @@ class DTNController(object):
             self.cnt_genpkt = 1
         else:
             self.cnt_genpkt =  self.cnt_genpkt + 1
-
         # 节点移动一个timestep
         tunple_list = []
         for node in self.list_node:
@@ -92,7 +136,7 @@ class DTNController(object):
                         self.__routinglinkdown(a_id, b_id)
 
 
-    # def __routinginit(self):
+    def __routinginit(self):
         self.epidemicrouting = RoutingEpidemic(len(self.list_node))
 
     # 各个routing 生成报文
@@ -101,13 +145,13 @@ class DTNController(object):
         dst_index = np.random.randint(len(self.list_node))
         while dst_index==src_index:
             dst_index = np.random.randint(len(self.list_node))
-        newpkt = (self.genfreq_pktid, src_index, dst_index)
+        newpkt = (self.pktid_nextgen, src_index, dst_index)
         self.list_genpkt.append(newpkt)
 
         # 各routing生成pkt, pkt大小为100k
-        self.epidemicrouting.gennewpkt(self.genfreq_pktid, src_index, dst_index, 0, 100)
+        self.epidemicrouting.gennewpkt(self.pktid_nextgen, src_index, dst_index, 0, 100)
 
-        self.genfreq_pktid = self.genfreq_pktid + 1
+        self.pktid_nextgen = self.pktid_nextgen + 1
         return
 
     # 各个routing开始交换报文

@@ -106,6 +106,9 @@ class MovementModelShortestPathMap(MovementModelBase):
     def get_src(self):
         return self.src[0].copy()
 
+    def get_loc(self):
+        return self.loc.copy()
+
     def get_path(self):
         return self.path
 
