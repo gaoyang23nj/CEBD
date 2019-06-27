@@ -2,30 +2,39 @@ import tkinter as tk
 from tkinter import messagebox
 import threading
 import numpy as np
+import ctypes
 from DTNSimBase import DTNSimBase
 from DTNNode import DTNNode
 from RoutingEpidemic import RoutingEpidemic
 
 class DTNSimGUI(DTNSimBase):
     def __init__(self, maxsizeofCanvas):
+        winapi = ctypes.windll.user32
+        width = winapi.GetSystemMetrics(0)
+        height = winapi.GetSystemMetrics(1)
+        geo = ''+str(int(width*2/3))+'x'+str(int(height*2/3))
+
         self.MaxSize = maxsizeofCanvas
         # 定时器界面刷新相关
         self.timerisrunning = False
         self.oval_size = 3
         self.window = tk.Tk()
         self.window.title('my win')
-        self.window.geometry('1000x1000')
+        self.window.geometry(geo)
 
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         frm_canvas = tk.Frame(self.window)
-        frm_canvas.pack(side='left')
+        frm_canvas.config(bg='blue', height=900, width=900)
+        # frm_canvas.pack(side='left')
+        frm_canvas.place(x=0, y=0, anchor='nw')
         frm_button = tk.Frame(self.window)
         frm_button.pack(side='right')
         # canvas
-        tk.Label(frm_canvas, text='frm_canvas').pack()
+        # tk.Label(frm_canvas, text='frm_canvas').pack()
         self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.MaxSize, width=self.MaxSize)
-        self.canvas.pack()
+        # self.canvas.pack()
+        self.canvas.place(x=0, y=0, anchor='nw')
 
 
     def attachController(self, dtncontroller):

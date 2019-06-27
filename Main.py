@@ -17,7 +17,7 @@ MAX_NODE_NUM = 10
 MAX_TIME_INDEX = 10000
 
 def runRandomWalk():
-    size = 800
+    size = 500
     # 每100个timestep(<模拟>10s)刷新一次界面, 通信范围100m, 每6000个timestep(<模拟>600s)产生一次报文
     theViewer = DTNSimGUI(size)
     theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000)
