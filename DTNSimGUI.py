@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 import threading
 import numpy as np
 import ctypes
+import time
 from DTNSimBase import DTNSimBase
 from DTNNode import DTNNode
 from RoutingEpidemic import RoutingEpidemic
@@ -33,16 +35,36 @@ class DTNSimGUI(DTNSimBase):
 
     # 初始化组件
     def inittkinter(self):
+        frm_control = tk.Frame(self.window)
+        frm_control.config(bg='White', height=40, width=1000)
+        frm_control.place(x=0, y=0, anchor='nw')
         frm_canvas = tk.Frame(self.window)
         frm_canvas.config(bg='GhostWhite', height=600, width=600)
         # frm_canvas.pack(side='left')
-        frm_canvas.place(x=0, y=0, anchor='nw')
-        frm_button = tk.Frame(self.window)
-        frm_button.config(bg='green', height=600, width=400)
-        frm_button.place(x=600, y=0, anchor='nw')
+        frm_canvas.place(x=0, y=40, anchor='nw')
+        frm_infoshow = tk.Frame(self.window)
+        frm_infoshow.config(bg='green', height=600, width=400)
+        frm_infoshow.place(x=600, y=40, anchor='nw')
+
+        # 按钮 控制执行进程
+        tk.Button(frm_control, text='stop', command=self.on_clickstop).place(x=20, y=5, height=30, width=60, anchor='nw')
+        tk.Button(frm_control, text='resume', command=self.on_clickresume).place(x=120, y=5, height=30, width=60, anchor='nw')
+        self.nr_signlestep = tk.StringVar()
+        self.comlist_nrstepsel = ttk.Combobox(frm_control, width=12, textvariable=self.nr_signlestep)
+        self.comlist_nrstepsel['values'] = (1, 2, 3, 4, 5)  # 设置下拉列表的值
+        self.comlist_nrstepsel.current(0)  # 设置下拉列表默认显示的值，0为 numberChosen['values'] 的下标值
+        self.comlist_nrstepsel.place(x=220, y=5, height=30, width=60, anchor='nw')
+        tk.Button(frm_control, text='step', command=self.on_clickstep).place(x=320, y=5, height=30, width=60, anchor='nw')
+        self.text_ctlinfo = tk.StringVar()
+        self.text_ctlinfo.set('ctlinfo')
+        tk.Label(frm_control, bg='White', textvariable=self.text_ctlinfo, height=2, width=500,justify='left').\
+            place(x=420, y=5, height=30, width=500, anchor='nw')
+
+        # 画布 绘制node移动
         self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.ShowSize, width=self.ShowSize)
         self.canvas.place(x=0, y=0, anchor='nw')
 
+        # 显示信息
         self.text_routingname = tk.StringVar()
         self.text_routingname.set('routingname')
         self.text_nodelist = tk.StringVar()
@@ -50,21 +72,33 @@ class DTNSimGUI(DTNSimBase):
         self.text_pktlist = tk.StringVar()
         self.text_pktlist.set('pkt_list')
         # info_routingname = 'epidemcirouting'
-        info_routing = tk.Label(frm_button, bg='white', textvariable=self.text_routingname, height=2, width=40, justify='left')
-        info_routing.pack()
-        info_nodelist = tk.Label(frm_button, bg='SkyBlue', textvariable=self.text_nodelist, height=12, width=40,justify='left')
-        info_nodelist.pack()
-        info_pktlist = tk.Label(frm_button, bg='CadetBlue', textvariable=self.text_pktlist, height=12, width=40,justify='left')
-        info_pktlist.pack()
-        # info_enorgen = tk.Label(frm_button, bg='gray', text='info_enorgen:',height=11,width=40)
+        tk.Label(frm_infoshow, bg='white', textvariable=self.text_routingname, height=2, width=40, justify='left').pack()
+        tk.Label(frm_infoshow, bg='SkyBlue', textvariable=self.text_nodelist, height=12, width=40,justify='left').pack()
+        tk.Label(frm_infoshow, bg='CadetBlue', textvariable=self.text_pktlist, height=12, width=40,justify='left').pack()
+        # info_enorgen = tk.Label(frm_infoshow, bg='gray', text='info_enorgen:',height=11,width=40)
         # info_enorgen.pack()
 
-    def initshow(self):
+    def initshow(self, infotext):
+        infotext = infotext + ' SimSize:'+ str(self.RealSize)
+        self.text_ctlinfo.set(infotext)
         self.window.mainloop()
+
+    def on_clickstep(self):
+        updatetimesOnce = self.comlist_nrstepsel.get()
+        self.DTNController.updateOnce(int(updatetimesOnce))
+
+    def on_clickstop(self):
+        self.DTNController.setTimerRunning(False)
+
+    def on_clickresume(self):
+        self.DTNController.setTimerRunning(True)
+        self.DTNController.updateViewer()
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.DTNController.closetimer()
+            self.DTNController.setTimerRunning(False)
+            # 1s之后关闭 防止主进程先关掉
+            time.sleep(1)
             # 删除窗口
             self.window.destroy()
 

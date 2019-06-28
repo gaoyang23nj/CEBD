@@ -40,9 +40,13 @@ class DTNController(object):
         self.mt_tranprocess = np.zeros((self.nr_nodes,  self.nr_nodes),dtype='int')
 
 
-    def closetimer(self):
+    def setTimerRunning(self, run):
         # 停止定时器
-        self.timerisrunning = False
+        self.timerisrunning = run
+
+    def updateOnce(self, updatetimesOnce):
+        for i in range(updatetimesOnce):
+            self.executeOnce()
 
     # View定时刷新机制
     def run(self, totaltime=36000):
@@ -53,19 +57,35 @@ class DTNController(object):
         # 启动定时刷新机制
         self.t = threading.Timer(0.1, self.updateViewer)
         self.t.start()
-        self.DTNView.initshow()
+        infotext = 'StepTime:'+ str(self.list_node[0].steptime)+' Times_showsteps:'+ str(self.times_showtstep) + ' Commu_range:'+ str(self.range_comm)
+        self.DTNView.initshow(infotext)
 
     def updateViewer(self):
         # 是否收到停止的命令
         if not self.timerisrunning:
             self.__routingshowres()
             return
+        # 按照times_showtstep的指定 执行showtimes次
+        self.executeOnce()
+
+        # 如果执行到最后的时刻，则停止下一次执行
+        self.runtimes_cur = self.runtimes_cur + 1
+        if self.runtimes_cur < self.runtimes_total:
+            # 没有到结束的时候, 设置定时器 下次更新视图
+            self.t = threading.Timer(0.1, self.updateViewer)
+            self.t.start()
+            return
+        else:
+            # 到结束的时候, 打印routing结果
+            self.__routingshowres()
+            return
+
+    def executeOnce(self):
         # 完成 self.showtimes 个 timestep的位置更新变化，routing变化
         for i in range(self.times_showtstep):
             self.run_onetimestep()
         # 获取self.DTNView指定的routing显示
         selected_routing = self.__getsrouting(self.DTNView.getroutingname())
-
         # 提供给Viewer显示Canvas
         tunple_list = []
         for node in self.list_node:
@@ -80,17 +100,6 @@ class DTNController(object):
             info_nodelist.append(tunple)
         info_pktlist = self.list_genpkt
         self.DTNView.updateInfoShow((info_nodelist, info_pktlist))
-        # 如果执行到最后的时刻，则停止下一次执行
-        self.runtimes_cur = self.runtimes_cur + 1
-        if self.runtimes_cur < self.runtimes_total:
-            # 没有到结束的时候, 设置定时器 下次更新视图
-            self.t = threading.Timer(0.1, self.updateViewer)
-            self.t.start()
-            return
-        else:
-            # 到结束的时候, 打印routing结果
-            self.__routingshowres()
-            return
 
     def run_onetimestep(self):
         # 报文生成计数器

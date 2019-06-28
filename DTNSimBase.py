@@ -8,7 +8,7 @@ class DTNSimBase(object):
         '''
 
     @classmethod
-    def initshow(cls):
+    def initshow(cls, infotext):
         '''
 
         :return:
