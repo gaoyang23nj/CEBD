@@ -100,11 +100,8 @@ class DTNController(object):
         else:
             self.cnt_genpkt =  self.cnt_genpkt + 1
         # 节点移动一个timestep
-        tunple_list = []
         for node in self.list_node:
-            loc = node.run()
-            tmp_tunple = (node.getNodeId(), loc, node.getNodeDest())
-            tunple_list.append(tmp_tunple)
+            node.run()
         # 检测linkdown事件
         self.detectlinkdown()
         # 检测相遇事件

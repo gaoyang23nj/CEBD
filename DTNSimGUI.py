@@ -8,14 +8,17 @@ from DTNNode import DTNNode
 from RoutingEpidemic import RoutingEpidemic
 
 class DTNSimGUI(DTNSimBase):
-    def __init__(self, maxsizeofCanvas):
+    def __init__(self, showsize, realsize):
         winapi = ctypes.windll.user32
         width = winapi.GetSystemMetrics(0)
         height = winapi.GetSystemMetrics(1)
         print(''+str(int(width))+'x'+str(int(height)))
         # geo = ''+str(int(width*3/4))+'x'+str(int(height*3/4))
         geo = '1000x600'
-        self.MaxSize = maxsizeofCanvas
+        # 显示尺寸 真实尺寸
+        self.ShowSize = showsize
+        self.RealSize = realsize
+        self.scale = showsize/realsize
         # 定时器界面刷新相关
         self.timerisrunning = False
         self.oval_size = 3
@@ -37,7 +40,7 @@ class DTNSimGUI(DTNSimBase):
         frm_button = tk.Frame(self.window)
         frm_button.config(bg='green', height=600, width=400)
         frm_button.place(x=600, y=0, anchor='nw')
-        self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.MaxSize, width=self.MaxSize)
+        self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.ShowSize, width=self.ShowSize)
         self.canvas.place(x=0, y=0, anchor='nw')
 
         self.text_routingname = tk.StringVar()
@@ -96,17 +99,19 @@ class DTNSimGUI(DTNSimBase):
 
     def __drawPointandLine(self, node_id, loc, dest):
         node_id = str(node_id)
+        newloc = loc * self.scale
+        newdest = dest * self.scale
         self.canvas.delete('text' + '_' + node_id, 'oval' + '_' + node_id, 'doval' + '_' + node_id, 'line' + '_' + node_id)
-        tmp_oval = self.canvas.create_oval(loc[0] - self.oval_size, loc[1] - self.oval_size,
-                                           loc[0] + self.oval_size, loc[1] + self.oval_size,
+        tmp_oval = self.canvas.create_oval(newloc[0] - self.oval_size, newloc[1] - self.oval_size,
+                                           newloc[0] + self.oval_size, newloc[1] + self.oval_size,
                                            tag='oval' + '_' + node_id, fill='red')
-        tmp_label = self.canvas.create_text(loc[0], loc[1] - (self.oval_size * 3), text='' + node_id,
+        tmp_label = self.canvas.create_text(newloc[0], newloc[1] - (self.oval_size * 3), text='' + node_id,
                                             tag='text' + '_' + node_id)
 
-        tmp_doval = self.canvas.create_oval(dest[0] - self.oval_size, dest[1] - self.oval_size,
-                                            dest[0] + self.oval_size, dest[1] + self.oval_size,
+        tmp_doval = self.canvas.create_oval(newdest[0] - self.oval_size, newdest[1] - self.oval_size,
+                                            newdest[0] + self.oval_size, newdest[1] + self.oval_size,
                                             tag='doval' + '_' + node_id, fill='blue')
-        tmp_line = self.canvas.create_line(loc[0], loc[1], dest[0], dest[1], fill="red", tags='line' + '_' + node_id)
+        tmp_line = self.canvas.create_line(newloc[0], newloc[1], newdest[0], newdest[1], fill="red", tags='line' + '_' + node_id)
 
 
 
