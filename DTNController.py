@@ -63,12 +63,23 @@ class DTNController(object):
         # 完成 self.showtimes 个 timestep的位置更新变化，routing变化
         for i in range(self.times_showtstep):
             self.run_onetimestep()
+        # 获取self.DTNView指定的routing显示
+        selected_routing = self.__getsrouting(self.DTNView.getroutingname())
+
+        # 提供给Viewer显示Canvas
         tunple_list = []
         for node in self.list_node:
             tunple = (node.getNodeId(), node.getNodeLoc(), node.getNodeDest())
             tunple_list.append(tunple)
-        # 显示
-        self.DTNView.updateshow(tunple_list)
+        self.DTNView.updateCanvaShow(tunple_list)
+        # 提供给Viewer info
+        info_nodelist = []
+        for node in self.list_node:
+            node_id = node.getNodeId()
+            tunple = (node_id, selected_routing.getnodelist(node_id))
+            info_nodelist.append(tunple)
+        info_pktlist = self.list_genpkt
+        self.DTNView.updateInfoShow((info_nodelist, info_pktlist))
         # 如果执行到最后的时刻，则停止下一次执行
         self.runtimes_cur = self.runtimes_cur + 1
         if self.runtimes_cur < self.runtimes_total:
@@ -167,3 +178,9 @@ class DTNController(object):
     # 各个routing显示结果
     def __routingshowres(self):
         self.epidemicrouting.showres()
+
+    def __getsrouting(self, routingname):
+        if routingname == 'epidemicrouting':
+            return self.epidemicrouting
+        # elif routingname == 'prophetrouting':
+        #     return self.prophetrouting

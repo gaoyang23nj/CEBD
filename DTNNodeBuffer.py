@@ -14,5 +14,12 @@ class DTNNodeBuffer(object):
         self.occupied_size = self.occupied_size + cppkt.pkt_size
         self.listofpkt.append(cppkt)
 
+    def getlistpkt(self):
+        relist = []
+        for pkt in self.listofpkt:
+            tunple = pkt.pkt_id
+            relist.append(tunple)
+        return  relist
+
 
 

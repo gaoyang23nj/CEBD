@@ -147,8 +147,13 @@ class RoutingEpidemic(RoutingBase):
             thenodebuffer.listofpkt.pop(0)
         return
 
-
-
+    def getnodelist(self, node_id):
+        node_pktlist = []
+        for nodebuffer in self.listofnodebuffer:
+            if node_id == nodebuffer.id:
+                node_pktlist = nodebuffer.getlistpkt()
+                break
+        return node_pktlist
 
 
 
