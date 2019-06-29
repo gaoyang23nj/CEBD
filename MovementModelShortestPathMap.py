@@ -3,9 +3,8 @@ from WKTPathReader import WKTPathReader
 import numpy as np
 
 class MovementModelShortestPathMap(MovementModelBase):
-    def __init__(self, steptime, maxsize, pathreader):
+    def __init__(self, steptime, pathreader):
         super(MovementModelShortestPathMap, self).__init__()
-        self.MaxSize = maxsize
         self.pathreader = pathreader
         self.headofadjnodes, self.allnodemap = self.pathreader.getListNode()
         self.steptime = steptime
@@ -105,6 +104,9 @@ class MovementModelShortestPathMap(MovementModelBase):
 
     def get_src(self):
         return self.src[0].copy()
+
+    def get_loc(self):
+        return self.loc.copy()
 
     def get_path(self):
         return self.path

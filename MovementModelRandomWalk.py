@@ -28,6 +28,7 @@ class MovementModelRandomWalk(MovementModelBase):
     def get_loc(self):
         return self.loc.copy()
 
+
     def __moveinDuringTime(self, duringtime, label):
         # loc到dest的向量
         tmp_dist_vec = self.dest - self.loc
