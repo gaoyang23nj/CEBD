@@ -33,22 +33,27 @@ def runRandomWalk():
 
 
 def runHelsinkSPM():
+    showsize = 500
+    realsize = 1000
     size = 800
-    pathreader = WKTPathReader(size)
+    pathreader = WKTPathReader()
     # 100倍速度执行
-    theGUI = DTNSimGUIMap(size, pathreader, 100)
-    theNodes = []
+    # theGUI = DTNSimGUIMap(size, pathreader, 100)
+    theViewer = DTNSimGUIMap(pathreader, showsize)
+    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000)
+    listNodes = []
     for node_id in range(MAX_NODE_NUM):
         # 0.1s 一个间隔
-        node = DTNNode('SPM', node_id, 0.1, size, pathreader)
-        theNodes.append(node)
-        theGUI.attachDTNNode(node)
-    theGUI.run()
+        node = DTNNode('SPM', node_id, 0.1, pathreader)
+        listNodes.append(node)
+    theController.attachnodelist(listNodes)
+    theViewer.attachController(theController)
+    theController.run()
 
 
 if __name__ == "__main__":
-    runRandomWalk()
-    # runHelsinkSPM()
+    # runRandomWalk()
+    runHelsinkSPM()
 
 
 

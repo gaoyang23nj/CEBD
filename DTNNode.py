@@ -11,11 +11,11 @@ class DTNNode(object):
             # self.MovementModel = MovementModelRandomWalk(steptime, *args)
             self.MovementModel = MovementModelRandomWalk(steptime, maxwidth=maxwidth, maxheight=maxheight)
         elif args[0] is 'SPM':
-            node_id, steptime, maxsize, pathreader = args[1:]
+            node_id, steptime, pathreader = args[1:]
             self.node_id = node_id
             self.steptime = steptime
             # self.MovementModel = MovementModelShortestPathMap(steptime, *args)
-            self.MovementModel = MovementModelShortestPathMap(steptime, maxsize, pathreader)
+            self.MovementModel = MovementModelShortestPathMap(steptime, pathreader)
         else:
             print('ERROR! DTNNode.__init__()')
 
