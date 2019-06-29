@@ -2,20 +2,19 @@ import numpy as np
 import os
 
 class WKTPathReader(object):
-    def __init__(self, maxsize):
+    def __init__(self):
         self.data_dir = 'data/'
         self.allnodemap = []
         self.headofadjnodes = []
         self.alllines = []
         self.allpois = []
+        # 范围参数Range
         self.RangeHeight = np.array([-1.0, -1.0])
         self.RangeWidth = np.array([-1.0, -1.0])
         self.MinXY = np.array([-1.0, -1.0])
-        self.MaxSize = maxsize
-        self.Scale = 1
+        # 读取文件
         self.readthedata()
         self.genMapAdjNodes()
-        self.genScaleParams()
 
     def readthedata(self):
         files = os.listdir(self.data_dir)
@@ -25,18 +24,16 @@ class WKTPathReader(object):
         self.MinXY[1] = self.RangeHeight[0]
 
 
-    def genScaleParams(self):
-        if (self.RangeWidth[1] - self.RangeWidth[0]) > (self.RangeHeight[1] - self.RangeHeight[0]):
-            self.Scale = self.MaxSize / (self.RangeWidth[1] - self.RangeWidth[0])
-        else:
-            self.Scale = self.MaxSize / (self.RangeHeight[1] - self.RangeHeight[0])
+    def getRangeParams(self):
+        return self.MinXY, self.RangeHeight, self.RangeWidth
 
-    def getParams(self):
-        return self.alllines, self.allpois, self.MinXY, self.Scale
+    def getMapParams(self):
+        return self.alllines, self.allpois
 
     def getListNode(self):
         return self.headofadjnodes.copy(), self.allnodemap.copy()
 
+    # 绘制出关联点图，以便随机生成 src/dest位置
     def genMapAdjNodes(self):
         for tmpline in self.alllines:
             for i in range(len(tmpline)):
