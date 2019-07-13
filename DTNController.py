@@ -146,7 +146,7 @@ class DTNController(object):
                 # 同时完成a->b b->a
                 if np.sqrt(np.dot(a_loc - b_loc, a_loc - b_loc)) < self.range_comm:
                     if self.mt_linkstate[a_id][b_id] == 0:
-                        self.log('[time_{}] [link_up] a(node_{})->b(node_{})\n'.format(
+                        self.log('[time_{}] [link_up] a(node_{})<->b(node_{})\n'.format(
                             self.RunningTime, a_id, b_id))
                     self.mt_linkstate[a_id][b_id] = 1
                     self.__routingswap(a_id, b_id)
@@ -166,7 +166,7 @@ class DTNController(object):
                 # linkstate 的连通是相互的, linkdown事件也是
                 if self.mt_linkstate[a_id][b_id] == 1:
                     if np.sqrt(np.dot(a_loc - b_loc, a_loc - b_loc)) >= self.range_comm:
-                        self.log('[time_{}] [link_down] a(node_{})->b(node_{})\n'.format(
+                        self.log('[time_{}] [link_down] a(node_{})<->b(node_{})\n'.format(
                                 self.RunningTime, a_id, b_id))
                         self.mt_linkstate[a_id][b_id] = 0
                         self.__routinglinkdown(a_id, b_id)
