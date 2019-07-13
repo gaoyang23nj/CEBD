@@ -10,7 +10,7 @@ from WKTPathReader import WKTPathReader
 from DTNNode import DTNNode
 
 class DTNSimGUIMap(DTNSimBase):
-    def __init__(self, pathreader, showsize):
+    def __init__(self, pathreader, showsize, isshowconn=True):
         winapi = ctypes.windll.user32
         width = winapi.GetSystemMetrics(0)
         height = winapi.GetSystemMetrics(1)
@@ -20,6 +20,7 @@ class DTNSimGUIMap(DTNSimBase):
         # 读取参数
         self.PathReader = pathreader
         self.ShowSize = showsize
+        self.isShowConn = isshowconn
         # 范围参数Range
         self.RangeHeight = np.array([-1.0, -1.0])
         self.RangeWidth = np.array([-1.0, -1.0])
@@ -110,9 +111,7 @@ class DTNSimGUIMap(DTNSimBase):
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.DTNController.setTimerRunning(False)
-            # 1s之后关闭 防止主进程先关掉
-            time.sleep(1)
+            self.DTNController.closeApp()
             # 删除窗口
             self.window.destroy()
 
@@ -192,52 +191,6 @@ class DTNSimGUIMap(DTNSimBase):
             # 上下方位
             self.canvas.create_line(loc[0], loc[1], dest[0], dest[1], fill="blue",  dash=(4, 4))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def run(self):
-        self.t = threading.Timer(0.1, self.update)
-        self.t.start()
-        self.window.mainloop()
-
-    def update(self):
-        tunple_list = self.runonetimestep()
-        for i in range(self.showtimes-1):
-            tunple_list = self.runonetimestep()
-
-        for tmp_tunple in tunple_list:
-            (node_id, loc, src, dest, path) = tmp_tunple
-            self.__drawPointandLine(node_id, loc, src, dest)
-
-        self.t = threading.Timer(0.1, self.update)
-        self.t.start()
-
-    def runonetimestep(self):
-        tunple_list = []
-        for node in self.node_list:
-            loc = node.run()
-            path = node.getPath()
-            src, dest = node.getSrcDestPair()
-            tmp_tunple = (node.getNodeId(), loc, src, dest, path)
-            tunple_list.append(tmp_tunple)
-            # 坐标转换
-        # print(tunple_list)
-        return tunple_list
+    # 连接显示
+    def __showconn(self):
+        pass

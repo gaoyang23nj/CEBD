@@ -39,7 +39,7 @@ def runHelsinkSPM():
     pathreader = WKTPathReader()
     # 100倍速度执行
     # theGUI = DTNSimGUIMap(size, pathreader, 100)
-    theViewer = DTNSimGUIMap(pathreader, showsize)
+    theViewer = DTNSimGUIMap(pathreader, showsize, isshowconn=True)
     theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000)
     listNodes = []
     for node_id in range(MAX_NODE_NUM):
@@ -52,8 +52,8 @@ def runHelsinkSPM():
 
 
 if __name__ == "__main__":
-    # runRandomWalk()
-    runHelsinkSPM()
+    runRandomWalk()
+    # runHelsinkSPM()
 
 
 

@@ -26,9 +26,11 @@ class DTNController(object):
         # 下一个pkt的id
         self.pktid_nextgen = 1
         # 总的执行次数 设置
-        self.runtimes_total = totaltimes
-        self.runtimes_cur = 0
+        self.RunningTime_Max = totaltimes
+        self.RunningTime = 0
         self.timerisrunning = False
+        # 启动log
+        self.__initlog()
 
     # attach node_list
     def attachnodelist(self, nodelist):
@@ -39,11 +41,20 @@ class DTNController(object):
         self.mt_linkstate = np.zeros((self.nr_nodes,  self.nr_nodes),dtype='int')
         self.mt_tranprocess = np.zeros((self.nr_nodes,  self.nr_nodes),dtype='int')
 
+    def closeApp(self):
+        # 关闭log
+        self.__closelog()
+        # 关闭定时器
+        self.setTimerRunning(False)
+        self.__routingshowres()
+        self.t.cancel()
+
 
     def setTimerRunning(self, run):
         # 停止定时器
         self.timerisrunning = run
 
+    # 执行指定的步数
     def updateOnce(self, updatetimesOnce):
         for i in range(updatetimesOnce):
             self.executeOnce()
@@ -63,14 +74,15 @@ class DTNController(object):
     def updateViewer(self):
         # 是否收到停止的命令
         if not self.timerisrunning:
+            self.t.cancel()
             self.__routingshowres()
             return
         # 按照times_showtstep的指定 执行showtimes次
         self.executeOnce()
 
         # 如果执行到最后的时刻，则停止下一次执行
-        self.runtimes_cur = self.runtimes_cur + 1
-        if self.runtimes_cur < self.runtimes_total:
+        # self.runtimes_cur = self.runtimes_cur + 1
+        if self.RunningTime < self.RunningTime_Max:
             # 没有到结束的时候, 设置定时器 下次更新视图
             self.t = threading.Timer(0.1, self.updateViewer)
             self.t.start()
@@ -80,6 +92,7 @@ class DTNController(object):
             self.__routingshowres()
             return
 
+    # 完成self.showtimes规定次数的移动和计算 并更新界面
     def executeOnce(self):
         # 完成 self.showtimes 个 timestep的位置更新变化，routing变化
         for i in range(self.times_showtstep):
@@ -101,6 +114,7 @@ class DTNController(object):
         info_pktlist = self.list_genpkt
         self.DTNView.updateInfoShow((info_nodelist, info_pktlist))
 
+    # 完成一个timestep的移动 计算 routing
     def run_onetimestep(self):
         # 报文生成计数器
         if self.cnt_genpkt == self.thr_genpkt:
@@ -115,6 +129,8 @@ class DTNController(object):
         self.detectlinkdown()
         # 检测相遇事件
         self.detectencounter()
+        # 如果执行到最后的时刻，则停止下一次执行
+        self.RunningTime = self.RunningTime + 1
 
     # 检测相遇事件
     def detectencounter(self):
@@ -129,6 +145,9 @@ class DTNController(object):
                 # 如果在通信范围内 交换信息
                 # 同时完成a->b b->a
                 if np.sqrt(np.dot(a_loc - b_loc, a_loc - b_loc)) < self.range_comm:
+                    if self.mt_linkstate[a_id][b_id] == 0:
+                        self.log('[time_{}] [link_up] a(node_{})->b(node_{})\n'.format(
+                            self.RunningTime, a_id, b_id))
                     self.mt_linkstate[a_id][b_id] = 1
                     self.__routingswap(a_id, b_id)
                     self.mt_linkstate[b_id][a_id] = 1
@@ -147,6 +166,8 @@ class DTNController(object):
                 # linkstate 的连通是相互的, linkdown事件也是
                 if self.mt_linkstate[a_id][b_id] == 1:
                     if np.sqrt(np.dot(a_loc - b_loc, a_loc - b_loc)) >= self.range_comm:
+                        self.log('[time_{}] [link_down] a(node_{})->b(node_{})\n'.format(
+                                self.RunningTime, a_id, b_id))
                         self.mt_linkstate[a_id][b_id] = 0
                         self.__routinglinkdown(a_id, b_id)
                         self.mt_linkstate[b_id][a_id] = 0
@@ -164,10 +185,11 @@ class DTNController(object):
             dst_index = np.random.randint(len(self.list_node))
         newpkt = (self.pktid_nextgen, src_index, dst_index)
         self.list_genpkt.append(newpkt)
-
         # 各routing生成pkt, pkt大小为100k
         self.epidemicrouting.gennewpkt(self.pktid_nextgen, src_index, dst_index, 0, 100)
-
+        # 生成报文生成的log
+        self.log('[time_{}] [packet gen] pkt_{}:src(node_{})->dst(node_{})\n'.format(
+                  self.RunningTime, self.pktid_nextgen, src_index, dst_index))
         self.pktid_nextgen = self.pktid_nextgen + 1
         return
 
@@ -190,3 +212,15 @@ class DTNController(object):
             return self.epidemicrouting
         # elif routingname == 'prophetrouting':
         #     return self.prophetrouting
+
+    # 初始化log文件 写入事件
+    def __initlog(self):
+        file_name = 'eve.log'
+        self.filelog_object = open(file_name, "w+", encoding="utf-8")
+
+    def log(self, str):
+        self.filelog_object.write(str)
+        self.filelog_object.flush()
+
+    def __closelog(self):
+        self.filelog_object.close()

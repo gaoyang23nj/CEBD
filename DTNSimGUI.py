@@ -10,7 +10,7 @@ from DTNNode import DTNNode
 from RoutingEpidemic import RoutingEpidemic
 
 class DTNSimGUI(DTNSimBase):
-    def __init__(self, showsize, realsize):
+    def __init__(self, showsize, realsize, isshowconn=True):
         winapi = ctypes.windll.user32
         width = winapi.GetSystemMetrics(0)
         height = winapi.GetSystemMetrics(1)
@@ -20,6 +20,7 @@ class DTNSimGUI(DTNSimBase):
         # 显示尺寸 真实尺寸
         self.ShowSize = showsize
         self.RealSize = realsize
+        self.isShowConn = True
         self.scale = showsize/realsize
         # 定时器界面刷新相关
         self.timerisrunning = False
@@ -96,9 +97,7 @@ class DTNSimGUI(DTNSimBase):
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.DTNController.setTimerRunning(False)
-            # 1s之后关闭 防止主进程先关掉
-            time.sleep(1)
+            self.DTNController.closeApp()
             # 删除窗口
             self.window.destroy()
 
@@ -147,5 +146,8 @@ class DTNSimGUI(DTNSimBase):
                                             tag='doval' + '_' + node_id, fill='blue')
         tmp_line = self.canvas.create_line(newloc[0], newloc[1], newdest[0], newdest[1], fill="red", tags='line' + '_' + node_id)
 
+    # 连接显示
+    def __showconn(self):
+        pass
 
 

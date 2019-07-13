@@ -40,13 +40,17 @@ class RoutingEpidemic(RoutingBase):
         self.listofnodebuffer[src_id].addpkt(newpkt)
         return
 
+    # 这种
     # routing接到指令aid和bid相遇，开始进行消息交换
-    # 如果a和b正在传输某个pkt, 则此时间间隔内应该帮助接着传
-    # 否则 选择新的pkt开始传输
     def swappkt(self, a_id, b_id):
         # 可传输数据量
         transmitvolume = self.transmitspeed * self.timestep
-        # 可以传输的状态
+        self.transmitting(a_id, b_id, transmitvolume)
+
+    # 如果a和b正在传输某个pkt, 则此时间间隔内应该帮助接着传
+    # 否则 选择新的pkt开始传输
+    def transmitting(self, a_id, b_id, transmitvolume):
+        # 如果存在正在传输的pkt
         if self.link_transmitpktid[a_id][b_id] != 0:
             # 继续传输之前的pkt
             tmp_pktid = self.link_transmitpktid[a_id][b_id]
@@ -60,10 +64,12 @@ class RoutingEpidemic(RoutingBase):
             assert(isfound == True)
             resumevolume = target_pkt.pkt_size-self.link_transmitprocess[a_id][b_id]
             if transmitvolume > resumevolume:
-                transmitvolume = transmitvolume - resumevolume
+                remiantransmitvolume = transmitvolume - resumevolume
                 self.link_transmitpktid[a_id][b_id] = 0
                 self.link_transmitprocess[a_id][b_id] = 0
                 self.copypkttobid(b_id, target_pkt)
+                # 还剩一些可传输量
+                self.transmitting(self, a_id, b_id, remiantransmitvolume)
             elif transmitvolume < resumevolume:
                 self.link_transmitprocess[a_id][b_id] = self.link_transmitprocess[a_id][b_id] + transmitvolume
                 return
@@ -72,9 +78,9 @@ class RoutingEpidemic(RoutingBase):
                 self.link_transmitprocess[a_id][b_id] = 0
                 self.copypkttobid(b_id, target_pkt)
                 return
-
+        # 如果没有正在传输的pkt
         # 从a的buffer里 顺序查找 b的buffer里没有的pkt
-        # 建立准备传输的pkt列表
+        # 建立准备传输的pkt列表(这应该是一个优先级的list)
         totran_pktlist = self.__gettranpktlist(a_id, b_id)
         for i_pkt in totran_pktlist:
             # 开始传输i_pkt 可传输量消耗
@@ -82,6 +88,7 @@ class RoutingEpidemic(RoutingBase):
                 transmitvolume = transmitvolume - i_pkt.pkt_size
                 # 把报文复制给b_id
                 self.copypkttobid(b_id, i_pkt)
+            # 如果传不完了...
             else:
                 self.link_transmitpktid[a_id][b_id] = i_pkt.pkt_id
                 self.link_transmitprocess[a_id][b_id] = i_pkt.pkt_size - transmitvolume
