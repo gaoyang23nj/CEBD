@@ -1,6 +1,7 @@
 import numpy as np
 import threading
 from RoutingEpidemic import RoutingEpidemic
+from DTNLogFiles import DTNLogFiles
 
 class DTNController(object):
     def __init__(self, dtnview, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000):
@@ -30,7 +31,8 @@ class DTNController(object):
         self.RunningTime = 0
         self.timerisrunning = False
         # 启动log
-        self.__initlog()
+        self.filelog = DTNLogFiles()
+        self.filelog.initlog('eve')
 
     # attach node_list
     def attachnodelist(self, nodelist):
@@ -43,7 +45,7 @@ class DTNController(object):
 
     def closeApp(self):
         # 关闭log
-        self.__closelog()
+        self.filelog.closelog()
         # 关闭定时器
         self.setTimerRunning(False)
         self.__routingshowres()
@@ -146,7 +148,7 @@ class DTNController(object):
                 # 同时完成a->b b->a
                 if np.sqrt(np.dot(a_loc - b_loc, a_loc - b_loc)) < self.range_comm:
                     if self.mt_linkstate[a_id][b_id] == 0:
-                        self.log('[time_{}] [link_up] a(node_{})<->b(node_{})\n'.format(
+                        self.filelog.insertlog('eve','[time_{}] [link_up] a(node_{})<->b(node_{})\n'.format(
                             self.RunningTime, a_id, b_id))
                     self.mt_linkstate[a_id][b_id] = 1
                     self.__routingswap(a_id, b_id)
@@ -166,7 +168,7 @@ class DTNController(object):
                 # linkstate 的连通是相互的, linkdown事件也是
                 if self.mt_linkstate[a_id][b_id] == 1:
                     if np.sqrt(np.dot(a_loc - b_loc, a_loc - b_loc)) >= self.range_comm:
-                        self.log('[time_{}] [link_down] a(node_{})<->b(node_{})\n'.format(
+                        self.filelog.insertlog('eve','[time_{}] [link_down] a(node_{})<->b(node_{})\n'.format(
                                 self.RunningTime, a_id, b_id))
                         self.mt_linkstate[a_id][b_id] = 0
                         self.__routinglinkdown(a_id, b_id)
@@ -188,7 +190,7 @@ class DTNController(object):
         # 各routing生成pkt, pkt大小为100k
         self.epidemicrouting.gennewpkt(self.pktid_nextgen, src_index, dst_index, 0, 100)
         # 生成报文生成的log
-        self.log('[time_{}] [packet gen] pkt_{}:src(node_{})->dst(node_{})\n'.format(
+        self.filelog.insertlog('eve','[time_{}] [packet gen] pkt_{}:src(node_{})->dst(node_{})\n'.format(
                   self.RunningTime, self.pktid_nextgen, src_index, dst_index))
         self.pktid_nextgen = self.pktid_nextgen + 1
         return
@@ -212,15 +214,3 @@ class DTNController(object):
             return self.epidemicrouting
         # elif routingname == 'prophetrouting':
         #     return self.prophetrouting
-
-    # 初始化log文件 写入事件
-    def __initlog(self):
-        file_name = 'eve.log'
-        self.filelog_object = open(file_name, "w+", encoding="utf-8")
-
-    def log(self, str):
-        self.filelog_object.write(str)
-        self.filelog_object.flush()
-
-    def __closelog(self):
-        self.filelog_object.close()

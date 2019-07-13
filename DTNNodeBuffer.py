@@ -21,5 +21,19 @@ class DTNNodeBuffer(object):
             relist.append(tunple)
         return  relist
 
+    # 按照pkt_id删掉pkt
+    def deletepktbypktid(self, pkt_id):
+        isOK = False
+        for pkt in self.listofpkt:
+            if pkt_id == pkt.pkt_id:
+                self.occupied_size = self.occupied_size - pkt.pkt_size
+                self.listofpkt.remove(pkt)
+                isOK = True
+        return isOK
 
-
+    # 老化机制 从头删除报文 提供至少pkt_size的空间
+    def deletepktbysize(self, pkt_size):
+        while self.occupied_size + pkt_size > self.maxsize:
+            self.occupied_size = self.occupied_size - self.listofpkt[0].pkt_size
+            self.listofpkt.pop(0)
+        return
