@@ -97,8 +97,9 @@ class DTNController(object):
     # 完成self.showtimes规定次数的移动和计算 并更新界面
     def executeOnce(self):
         # 完成 self.showtimes 个 timestep的位置更新变化，routing变化
+        encounter_list = []
         for i in range(self.times_showtstep):
-            self.run_onetimestep()
+            encounter_list = self.run_onetimestep()
         # 获取self.DTNView指定的routing显示
         selected_routing = self.__getsrouting(self.DTNView.getroutingname())
         # 提供给Viewer显示Canvas
@@ -106,7 +107,7 @@ class DTNController(object):
         for node in self.list_node:
             tunple = (node.getNodeId(), node.getNodeLoc(), node.getNodeDest())
             tunple_list.append(tunple)
-        self.DTNView.updateCanvaShow(tunple_list)
+        self.DTNView.updateCanvaShow(tunple_list, encounter_list)
         # 提供给Viewer info
         info_nodelist = []
         for node in self.list_node:
@@ -130,12 +131,15 @@ class DTNController(object):
         # 检测linkdown事件
         self.detectlinkdown()
         # 检测相遇事件
-        self.detectencounter()
+        encounter_list = self.detectencounter()
         # 如果执行到最后的时刻，则停止下一次执行
         self.RunningTime = self.RunningTime + 1
+        return encounter_list
+
 
     # 检测相遇事件
     def detectencounter(self):
+        encounter_list = []
         for a_index in range(len(self.list_node)):
             a_node = self.list_node[a_index]
             a_id = a_node.getNodeId()
@@ -154,6 +158,9 @@ class DTNController(object):
                     self.__routingswap(a_id, b_id)
                     self.mt_linkstate[b_id][a_id] = 1
                     self.__routingswap(b_id, a_id)
+                    encounter_list.append((a_id, b_id, a_loc, b_loc))
+        return encounter_list
+
 
     # 检测linkdown事件
     def detectlinkdown(self):

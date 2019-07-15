@@ -101,14 +101,19 @@ class DTNSimGUI(DTNSimBase):
             # 删除窗口
             self.window.destroy()
 
+
     def getroutingname(self):
         return 'epidemicrouting'
 
-    def updateCanvaShow(self, listtunple):
+
+    def updateCanvaShow(self, listtunple, encounter_list):
         # 显示
         for tunple in listtunple:
             node_id, loc, dest = tunple
             self.__drawPointandLine(node_id, loc, dest)
+        if self.isShowConn:
+            self.__drawConn(encounter_list)
+
 
     def updateInfoShow(self, tunple):
         (node_list, pkt_list) = tunple
@@ -147,7 +152,14 @@ class DTNSimGUI(DTNSimBase):
         tmp_line = self.canvas.create_line(newloc[0], newloc[1], newdest[0], newdest[1], fill="red", tags='line' + '_' + node_id)
 
     # 连接显示
-    def __showconn(self):
-        pass
+    def __drawConn(self, encounter_list):
+        self.canvas.delete('conline' + '_')
+        for encounter_tunple in encounter_list:
+            (a_id, b_id, a_loc, b_loc) = encounter_tunple
+            newloc_a = a_loc * self.scale
+            newloc_b = b_loc * self.scale
+            tmp_line = self.canvas.create_line(newloc_a[0], newloc_a[1], newloc_b[0], newloc_b[1], fill="yellow",
+                                               tags='conline' + '_')
+        return
 
 

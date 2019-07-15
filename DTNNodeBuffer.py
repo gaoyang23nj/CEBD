@@ -37,3 +37,14 @@ class DTNNodeBuffer(object):
             self.occupied_size = self.occupied_size - self.listofpkt[0].pkt_size
             self.listofpkt.pop(0)
         return
+
+    # 按照id 找到pkt
+    def findpktbyid(self,id):
+        isFound = False
+        pkt = 0
+        for pkt in self.listofpkt:
+            if id == pkt.pkt_id:
+               isFound = True
+               break
+        assert(isFound)
+        return isFound, pkt

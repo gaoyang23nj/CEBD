@@ -35,7 +35,7 @@ class RoutingEpidemic(RoutingBase):
         # tmpnodebuffer = self.listofnodebuffer[src_id]
         # 如果需要删除 按照drop old原则
         if self.listofnodebuffer[src_id].occupied_size + pkt_size >  self.listofnodebuffer[src_id].maxsize:
-            self.__deletepkt(src_id, pkt_size)
+            self.__deletepkt_size(src_id, pkt_size)
 
         self.listofnodebuffer[src_id].addpkt(newpkt)
         return
@@ -45,44 +45,42 @@ class RoutingEpidemic(RoutingBase):
     def swappkt(self, a_id, b_id):
         # 可传输数据量
         transmitvolume = self.transmitspeed * self.timestep
+        # 如果存在正在传输的pkt
+        if self.link_transmitpktid[a_id][b_id] != 0:
+            transmitvolume = self.continue_transmitting(a_id, b_id, transmitvolume)
         self.transmitting(a_id, b_id, transmitvolume)
 
 
-    # 如果a和b正在传输某个pkt, 则此时间间隔内应该帮助接着传
+    # 如果a和b正在传输某个pkt, 则此时间间隔内 继续传输 已经传输一部分的pkt
+    # 返回 剩余的可传输量
+    def continue_transmitting(self,a_id, b_id, transmitvolume):
+        # 继续传输之前的pkt
+        tmp_pktid = self.link_transmitpktid[a_id][b_id]
+        (isfound, target_pkt) = self.listofnodebuffer[a_id].findpktbyid(tmp_pktid)
+        # 既然正在传输的标志位(link_transmitpktid[a_id][b_id])存在
+        # 就一定有传输量(link_transmitprocess[a_id][b_id])存在
+        assert (isfound == True)
+        resumevolume = target_pkt.pkt_size - self.link_transmitprocess[a_id][b_id]
+        if transmitvolume > resumevolume:
+            remiantransmitvolume = transmitvolume - resumevolume
+            # 本次传输结束 记得置空标志位
+            self.link_transmitpktid[a_id][b_id] = 0
+            self.link_transmitprocess[a_id][b_id] = 0
+            self.copypkttobid(a_id, b_id, target_pkt)
+            # 还剩一些可传输量
+            return remiantransmitvolume
+        elif transmitvolume < resumevolume:
+            self.link_transmitprocess[a_id][b_id] = self.link_transmitprocess[a_id][b_id] + transmitvolume
+            return 0
+        else:
+            self.link_transmitpktid[a_id][b_id] = 0
+            self.link_transmitprocess[a_id][b_id] = 0
+            self.copypkttobid(a_id, b_id, target_pkt)
+            return 0
+
+
     # 否则 选择新的pkt开始传输
     def transmitting(self, a_id, b_id, transmitvolume):
-        # 如果存在正在传输的pkt
-        if self.link_transmitpktid[a_id][b_id] != 0:
-            # 继续传输之前的pkt
-            tmp_pktid = self.link_transmitpktid[a_id][b_id]
-            isfound = False
-            for target_pkt in self.listofnodebuffer[a_id].listofpkt:
-                if target_pkt.pkt_id == tmp_pktid:
-                    isfound = True
-                    break
-            # 既然正在传输的标志位(link_transmitpktid[a_id][b_id])存在
-            # 就一定有传输量(link_transmitprocess[a_id][b_id])存在
-            assert(isfound == True)
-            resumevolume = target_pkt.pkt_size-self.link_transmitprocess[a_id][b_id]
-            if transmitvolume > resumevolume:
-                remiantransmitvolume = transmitvolume - resumevolume
-                self.link_transmitpktid[a_id][b_id] = 0
-                self.link_transmitprocess[a_id][b_id] = 0
-                isArriveDest = self.copypkttobid(b_id, target_pkt)
-                if isArriveDest == True:
-                    self.__deletepkt_id(a_id, target_pkt.pkt_id)
-                # 还剩一些可传输量
-                self.transmitting(self, a_id, b_id, remiantransmitvolume)
-            elif transmitvolume < resumevolume:
-                self.link_transmitprocess[a_id][b_id] = self.link_transmitprocess[a_id][b_id] + transmitvolume
-                return
-            else:
-                self.link_transmitpktid[a_id][b_id] = 0
-                self.link_transmitprocess[a_id][b_id] = 0
-                isArriveDest = self.copypkttobid(b_id, target_pkt)
-                if isArriveDest == True:
-                    self.__deletepkt_id(a_id, target_pkt.pkt_id)
-                return
         # 如果没有正在传输的pkt
         # 从a的buffer里 顺序查找 b的buffer里没有的pkt
         # 建立准备传输的pkt列表(这应该是一个优先级的list)
@@ -92,9 +90,7 @@ class RoutingEpidemic(RoutingBase):
             if i_pkt.pkt_size <= transmitvolume:
                 transmitvolume = transmitvolume - i_pkt.pkt_size
                 # 把报文复制给b_id
-                isArriveDest = self.copypkttobid(b_id, i_pkt)
-                if isArriveDest == True:
-                    self.__deletepkt_id(a_id, i_pkt.pkt_id)
+                self.copypkttobid(a_id, b_id, i_pkt)
             # 如果传不完了...
             else:
                 self.link_transmitpktid[a_id][b_id] = i_pkt.pkt_id
@@ -125,11 +121,11 @@ class RoutingEpidemic(RoutingBase):
         return totran_pktlist
 
 
-    # EpidemicRouter复制报文给b_id
-    def copypkttobid(self, b_id, i_pkt):
-        isArriveDest = False
+    # EpidemicRouter复制报文从a_id给b_id
+    def copypkttobid(self, a_id, b_id, i_pkt):
+        # 成功投递给目的node,
         if i_pkt.dst_id == b_id:
-            # 成功投递给目的node, 去重复
+            # 为了加入 succ ist, 需要去重复
             isduplicate = False
             for j_pkt in self.listofsuccpkt[b_id]:
                 if i_pkt.pkt_id == j_pkt.pkt_id:
@@ -137,11 +133,14 @@ class RoutingEpidemic(RoutingBase):
                     break
             # 只有之前没有接收到i_pkt 才会加入succlist
             if isduplicate == False:
-                self.listofsuccpkt[b_id].append(i_pkt)
-            isArriveDest = True
+                target_pkt = copy.deepcopy(i_pkt)
+                self.listofsuccpkt[b_id].append(target_pkt)
+            # 已经找到目的node, a_id就不必保留原来的副本了
+            self.__deletepkt_id(a_id, i_pkt.pkt_id)
         else:
-            self.listofnodebuffer[b_id].addpkt(i_pkt)
-        return isArriveDest
+            target_pkt = copy.deepcopy(i_pkt)
+            self.listofnodebuffer[b_id].addpkt(target_pkt)
+        return
 
 
     def linkdown(self, a_id, b_id):
@@ -158,11 +157,6 @@ class RoutingEpidemic(RoutingBase):
         return succnum
 
 
-    # 建立一个hashmap
-    def __isTransferring(self, a_id, b_id):
-        return False
-
-
     # 从src_id的list里 删掉指定pkt_id的报文
     def __deletepkt_id(self, src_id, pkt_id):
         thenodebuffer = self.listofnodebuffer[src_id]
@@ -172,7 +166,7 @@ class RoutingEpidemic(RoutingBase):
 
 
     # 为了在src_id 新增pkt, 需要从list开头开始提供pkt_size大小的空间
-    def __deletepkt(self, src_id, pkt_size):
+    def __deletepkt_size(self, src_id, pkt_size):
         thenodebuffer = self.listofnodebuffer[src_id]
         thenodebuffer.deletepktbysize(pkt_size)
         return
