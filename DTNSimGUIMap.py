@@ -199,8 +199,10 @@ class DTNSimGUIMap(DTNSimBase):
         self.canvas.delete('conline' + '_')
         for encounter_tunple in encounter_list:
             (a_id, b_id, a_loc, b_loc) = encounter_tunple
-            newloc_a = a_loc * self.scale
-            newloc_b = b_loc * self.scale
+            newloc_a = (a_loc - self.MinXY) * self.scale
+            newloc_a[1] = self.ShowSize - newloc_a[1]
+            newloc_b = (b_loc - self.MinXY) * self.scale
+            newloc_b[1] = self.ShowSize - newloc_b[1]
             tmp_line = self.canvas.create_line(newloc_a[0], newloc_a[1], newloc_b[0], newloc_b[1], fill="yellow",
                                                tags='conline' + '_')
         return
