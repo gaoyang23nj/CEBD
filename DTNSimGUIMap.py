@@ -193,7 +193,7 @@ class DTNSimGUIMap(DTNSimBase):
             # 上下方位
             self.canvas.create_line(loc[0], loc[1], dest[0], dest[1], fill="blue",  dash=(4, 4))
 
-    # 连接显示
+
     # 连接显示
     def __drawConn(self, encounter_list):
         self.canvas.delete('conline' + '_')
@@ -204,3 +204,4 @@ class DTNSimGUIMap(DTNSimBase):
             tmp_line = self.canvas.create_line(newloc_a[0], newloc_a[1], newloc_b[0], newloc_b[1], fill="yellow",
                                                tags='conline' + '_')
         return
+

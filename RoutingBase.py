@@ -9,7 +9,7 @@ class RoutingBase(object):
 
 
     @classmethod
-    def swappkt(cls, a_id, b_id):
+    def swappkt(cls, runningtime, a_id, b_id):
         '''
 
         :return:

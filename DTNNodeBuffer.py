@@ -46,5 +46,4 @@ class DTNNodeBuffer(object):
             if id == pkt.pkt_id:
                isFound = True
                break
-        assert(isFound)
         return isFound, pkt

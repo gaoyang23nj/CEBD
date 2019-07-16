@@ -2,9 +2,9 @@ import threading
 # 通过字典 管理多个 log file
 class DTNLogFiles(object):
     _instance_lock = threading.Lock()
+    Dict = {}
 
     def __init__(self):
-        self.Dict = dict()
         pass
 
     # 做成 单例模式
@@ -17,18 +17,18 @@ class DTNLogFiles(object):
 
     # 初始化名为str的log文件 str.log, 以便于写入事件
     def initlog(self, strname='eve'):
-        file_name = strname + '.log'
-        filelog_object = open(file_name, "w+", encoding="utf-8")
-        dict = {strname : filelog_object}
         # if not self.Dict.has_key(strname):
         if not strname in self.Dict.keys():
+            file_name = strname + '.log'
+            filelog_object = open(file_name, "w+", encoding="utf-8")
+            dict = {strname: filelog_object}
             self.Dict.update(dict)
         else:
-            print('ERROR! 已有此key:({})'.format(strname))
+            print('ERROR! DTNLogFile 已有此key:({})'.format(strname))
 
     def insertlog(self, strname, str):
         if not strname in self.Dict.keys():
-            print('ERROE! 没有此key')
+            print('ERROE! DTNLogFile 没有此key')
         else:
             self.Dict[strname].write(str)
             self.Dict[strname].flush()

@@ -92,6 +92,7 @@ class DTNController(object):
         else:
             # 到结束的时候, 打印routing结果
             self.__routingshowres()
+            self.DTNView.on_closing()
             return
 
     # 完成self.showtimes规定次数的移动和计算 并更新界面
@@ -180,7 +181,7 @@ class DTNController(object):
                         self.mt_linkstate[a_id][b_id] = 0
                         self.__routinglinkdown(a_id, b_id)
                         self.mt_linkstate[b_id][a_id] = 0
-                        self.__routinglinkdown(a_id, b_id)
+                        self.__routinglinkdown(b_id, a_id)
 
 
     def __routinginit(self):
@@ -204,17 +205,16 @@ class DTNController(object):
 
     # 各个routing开始交换报文
     def __routingswap(self, a_id, b_id):
-        self.epidemicrouting.swappkt(a_id, b_id)
-        self.epidemicrouting.swappkt(b_id, a_id)
+        self.epidemicrouting.swappkt(self.RunningTime, a_id, b_id)
 
     # 各个routing收到linkdown事件
     def __routinglinkdown(self, a_id, b_id):
-        self.epidemicrouting.linkdown(a_id, b_id)
-        self.epidemicrouting.linkdown(b_id, a_id)
+        self.epidemicrouting.linkdown(self.RunningTime, a_id, b_id)
 
     # 各个routing显示结果
     def __routingshowres(self):
-        self.epidemicrouting.showres()
+        succ_num = self.epidemicrouting.showres()
+        print('succ_num ep_routing:{}'.format(succ_num))
 
     def __getsrouting(self, routingname):
         if routingname == 'epidemicrouting':
