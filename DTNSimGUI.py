@@ -66,34 +66,44 @@ class DTNSimGUI(DTNSimBase):
         self.canvas.place(x=0, y=0, anchor='nw')
 
         # 显示信息
-        self.text_routingname = tk.StringVar()
-        self.text_routingname.set('routingname')
+        self.cbbox_scena = ttk.Combobox(frm_infoshow)
+        self.cbbox_scena.pack()
+        # self.text_routingname.set('routingname')
         self.text_nodelist = tk.StringVar()
         self.text_nodelist.set('node_list:')
         self.text_pktlist = tk.StringVar()
         self.text_pktlist.set('pkt_list')
-        # info_routingname = 'epidemcirouting'
-        tk.Label(frm_infoshow, bg='white', textvariable=self.text_routingname, height=2, width=40, justify='left').pack()
+        # tk.Label(frm_infoshow, bg='white', textvariable=self.text_routingname, height=2, width=40, justify='left').pack()
         tk.Label(frm_infoshow, bg='SkyBlue', textvariable=self.text_nodelist, height=12, width=40,justify='left').pack()
         tk.Label(frm_infoshow, bg='CadetBlue', textvariable=self.text_pktlist, height=12, width=40,justify='left').pack()
         # info_enorgen = tk.Label(frm_infoshow, bg='gray', text='info_enorgen:',height=11,width=40)
         # info_enorgen.pack()
 
-    def initshow(self, infotext):
+
+    def initshow(self, infotext, list_scena):
         infotext = infotext + ' SimSize:'+ str(self.RealSize)
         self.text_ctlinfo.set(infotext)
+        self.cbbox_scena["values"] = list_scena
+        self.cbbox_scena.current(0)
+
+
+    def mainloop(self):
         self.window.mainloop()
+
 
     def on_clickstep(self):
         updatetimesOnce = self.comlist_nrstepsel.get()
         self.DTNController.updateOnce(int(updatetimesOnce))
 
+
     def on_clickstop(self):
         self.DTNController.setTimerRunning(False)
+
 
     def on_clickresume(self):
         self.DTNController.setTimerRunning(True)
         self.DTNController.updateViewer()
+
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
@@ -102,8 +112,8 @@ class DTNSimGUI(DTNSimBase):
             self.window.destroy()
 
 
-    def getroutingname(self):
-        return 'epidemicrouting'
+    def getscenaname(self):
+        return self.cbbox_scena.get()
 
 
     def updateCanvaShow(self, listtunple, encounter_list):
@@ -115,8 +125,7 @@ class DTNSimGUI(DTNSimBase):
             self.__drawConn(encounter_list)
 
 
-    def updateInfoShow(self, tunple):
-        (node_list, pkt_list) = tunple
+    def updateInfoShow(self, node_list, pkt_list):
         strinfo_nodelist = '<info>pkt list in the node: \n'
         for node in node_list:
             (node_id, pktlistofnode) = node

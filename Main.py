@@ -52,8 +52,8 @@ def runHelsinkSPM():
 
 
 if __name__ == "__main__":
-    # runRandomWalk()
-    runHelsinkSPM()
+    runRandomWalk()
+    # runHelsinkSPM()
 
 
 

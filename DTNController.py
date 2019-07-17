@@ -1,7 +1,7 @@
 import numpy as np
 import threading
-from RoutingEpidemic import RoutingEpidemic
 from DTNLogFiles import DTNLogFiles
+from DTNScenario import DTNScenario
 
 class DTNController(object):
     def __init__(self, dtnview, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000):
@@ -34,6 +34,7 @@ class DTNController(object):
         self.filelog = DTNLogFiles()
         self.filelog.initlog('eve')
 
+
     # attach node_list
     def attachnodelist(self, nodelist):
         assert(len(self.list_node)==0)
@@ -43,12 +44,19 @@ class DTNController(object):
         self.mt_linkstate = np.zeros((self.nr_nodes,  self.nr_nodes),dtype='int')
         self.mt_tranprocess = np.zeros((self.nr_nodes,  self.nr_nodes),dtype='int')
 
+    def __getscenarioname(self, scenaname):
+        if not scenaname in self.scenaDict.keys():
+            print('ERROR! DTNController scenaDict 里 没有此key')
+        else:
+            return self.scenaDict[scenaname]
+
+
     def closeApp(self):
         # 关闭log
         self.filelog.closelog()
         # 关闭定时器
         self.setTimerRunning(False)
-        self.__routingshowres()
+        self.__scenarioshowres()
         self.t.cancel()
 
 
@@ -56,34 +64,36 @@ class DTNController(object):
         # 停止定时器
         self.timerisrunning = run
 
+
     # 执行指定的步数
     def updateOnce(self, updatetimesOnce):
         for i in range(updatetimesOnce):
             self.executeOnce()
 
+
     # View定时刷新机制
-    def run(self, totaltime=36000):
+    def run(self, totaltime = 36000):
         # 初始化各个routing
-        self.__routinginit()
+        list_scena = self.__scenarioinit()
         # 定时器刷新位
         self.timerisrunning = True
+        infotext = 'StepTime:'+ str(self.list_node[0].steptime)+' Times_showsteps:'+ str(self.times_showtstep) + ' Commu_range:'+ str(self.range_comm)
+        self.DTNView.initshow(infotext, list_scena)
         # 启动定时刷新机制
         self.t = threading.Timer(0.1, self.updateViewer)
         self.t.start()
-        infotext = 'StepTime:'+ str(self.list_node[0].steptime)+' Times_showsteps:'+ str(self.times_showtstep) + ' Commu_range:'+ str(self.range_comm)
-        self.DTNView.initshow(infotext)
+        self.DTNView.mainloop()
+
 
     def updateViewer(self):
         # 是否收到停止的命令
         if not self.timerisrunning:
             self.t.cancel()
-            self.__routingshowres()
+            self.__scenarioshowres()
             return
         # 按照times_showtstep的指定 执行showtimes次
         self.executeOnce()
-
         # 如果执行到最后的时刻，则停止下一次执行
-        # self.runtimes_cur = self.runtimes_cur + 1
         if self.RunningTime < self.RunningTime_Max:
             # 没有到结束的时候, 设置定时器 下次更新视图
             self.t = threading.Timer(0.1, self.updateViewer)
@@ -91,9 +101,10 @@ class DTNController(object):
             return
         else:
             # 到结束的时候, 打印routing结果
-            self.__routingshowres()
+            self.__scenarioshowres()
             self.DTNView.on_closing()
             return
+
 
     # 完成self.showtimes规定次数的移动和计算 并更新界面
     def executeOnce(self):
@@ -102,7 +113,7 @@ class DTNController(object):
         for i in range(self.times_showtstep):
             encounter_list = self.run_onetimestep()
         # 获取self.DTNView指定的routing显示
-        selected_routing = self.__getsrouting(self.DTNView.getroutingname())
+        scena = self.__getscenarioname(self.DTNView.getscenaname())
         # 提供给Viewer显示Canvas
         tunple_list = []
         for node in self.list_node:
@@ -113,16 +124,19 @@ class DTNController(object):
         info_nodelist = []
         for node in self.list_node:
             node_id = node.getNodeId()
-            tunple = (node_id, selected_routing.getnodelist(node_id))
+            tmplist = []
+            for pkt in scena.getnodelist(node_id):
+                tmplist.append(pkt.pkt_id)
+            tunple = (node_id, tmplist)
             info_nodelist.append(tunple)
         info_pktlist = self.list_genpkt
-        self.DTNView.updateInfoShow((info_nodelist, info_pktlist))
+        self.DTNView.updateInfoShow(info_nodelist, info_pktlist)
 
     # 完成一个timestep的移动 计算 routing
     def run_onetimestep(self):
         # 报文生成计数器
         if self.cnt_genpkt == self.thr_genpkt:
-            self.__routinggenpkt()
+            self.__scenariogenpkt()
             self.cnt_genpkt = 1
         else:
             self.cnt_genpkt =  self.cnt_genpkt + 1
@@ -156,9 +170,9 @@ class DTNController(object):
                         self.filelog.insertlog('eve','[time_{}] [link_up] a(node_{})<->b(node_{})\n'.format(
                             self.RunningTime, a_id, b_id))
                     self.mt_linkstate[a_id][b_id] = 1
-                    self.__routingswap(a_id, b_id)
+                    self.__scenarioswap(a_id, b_id)
                     self.mt_linkstate[b_id][a_id] = 1
-                    self.__routingswap(b_id, a_id)
+                    self.__scenarioswap(b_id, a_id)
                     encounter_list.append((a_id, b_id, a_loc, b_loc))
         return encounter_list
 
@@ -179,24 +193,37 @@ class DTNController(object):
                         self.filelog.insertlog('eve','[time_{}] [link_down] a(node_{})<->b(node_{})\n'.format(
                                 self.RunningTime, a_id, b_id))
                         self.mt_linkstate[a_id][b_id] = 0
-                        self.__routinglinkdown(a_id, b_id)
+                        self.__scenariolinkdown(a_id, b_id)
                         self.mt_linkstate[b_id][a_id] = 0
-                        self.__routinglinkdown(b_id, a_id)
+                        self.__scenariolinkdown(b_id, a_id)
 
 
-    def __routinginit(self):
-        self.epidemicrouting = RoutingEpidemic(len(self.list_node))
+    # =========提供给 scenario的接口, init gennewpkt swap linkdown showres============================
+    # 初始化各个路由场景 并返回 场景名的list
+    def __scenarioinit(self):
+        list_scena = ['scenario1', 'scenario2']
+        self.scenaDict = {}
+        # 场景1 全ep routing
+        list_idrouting = []
+        for movenode in self.list_node:
+            list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
+        self.scenario1 = DTNScenario(list_scena[0], list_idrouting)
+        self.scenaDict.update({list_scena[0]: self.scenario1})
+        # 场景1 全ep routing
+        return list_scena
+
 
     # 各个routing 生成报文
-    def __routinggenpkt(self):
+    def __scenariogenpkt(self):
         src_index = np.random.randint(len(self.list_node))
         dst_index = np.random.randint(len(self.list_node))
-        while dst_index==src_index:
+        while dst_index == src_index:
             dst_index = np.random.randint(len(self.list_node))
         newpkt = (self.pktid_nextgen, src_index, dst_index)
         self.list_genpkt.append(newpkt)
         # 各routing生成pkt, pkt大小为100k
-        self.epidemicrouting.gennewpkt(self.pktid_nextgen, src_index, dst_index, 0, 100)
+        # self.epidemicrouting.gennewpkt(self.pktid_nextgen, src_index, dst_index, 0, 100)
+        self.scenario1.gennewpkt(self.pktid_nextgen, src_index, dst_index, self.RunningTime, 100)
         # 生成报文生成的log
         self.filelog.insertlog('eve','[time_{}] [packet gen] pkt_{}:src(node_{})->dst(node_{})\n'.format(
                   self.RunningTime, self.pktid_nextgen, src_index, dst_index))
@@ -204,20 +231,16 @@ class DTNController(object):
         return
 
     # 各个routing开始交换报文
-    def __routingswap(self, a_id, b_id):
-        self.epidemicrouting.swappkt(self.RunningTime, a_id, b_id)
+    def __scenarioswap(self, a_id, b_id):
+        self.scenario1.swappkt(self.RunningTime, a_id, b_id)
 
     # 各个routing收到linkdown事件
-    def __routinglinkdown(self, a_id, b_id):
-        self.epidemicrouting.linkdown(self.RunningTime, a_id, b_id)
+    def __scenariolinkdown(self, a_id, b_id):
+        self.scenario1.linkdown(self.RunningTime, a_id, b_id)
 
     # 各个routing显示结果
-    def __routingshowres(self):
-        succ_num = self.epidemicrouting.showres()
-        print('succ_num ep_routing:{}'.format(succ_num))
+    def __scenarioshowres(self):
+        succ_num, stroutput = self.scenario1.showres()
+        print('\nscenario1 succ_num:{}'.format(succ_num))
+        print(stroutput)
 
-    def __getsrouting(self, routingname):
-        if routingname == 'epidemicrouting':
-            return self.epidemicrouting
-        # elif routingname == 'prophetrouting':
-        #     return self.prophetrouting

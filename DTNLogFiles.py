@@ -28,7 +28,7 @@ class DTNLogFiles(object):
 
     def insertlog(self, strname, str):
         if not strname in self.Dict.keys():
-            print('ERROE! DTNLogFile 没有此key')
+            print('ERROR! DTNLogFile 没有此key')
         else:
             self.Dict[strname].write(str)
             self.Dict[strname].flush()

@@ -1,16 +1,24 @@
 
 class RoutingBase(object):
     @classmethod
-    def gennewpkt(cls, pkt_id, src_id, dst_id, gentime, pkt_size):
+    def gettranpktlist(cls, b_id, listb, a_id, lista):
         '''
 
         :return:
         '''
-
 
     @classmethod
-    def swappkt(cls, runningtime, a_id, b_id):
+    def decideDelafterSend(cls, b_id, i_pkt):
         '''
 
         :return:
         '''
+
+    @classmethod
+    def decideAddafterRece(cls, a_id, i_pkt):
+        '''
+        :return:
+        '''
+
+
+
