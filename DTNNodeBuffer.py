@@ -2,7 +2,8 @@ import copy
 from DTNPkt import DTNPkt
 from RoutingBase import RoutingBase
 from RoutingEpidemic import RoutingEpidemic
-# from RoutingSparyandWait import RoutingSparyandWait
+from RoutingSparyandWait import *
+
 # from RoutingBlackhole import RoutingBlackhole
 
 class DTNNodeBuffer(object):
@@ -23,7 +24,7 @@ class DTNNodeBuffer(object):
         if routingname == 'RoutingEpidemic':
             self.router = RoutingEpidemic()
         elif routingname == 'RoutingSparyandWait':
-            self.router = RoutingSparyandWait()
+            self.router = RoutingSparyandWait(inittoken = 8)
 
 
     # 内存中增加pkt newpkt
@@ -86,6 +87,9 @@ class DTNNodeBuffer(object):
 
     # 保证内存空间足够 并把pkt放在内存里
     def mkroomaddpkt(self, newpkt):
+        if isinstance(self.router, RoutingSparyandWait):
+            # 按照需要 改装pkt
+            newpkt = DTNSWPkt(newpkt, self.router.inittoken)
         # 如果需要删除pkt以提供内存空间 按照drop old原则
         if self.occupied_size + newpkt.pkt_size > self.maxsize:
             self.__deletepktbysize(newpkt.pkt_size)

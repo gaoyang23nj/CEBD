@@ -1,3 +1,4 @@
+import copy
 class DTNPkt(object):
     def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         self.pkt_id = pkt_id
@@ -7,4 +8,5 @@ class DTNPkt(object):
         self.pkt_size = pkt_size
         self.TTL = 0
         self.hops = 0
+
 
