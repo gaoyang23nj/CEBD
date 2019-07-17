@@ -1,21 +1,15 @@
 
 class DTNSimBase(object):
     @classmethod
-    def attachController(self, nodelist):
+    def attachController(self, dtncontroller):
         '''
 
         :return:
         '''
 
-    @classmethod
-    def updateshow(cls, listtunple):
-        '''
-
-        :return:
-        '''
 
     @classmethod
-    def initshow(cls, infotext):
+    def initshow(cls, infotext, list_scena):
         '''
 
         :return:

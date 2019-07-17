@@ -113,7 +113,6 @@ class DTNController(object):
         for i in range(self.times_showtstep):
             encounter_list = self.run_onetimestep()
         # 获取self.DTNView指定的routing显示
-        scena = self.__getscenarioname(self.DTNView.getscenaname())
         # 提供给Viewer显示Canvas
         tunple_list = []
         for node in self.list_node:
@@ -121,13 +120,14 @@ class DTNController(object):
             tunple_list.append(tunple)
         self.DTNView.updateCanvaShow(tunple_list, encounter_list)
         # 提供给Viewer info
+        scenaobj = self.__getscenarioname(self.DTNView.getscenaname())
         info_nodelist = []
         for node in self.list_node:
             node_id = node.getNodeId()
-            tmplist = []
-            for pkt in scena.getnodelist(node_id):
-                tmplist.append(pkt.pkt_id)
-            tunple = (node_id, tmplist)
+            # tmplist = []
+            # for pkt in scenaobj.getnodelist(node_id):
+            #     tmplist.append(pkt.pkt_id)
+            tunple = (node_id, scenaobj.getnodelist(node_id))
             info_nodelist.append(tunple)
         info_pktlist = self.list_genpkt
         self.DTNView.updateInfoShow(info_nodelist, info_pktlist)
@@ -203,44 +203,54 @@ class DTNController(object):
     def __scenarioinit(self):
         list_scena = ['scenario1', 'scenario2']
         self.scenaDict = {}
-        # 场景1 全ep routing
+        # ===============================场景1 全ep routing===================================
         list_idrouting = []
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
         self.scenario1 = DTNScenario(list_scena[0], list_idrouting)
         self.scenaDict.update({list_scena[0]: self.scenario1})
-        # 场景1 全ep routing
+        # ===============================场景2 全sw routing===================================
+        list_idrouting = []
+        for movenode in self.list_node:
+            list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+        self.scenario2 = DTNScenario(list_scena[1], list_idrouting)
+        self.scenaDict.update({list_scena[1]: self.scenario2})
         return list_scena
 
 
-    # 各个routing 生成报文
+    # 各个scenario生成报文
     def __scenariogenpkt(self):
         src_index = np.random.randint(len(self.list_node))
         dst_index = np.random.randint(len(self.list_node))
         while dst_index == src_index:
             dst_index = np.random.randint(len(self.list_node))
         newpkt = (self.pktid_nextgen, src_index, dst_index)
+        # controller记录这个pkt
         self.list_genpkt.append(newpkt)
-        # 各routing生成pkt, pkt大小为100k
-        # self.epidemicrouting.gennewpkt(self.pktid_nextgen, src_index, dst_index, 0, 100)
-        self.scenario1.gennewpkt(self.pktid_nextgen, src_index, dst_index, self.RunningTime, 100)
+        # 各scenario生成pkt, pkt大小为100k
+        for key, value in self.scenaDict.items():
+            value.gennewpkt(self.pktid_nextgen, src_index, dst_index, self.RunningTime, 100)
         # 生成报文生成的log
         self.filelog.insertlog('eve','[time_{}] [packet gen] pkt_{}:src(node_{})->dst(node_{})\n'.format(
                   self.RunningTime, self.pktid_nextgen, src_index, dst_index))
         self.pktid_nextgen = self.pktid_nextgen + 1
         return
 
-    # 各个routing开始交换报文
+    # 各个scenario开始交换报文
     def __scenarioswap(self, a_id, b_id):
-        self.scenario1.swappkt(self.RunningTime, a_id, b_id)
+        for key, value in self.scenaDict.items():
+            value.swappkt(self.RunningTime, a_id, b_id)
 
-    # 各个routing收到linkdown事件
+
+    # 各个scenario收到linkdown事件
     def __scenariolinkdown(self, a_id, b_id):
-        self.scenario1.linkdown(self.RunningTime, a_id, b_id)
+        for key, value in self.scenaDict.items():
+            value.linkdown(self.RunningTime, a_id, b_id)
 
-    # 各个routing显示结果
+    # 各个scenario显示结果
     def __scenarioshowres(self):
-        succ_num, stroutput = self.scenario1.showres()
-        print('\nscenario1 succ_num:{}'.format(succ_num))
-        print(stroutput)
+        for key, value in self.scenaDict.items():
+            succ_num, stroutput = value.showres()
+            print('\n{} succ_num:{}'.format(key, succ_num))
+            print(stroutput)
 

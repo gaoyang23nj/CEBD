@@ -8,6 +8,7 @@ import time
 from DTNSimBase import DTNSimBase
 from DTNNode import DTNNode
 from RoutingEpidemic import RoutingEpidemic
+from RoutingSparyandWait import *
 
 class DTNSimGUI(DTNSimBase):
     def __init__(self, showsize, realsize, isshowconn=True):
@@ -51,7 +52,7 @@ class DTNSimGUI(DTNSimBase):
         tk.Button(frm_control, text='stop', command=self.on_clickstop).place(x=20, y=5, height=30, width=60, anchor='nw')
         tk.Button(frm_control, text='resume', command=self.on_clickresume).place(x=120, y=5, height=30, width=60, anchor='nw')
         self.nr_signlestep = tk.StringVar()
-        self.comlist_nrstepsel = ttk.Combobox(frm_control, width=12, textvariable=self.nr_signlestep)
+        self.comlist_nrstepsel = ttk.Combobox(frm_control, width=12, textvariable=self.nr_signlestep, state='readonly')
         self.comlist_nrstepsel['values'] = (1, 2, 3, 4, 5)  # 设置下拉列表的值
         self.comlist_nrstepsel.current(0)  # 设置下拉列表默认显示的值，0为 numberChosen['values'] 的下标值
         self.comlist_nrstepsel.place(x=220, y=5, height=30, width=60, anchor='nw')
@@ -84,7 +85,7 @@ class DTNSimGUI(DTNSimBase):
         infotext = infotext + ' SimSize:'+ str(self.RealSize)
         self.text_ctlinfo.set(infotext)
         self.cbbox_scena["values"] = list_scena
-        self.cbbox_scena.current(0)
+        self.cbbox_scena.current(1)
 
 
     def mainloop(self):
@@ -130,8 +131,10 @@ class DTNSimGUI(DTNSimBase):
         for node in node_list:
             (node_id, pktlistofnode) = node
             strinfo_nodelist = strinfo_nodelist+str(node_id)+':'
-            for pkt_id in pktlistofnode:
-                strinfo_nodelist = strinfo_nodelist + ' p_'+str(pkt_id)
+            for pkt in pktlistofnode:
+                strinfo_nodelist = strinfo_nodelist + ' p_'+str(pkt.pkt_id)
+                if isinstance(pkt, DTNSWPkt):
+                    strinfo_nodelist = strinfo_nodelist + '(t_{})'.format(pkt.token)
             strinfo_nodelist = strinfo_nodelist+'\n'
         strinfo_pktlist = '<info>pkt list: \n'
         cnt = 1

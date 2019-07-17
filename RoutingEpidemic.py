@@ -35,6 +35,7 @@ class RoutingEpidemic(RoutingBase):
             isDel = True
         return isDel
 
+
     #接收从a_id来的i_pkt以后, 决定要不要接收到内存里
     def decideAddafterRece(self, a_id, i_pkt):
         isAdd = True

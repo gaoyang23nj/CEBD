@@ -24,7 +24,7 @@ class DTNNodeBuffer(object):
         if routingname == 'RoutingEpidemic':
             self.router = RoutingEpidemic()
         elif routingname == 'RoutingSparyandWait':
-            self.router = RoutingSparyandWait(inittoken = 8)
+            self.router = RoutingSparyandWait(inittoken=2)
 
 
     # 内存中增加pkt newpkt
@@ -85,11 +85,12 @@ class DTNNodeBuffer(object):
         return self.listofpkt
 
 
-    # 保证内存空间足够 并把pkt放在内存里
-    def mkroomaddpkt(self, newpkt):
-        if isinstance(self.router, RoutingSparyandWait):
-            # 按照需要 改装pkt
+    # 保证内存空间足够 并把pkt放在内存里; isgen 是否是生成新pkt
+    def mkroomaddpkt(self, newpkt, isgen):
+        # 按照需要 改装pkt
+        if isgen and isinstance(self.router, RoutingSparyandWait):
             newpkt = DTNSWPkt(newpkt, self.router.inittoken)
+
         # 如果需要删除pkt以提供内存空间 按照drop old原则
         if self.occupied_size + newpkt.pkt_size > self.maxsize:
             self.__deletepktbysize(newpkt.pkt_size)
@@ -119,7 +120,9 @@ class DTNNodeBuffer(object):
                 target_pkt = copy.deepcopy(i_pkt)
                 self.listofsuccpkt.append(target_pkt)
             return
-        isReceive = self.router.decideAddafterRece(a_id, i_pkt)
+        # 拷贝出一份 以防要修改一些值 hop; track; token等
+        target_pkt = copy.deepcopy(i_pkt)
+        isReceive = self.router.decideAddafterRece(a_id, target_pkt)
         if isReceive == True:
-            self.mkroomaddpkt(i_pkt)
+            self.mkroomaddpkt(target_pkt, isgen=False)
         return

@@ -43,8 +43,9 @@ class DTNScenario(object):
 
 
     # 通知newpkt.src_id: 新pkt生成<内存空间可能需要开辟>
-    def __notifygennewpkt(self, runningtime, newpkt):
-        self.listNodeBuffer[newpkt.src_id].mkroomaddpkt(newpkt)
+    def __notifygennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
+        newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
+        self.listNodeBuffer[src_id].mkroomaddpkt(newpkt, isgen=True)
 
 
     # =======================提供给DTNController的功能============================================
@@ -67,8 +68,7 @@ class DTNScenario(object):
 
     # scenario收到DTNcontroller指令, 在srcid生成一个pkt(srcid->dstid)
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
-        self.__notifygennewpkt(gentime, newpkt)
+        self.__notifygennewpkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         return
 
 
@@ -118,8 +118,9 @@ class DTNScenario(object):
             self.link_transmitpktid[a_id][b_id] = 0
             self.link_transmitprocess[a_id][b_id] = 0
             # 通知 对应节点a_id pkt已发送; 通知 对应节点b_id pkt需接收;
-            self.__notifypktsent(runningtime, a_id, b_id, target_pkt)
+            # 接收时 使用的是副本 可以先处理
             self.__notifypktreceived(runningtime, b_id, a_id, target_pkt)
+            self.__notifypktsent(runningtime, a_id, b_id, target_pkt)
             # 还剩一些可传输量
             return remiantransmitvolume
         elif transmitvolume < resumevolume:
@@ -129,8 +130,9 @@ class DTNScenario(object):
             self.link_transmitpktid[a_id][b_id] = 0
             self.link_transmitprocess[a_id][b_id] = 0
             # 通知 对应节点a_id pkt已发送; 通知 对应节点b_id pkt需接收;
-            self.__notifypktsent(runningtime, a_id, b_id, target_pkt)
+            # 接收时 使用的是副本 可以先处理
             self.__notifypktreceived(runningtime, b_id, a_id, target_pkt)
+            self.__notifypktsent(runningtime, a_id, b_id, target_pkt)
             return 0
 
 
@@ -147,8 +149,9 @@ class DTNScenario(object):
             if i_pkt.pkt_size <= transmitvolume:
                 transmitvolume = transmitvolume - i_pkt.pkt_size
                 # 通知 对应节点a_id pkt已发送; 通知 对应节点b_id pkt需接收;
-                self.__notifypktsent(runningtime, a_id, b_id, i_pkt)
+                # 接收时 使用的是副本 可以先处理
                 self.__notifypktreceived(runningtime, b_id, a_id, i_pkt)
+                self.__notifypktsent(runningtime, a_id, b_id, i_pkt)
             # 如果传不完了, 记录传输进度 transmitvolume
             else:
                 self.link_transmitpktid[a_id][b_id] = i_pkt.pkt_id
