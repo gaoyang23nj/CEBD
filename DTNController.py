@@ -55,7 +55,6 @@ class DTNController(object):
         # 关闭log
         self.filelog.closelog()
         # 关闭定时器
-        self.setTimerRunning(False)
         self.__scenarioshowres()
         self.t.cancel()
 

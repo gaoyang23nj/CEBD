@@ -21,7 +21,7 @@ class DTNSimGUI(DTNSimBase):
         # 显示尺寸 真实尺寸
         self.ShowSize = showsize
         self.RealSize = realsize
-        self.isShowConn = True
+        self.isShowConn = isshowconn
         self.scale = showsize/realsize
         # 定时器界面刷新相关
         self.timerisrunning = False
@@ -69,12 +69,10 @@ class DTNSimGUI(DTNSimBase):
         # 显示信息
         self.cbbox_scena = ttk.Combobox(frm_infoshow)
         self.cbbox_scena.pack()
-        # self.text_routingname.set('routingname')
         self.text_nodelist = tk.StringVar()
         self.text_nodelist.set('node_list:')
         self.text_pktlist = tk.StringVar()
         self.text_pktlist.set('pkt_list')
-        # tk.Label(frm_infoshow, bg='white', textvariable=self.text_routingname, height=2, width=40, justify='left').pack()
         tk.Label(frm_infoshow, bg='SkyBlue', textvariable=self.text_nodelist, height=12, width=40,justify='left').pack()
         tk.Label(frm_infoshow, bg='CadetBlue', textvariable=self.text_pktlist, height=12, width=40,justify='left').pack()
         # info_enorgen = tk.Label(frm_infoshow, bg='gray', text='info_enorgen:',height=11,width=40)
@@ -107,10 +105,15 @@ class DTNSimGUI(DTNSimBase):
 
 
     def on_closing(self):
+        # 点了closing  先暂停，如果确定就退出 否则就恢复更新
+        self.DTNController.setTimerRunning(False)
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.DTNController.closeApp()
             # 删除窗口
             self.window.destroy()
+        else:
+            self.DTNController.setTimerRunning(True)
+            self.DTNController.updateViewer()
 
 
     def getscenaname(self):
@@ -147,6 +150,7 @@ class DTNSimGUI(DTNSimBase):
         self.text_nodelist.set(strinfo_nodelist)
         self.text_pktlist.set(strinfo_pktlist)
 
+
     def __drawPointandLine(self, node_id, loc, dest):
         node_id = str(node_id)
         newloc = loc * self.scale
@@ -162,6 +166,7 @@ class DTNSimGUI(DTNSimBase):
                                             newdest[0] + self.oval_size, newdest[1] + self.oval_size,
                                             tag='doval' + '_' + node_id, fill='blue')
         tmp_line = self.canvas.create_line(newloc[0], newloc[1], newdest[0], newdest[1], fill="red", tags='line' + '_' + node_id)
+
 
     # 连接显示
     def __drawConn(self, encounter_list):

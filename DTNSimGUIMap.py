@@ -8,6 +8,7 @@ import time
 from DTNSimBase import DTNSimBase
 from WKTPathReader import WKTPathReader
 from DTNNode import DTNNode
+from RoutingSparyandWait import *
 
 class DTNSimGUIMap(DTNSimBase):
     def __init__(self, pathreader, showsize, isshowconn=True):
@@ -27,7 +28,6 @@ class DTNSimGUIMap(DTNSimBase):
         self.MinXY = np.array([-1.0, -1.0])
         self.scale = 1
         self.genScaleParams()
-        #
         # 定时器界面刷新相关
         self.timerisrunning = False
         self.oval_size = 3
@@ -38,6 +38,7 @@ class DTNSimGUIMap(DTNSimBase):
         self.inittkinter()
         self.__drawmap()
 
+
     def genScaleParams(self):
         (self.MinXY, self.RangeHeight, self.RangeWidth) = self.PathReader.getRangeParams()
         if (self.RangeWidth[1] - self.RangeWidth[0]) > (self.RangeHeight[1] - self.RangeHeight[0]):
@@ -45,8 +46,10 @@ class DTNSimGUIMap(DTNSimBase):
         else:
             self.scale = self.ShowSize / (self.RangeHeight[1] - self.RangeHeight[0])
 
+
     def attachController(self, dtncontroller):
         self.DTNController = dtncontroller
+
 
     # 初始化组件
     def inittkinter(self):
@@ -74,46 +77,58 @@ class DTNSimGUIMap(DTNSimBase):
         self.text_ctlinfo.set('ctlinfo')
         tk.Label(frm_control, bg='White', textvariable=self.text_ctlinfo, height=2, width=500,justify='left').\
             place(x=420, y=5, height=30, width=500, anchor='nw')
-
         # 画布 绘制node移动
         self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.ShowSize, width=self.ShowSize)
         self.canvas.place(x=0, y=0, anchor='nw')
-
         # 显示信息
-        self.text_routingname = tk.StringVar()
-        self.text_routingname.set('routingname')
+        self.cbbox_scena = ttk.Combobox(frm_infoshow)
+        self.cbbox_scena.pack()
         self.text_nodelist = tk.StringVar()
         self.text_nodelist.set('node_list:')
         self.text_pktlist = tk.StringVar()
         self.text_pktlist.set('pkt_list')
-        # info_routingname = 'epidemcirouting'
-        tk.Label(frm_infoshow, bg='white', textvariable=self.text_routingname, height=2, width=40, justify='left').pack()
         tk.Label(frm_infoshow, bg='SkyBlue', textvariable=self.text_nodelist, height=12, width=40,justify='left').pack()
         tk.Label(frm_infoshow, bg='CadetBlue', textvariable=self.text_pktlist, height=12, width=40,justify='left').pack()
         # info_enorgen = tk.Label(frm_infoshow, bg='gray', text='info_enorgen:',height=11,width=40)
         # info_enorgen.pack()
 
-    def initshow(self, infotext):
+
+    def initshow(self, infotext, list_scena):
         infotext = infotext + ' SimSize:['+ str(self.RangeWidth[0])+','+str(self.RangeWidth[1])+'],['+str(self.RangeHeight[0])+','+str(self.RangeHeight[1])+']'
         self.text_ctlinfo.set(infotext)
+        self.cbbox_scena["values"] = list_scena
+        self.cbbox_scena.current(1)
+
+
+    def mainloop(self):
         self.window.mainloop()
+
 
     def on_clickstep(self):
         updatetimesOnce = self.comlist_nrstepsel.get()
         self.DTNController.updateOnce(int(updatetimesOnce))
 
+
     def on_clickstop(self):
         self.DTNController.setTimerRunning(False)
+
 
     def on_clickresume(self):
         self.DTNController.setTimerRunning(True)
         self.DTNController.updateViewer()
 
+
     def on_closing(self):
+        # 点了closing  先暂停，如果确定就退出 否则就恢复更新
+        self.DTNController.setTimerRunning(False)
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.DTNController.closeApp()
             # 删除窗口
             self.window.destroy()
+        else:
+            self.DTNController.setTimerRunning(True)
+            self.DTNController.updateViewer()
+
 
     # 画出地图 作为背景
     def __drawmap(self):
@@ -130,8 +145,10 @@ class DTNSimGUIMap(DTNSimBase):
                 # 上下方位
                 self.canvas.create_line(loc[0], loc[1], dest[0], dest[1], fill="white")
 
-    def getroutingname(self):
-        return 'epidemicrouting'
+
+    def getscenaname(self):
+        return self.cbbox_scena.get()
+
 
     def updateCanvaShow(self, listtunple, encounter_list):
         # 显示
@@ -141,15 +158,17 @@ class DTNSimGUIMap(DTNSimBase):
         if self.isShowConn:
             self.__drawConn(encounter_list)
 
-    def updateInfoShow(self, tunple):
-        (node_list, pkt_list) = tunple
+
+    def updateInfoShow(self, node_list, pkt_list):
         strinfo_nodelist = '<info>pkt list in the node: \n'
         for node in node_list:
             (node_id, pktlistofnode) = node
-            strinfo_nodelist = strinfo_nodelist+str(node_id)+':'
-            for pkt_id in pktlistofnode:
-                strinfo_nodelist = strinfo_nodelist + ' p_'+str(pkt_id)
-            strinfo_nodelist = strinfo_nodelist+'\n'
+            strinfo_nodelist = strinfo_nodelist + str(node_id) + ':'
+            for pkt in pktlistofnode:
+                strinfo_nodelist = strinfo_nodelist + ' p_' + str(pkt.pkt_id)
+                if isinstance(pkt, DTNSWPkt):
+                    strinfo_nodelist = strinfo_nodelist + '(t_{})'.format(pkt.token)
+            strinfo_nodelist = strinfo_nodelist + '\n'
         strinfo_pktlist = '<info>pkt list: \n'
         cnt = 1
         for pkt in pkt_list:
@@ -160,6 +179,7 @@ class DTNSimGUIMap(DTNSimBase):
             cnt = cnt + 1
         self.text_nodelist.set(strinfo_nodelist)
         self.text_pktlist.set(strinfo_pktlist)
+
 
     def __drawPointandLine(self, node_id, loc, dest):
         node_id = str(node_id)
@@ -181,6 +201,7 @@ class DTNSimGUIMap(DTNSimBase):
                                            tag='doval' + '_' + node_id, fill='blue')
         tmp_line = self.canvas.create_line(newloc[0], newloc[1], newdest[0], newdest[1], fill="red",
                                            tags='line' + '_' + node_id)
+
 
     # 绘制loc连成的折线
     def __drawPath(self, locs):
