@@ -15,7 +15,8 @@ class DTNSWPkt(DTNPkt):
 
 
 class RoutingSparyandWait(RoutingBase):
-    def __init__(self, inittoken = 8):
+    def __init__(self, theBufferNode, inittoken = 8):
+        super(RoutingSparyandWait, self).__init__(theBufferNode)
         self.inittoken = inittoken
 
 
@@ -44,20 +45,19 @@ class RoutingSparyandWait(RoutingBase):
     # 依赖于 浅拷贝, 才能修改 a_id里的 token值
     def decideDelafterSend(self, b_id, i_pkt):
         isDel = False
-        if b_id == i_pkt.dst_id:
-            isDel = True
         i_pkt.token = math.ceil(i_pkt.token / 2)
         return isDel
 
 
-    # 接收从a_id来的i_pkt以后, 决定要不要接收到内存里
+    # 作为relay, 接收a_id发来的i_pkt吗？
     # 依赖于 浅拷贝, 才能修改 a_id里的 token值
     def decideAddafterRece(self, a_id, target_pkt):
         isAdd = True
         if math.floor(target_pkt.token/2) >= 1:
             target_pkt.token = math.floor(target_pkt.token / 2)
-        # 补救措施 bug还是没找到
+        # 正常情况下 发起tran之前 a_id已经保证pkt有足够的token
+        # 接收时 不会出现token不够的情况
         else:
-            print('ERROR! SWRouting 补救措施')
+            print('ERROR! SWRouting token补救措施!')
             isAdd = False
         return isAdd

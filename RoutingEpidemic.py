@@ -5,8 +5,9 @@ from RoutingBase import RoutingBase
 from DTNLogFiles import DTNLogFiles
 
 class RoutingEpidemic(RoutingBase):
-    def __init__(self):
-        pass
+    def __init__(self, theBufferNode):
+        super(RoutingEpidemic, self).__init__(theBufferNode)
+
 
     # 根据对方node的pkt存储状态 和 自身存储状态, router 提供 准备传输的pktlist
     # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
@@ -28,15 +29,13 @@ class RoutingEpidemic(RoutingBase):
         return totran_pktlist
 
 
-    #发送i_pkt给b_id 以后，决定要不要 从内存中删除
+    # 发送i_pkt给b_id 以后，决定要不要 从内存中删除
     def decideDelafterSend(self, b_id, i_pkt):
         isDel = False
-        if b_id == i_pkt.dst_id:
-            isDel = True
         return isDel
 
 
-    #接收从a_id来的i_pkt以后, 决定要不要接收到内存里
+    # 作为relay, 接收a_id发来的i_pkt吗？
     def decideAddafterRece(self, a_id, i_pkt):
         isAdd = True
         return isAdd

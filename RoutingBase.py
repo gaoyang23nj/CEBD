@@ -1,5 +1,8 @@
 
 class RoutingBase(object):
+    def __init__(self, theBufferNode):
+        self.theBufferNode = theBufferNode
+
     @classmethod
     def gettranpktlist(cls, b_id, listb, a_id, lista):
         '''

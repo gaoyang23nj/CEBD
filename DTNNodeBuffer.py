@@ -3,10 +3,17 @@ from DTNPkt import DTNPkt
 from RoutingBase import RoutingBase
 from RoutingEpidemic import RoutingEpidemic
 from RoutingSparyandWait import *
-
-# from RoutingBlackhole import RoutingBlackhole
+from RoutingBlackhole import RoutingBlackhole
 
 class DTNNodeBuffer(object):
+    # b_id 将要复制pkt之前 给a_id的返回码 (a_id据此作出操作)
+    # 报文投递至dst_id == b_id, 通知a_id可以删除了
+    Rece_Code_ToDst = 1
+    # 报文被b_id拒绝了 (显式拒绝)
+    Rece_Code_DenyPkt = 2
+    # 报文被b_id接收了 (接收 或者 隐式拒绝)
+    Rece_Code_AcceptPkt = 3
+
     # buffersize = 100*1000 k, 即100M
     def __init__(self, scenario, node_id, routingname, maxsize=100*1000):
         self.dtnscenario = scenario
@@ -22,9 +29,13 @@ class DTNNodeBuffer(object):
 
     def __attachRouter(self, routingname):
         if routingname == 'RoutingEpidemic':
-            self.router = RoutingEpidemic()
+            self.router = RoutingEpidemic(self)
         elif routingname == 'RoutingSparyandWait':
-            self.router = RoutingSparyandWait(inittoken=2)
+            self.router = RoutingSparyandWait(self, inittoken=2)
+        elif routingname == 'RoutingBlackhole':
+            self.router = RoutingBlackhole(self)
+        else:
+            print('ERROR! 未知的router!')
 
 
     # 内存中增加pkt newpkt
@@ -65,7 +76,7 @@ class DTNNodeBuffer(object):
         return len(self.listofsuccpkt), str
 
     # 按照id 找到pkt
-    def findpktbyid(self,id):
+    def findpktbyid(self, id):
         isFound = False
         pkt = 0
         for pkt in self.listofpkt:
@@ -98,15 +109,28 @@ class DTNNodeBuffer(object):
 
 
     # 收到Scenario上的通知 i_pkt已经传输; 在runningtime时候 发送i_pkt给b_id
-    def notifysentpkt(self, runningtime, b_id, i_pkt):
-        isDelete = self.router.decideDelafterSend(b_id, i_pkt)
-        if isDelete == True:
+    def notifysentpkt(self, runningtime, codeRece, b_id, i_pkt):
+        # 若报文已经抵达目的, a_id同时做个验证保证真实
+        if codeRece == DTNNodeBuffer.Rece_Code_ToDst and b_id == i_pkt.dst_id:
+            isDelete = True
             self.__deletepktbypktid(i_pkt.pkt_id)
-        return
+        # 若报文不被接收
+        elif codeRece == DTNNodeBuffer.Rece_Code_DenyPkt:
+            # do nothing
+            return
+        elif codeRece == DTNNodeBuffer.Rece_Code_AcceptPkt:
+            isDelete = self.router.decideDelafterSend(b_id, i_pkt)
+            if isDelete == True:
+                self.__deletepktbypktid(i_pkt.pkt_id)
+            return
+        else:
+            print('ERROR! DTNBuffer 未知的接受码')
+            pass
 
 
     # 收到Scenario上的通知 i_pkt已经传输; 在runningtime时候 发送i_pkt给b_id
     def notifyreceivedpkt(self, runningtime, a_id, i_pkt):
+        #================================ code_1 成功抵达
         if i_pkt.dst_id == self.node_id:
             # 成功接收 加入成功接收的list
             isduplicate = False
@@ -119,10 +143,17 @@ class DTNNodeBuffer(object):
                 # append之前 需要 deepcopy
                 target_pkt = copy.deepcopy(i_pkt)
                 self.listofsuccpkt.append(target_pkt)
-            return
+            return DTNNodeBuffer.Rece_Code_ToDst
+        #================================ code_2 显式拒绝
+        # 竟然找到了这个pkt, 在这个pkt转发的过程中, 本pkt的其他副本已经成功
+        isFound, pkt = self.findpktbyid(i_pkt.pkt_id)
+        if isFound == True:
+            return DTNNodeBuffer.Rece_Code_DenyPkt
+        # ================================ code_3 (显、隐)接收 隐拒绝
         # 拷贝出一份 以防要修改一些值 hop; track; token等
         target_pkt = copy.deepcopy(i_pkt)
+        # router决定是否真的要接收
         isReceive = self.router.decideAddafterRece(a_id, target_pkt)
         if isReceive == True:
             self.mkroomaddpkt(target_pkt, isgen=False)
-        return
+        return DTNNodeBuffer.Rece_Code_AcceptPkt

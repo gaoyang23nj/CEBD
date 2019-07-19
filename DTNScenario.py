@@ -30,16 +30,24 @@ class DTNScenario(object):
         return
 
     # ==========================挂载在Scenario 上的 received、sent、gen接口=========================
-    # 通知a_id: pkt已经发送
-    def __notifypktsent(self, runningtime, a_id, b_id, i_pkt):
-        self.listNodeBuffer[a_id].notifysentpkt(runningtime, b_id, i_pkt)
-        return
+    # a_id -> b_id 传输pkt: 传输量已经足够 正在拷贝
+    def __sendandreceivepkt(self, a_id, b_id, runningtime, target_pkt):
+        # self.__notifypktreceived(runningtime, b_id, a_id, target_pkt)
+        # self.__notifypktsent(runningtime, a_id, b_id, target_pkt)
+        # b_id被通知: 将要收到来自a_id的pkt.
+        # b_id做出对a_id的回应, b_id是否复制<开辟内存空间,修改字段>/是否欺骗
+        codeRece = self.listNodeBuffer[b_id].notifyreceivedpkt(runningtime, a_id, target_pkt)
+        # a_id被b_id通知: b_id已经收到了target_pkt
+        # a_id将可能执行：修改原pkt字段(token), 删除pkt
+        self.listNodeBuffer[a_id].notifysentpkt(runningtime, codeRece, b_id, target_pkt)
 
-
-    # 通知b_id: pkt需要接收<内存空间可能需要开辟>
-    def __notifypktreceived(self, runningtime, b_id, a_id, i_pkt):
-        self.listNodeBuffer[b_id].notifyreceivedpkt(runningtime, a_id, i_pkt)
-        return
+    # def __notifypktsent(self, runningtime, a_id, b_id, i_pkt):
+    #     self.listNodeBuffer[a_id].notifysentpkt(runningtime, b_id, i_pkt)
+    #     return
+    # # 通知b_id: pkt需要接收<内存空间可能需要开辟>
+    # def __notifypktreceived(self, runningtime, b_id, a_id, i_pkt):
+    #     self.listNodeBuffer[b_id].notifyreceivedpkt(runningtime, a_id, i_pkt)
+    #     return
 
 
     # 通知newpkt.src_id: 新pkt生成<内存空间可能需要开辟>
@@ -119,8 +127,7 @@ class DTNScenario(object):
             self.link_transmitprocess[a_id][b_id] = 0
             # 通知 对应节点a_id pkt已发送; 通知 对应节点b_id pkt需接收;
             # 接收时 使用的是副本 可以先处理
-            self.__notifypktreceived(runningtime, b_id, a_id, target_pkt)
-            self.__notifypktsent(runningtime, a_id, b_id, target_pkt)
+            self.__sendandreceivepkt(a_id, b_id, runningtime, target_pkt)
             # 还剩一些可传输量
             return remiantransmitvolume
         elif transmitvolume < resumevolume:
@@ -131,8 +138,7 @@ class DTNScenario(object):
             self.link_transmitprocess[a_id][b_id] = 0
             # 通知 对应节点a_id pkt已发送; 通知 对应节点b_id pkt需接收;
             # 接收时 使用的是副本 可以先处理
-            self.__notifypktreceived(runningtime, b_id, a_id, target_pkt)
-            self.__notifypktsent(runningtime, a_id, b_id, target_pkt)
+            self.__sendandreceivepkt(a_id, b_id, runningtime, target_pkt)
             return 0
 
 
@@ -142,19 +148,18 @@ class DTNScenario(object):
         # 建立准备传输的pkt列表(这应该是一个优先级的list)
         listpkt = self.listNodeBuffer[b_id].getlistpkt()
         totran_pktlist = self.listNodeBuffer[a_id].gettranpktlist(b_id, listpkt)
-        for i_pkt in totran_pktlist:
+        for target_pkt in totran_pktlist:
             self.filelog.insertlog(self.scenarioname, '[time_{}] [tran] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
-                runningtime, a_id, b_id, i_pkt.pkt_id))
+                runningtime, a_id, b_id, target_pkt.pkt_id))
             # 开始传输i_pkt 可传输量消耗
-            if i_pkt.pkt_size <= transmitvolume:
-                transmitvolume = transmitvolume - i_pkt.pkt_size
+            if target_pkt.pkt_size <= transmitvolume:
+                transmitvolume = transmitvolume - target_pkt.pkt_size
                 # 通知 对应节点a_id pkt已发送; 通知 对应节点b_id pkt需接收;
                 # 接收时 使用的是副本 可以先处理
-                self.__notifypktreceived(runningtime, b_id, a_id, i_pkt)
-                self.__notifypktsent(runningtime, a_id, b_id, i_pkt)
+                self.__sendandreceivepkt(a_id, b_id, runningtime, target_pkt)
             # 如果传不完了, 记录传输进度 transmitvolume
             else:
-                self.link_transmitpktid[a_id][b_id] = i_pkt.pkt_id
+                self.link_transmitpktid[a_id][b_id] = target_pkt.pkt_id
                 self.link_transmitprocess[a_id][b_id] = transmitvolume
                 break
         return
