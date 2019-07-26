@@ -198,25 +198,6 @@ class DTNController(object):
 
 
     # =========提供给 scenario的接口, init gennewpkt swap linkdown showres============================
-    # 初始化各个路由场景 并返回 场景名的list
-    def __scenarioinit(self):
-        list_scena = ['scenario1', 'scenario2']
-        self.scenaDict = {}
-        # ===============================场景1 全ep routing===================================
-        list_idrouting = []
-        for movenode in self.list_node:
-            list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
-        self.scenario1 = DTNScenario(list_scena[0], list_idrouting)
-        self.scenaDict.update({list_scena[0]: self.scenario1})
-        # ===============================场景2 全sw routing===================================
-        list_idrouting = []
-        for movenode in self.list_node:
-            list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
-        self.scenario2 = DTNScenario(list_scena[1], list_idrouting)
-        self.scenaDict.update({list_scena[1]: self.scenario2})
-        return list_scena
-
-
     # 各个scenario生成报文
     def __scenariogenpkt(self):
         src_index = np.random.randint(len(self.list_node))
@@ -253,3 +234,77 @@ class DTNController(object):
             print('\n{} succ_num:{}'.format(key, succ_num))
             print(stroutput)
 
+   # 初始化各个路由场景 并返回 场景名的list
+    def __scenarioinit(self):
+        list_scena = ['scenario1', 'scenario2', 'scenario3', 'scenario4', 'scenario5']
+        self.scenaDict = {}
+
+        # ===============================场景1 全ep routing===================================
+        list_idrouting = []
+        for movenode in self.list_node:
+            list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
+        self.scenario1 = DTNScenario(list_scena[0], list_idrouting)
+        self.scenaDict.update({list_scena[0]: self.scenario1})
+
+        # ===============================场景2 全sw routing===================================
+        list_idrouting = []
+        for movenode in self.list_node:
+            list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+        self.scenario2 = DTNScenario(list_scena[1], list_idrouting)
+        self.scenaDict.update({list_scena[1]: self.scenario2})
+
+        # ===============================场景3 设置10%的dropping node===================================
+        # 随机生成序列
+        indices = np.random.permutation(len(self.list_node))
+        malicious_indices = indices[: int(0.5 * len(self.list_node))]
+        normal_indices = indices[int(0.5 * len(self.list_node)):]
+        list_idrouting = []
+        id = 0
+        for movenode in self.list_node:
+            if id in normal_indices:
+                list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+            elif id in malicious_indices:
+                list_idrouting.append((movenode.node_id, 'RoutingBlackhole'))
+            else:
+                print('ERROR! Scenario Init!')
+            id = id + 1
+        self.scenario3 = DTNScenario(list_scena[2], list_idrouting)
+        self.scenaDict.update({list_scena[2]: self.scenario3})
+
+        # ===============================场景4 设置30%的dropping node===================================
+        # 随机生成序列
+        indices = np.random.permutation(len(self.list_node))
+        malicious_indices = indices[: int(0.5 * len(self.list_node))]
+        normal_indices = indices[int(0.5 * len(self.list_node)):]
+        list_idrouting = []
+        id = 0
+        for movenode in self.list_node:
+            if id in normal_indices:
+                list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+            elif id in malicious_indices:
+                list_idrouting.append((movenode.node_id, 'RoutingBlackhole'))
+            else:
+                print('ERROR! Scenario Init!')
+            id = id + 1
+        self.scenario4 = DTNScenario(list_scena[3], list_idrouting)
+        self.scenaDict.update({list_scena[3]: self.scenario4})
+
+        # ===============================场景5 设置50%的dropping node===================================
+        # 随机生成序列
+        indices = np.random.permutation(len(self.list_node))
+        malicious_indices = indices[: int(0.5 * len(self.list_node))]
+        normal_indices = indices[int(0.5 * len(self.list_node)):]
+        list_idrouting = []
+        id = 0
+        for movenode in self.list_node:
+            if id in normal_indices:
+                list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+            elif id in malicious_indices:
+                list_idrouting.append((movenode.node_id, 'RoutingBlackhole'))
+            else:
+                print('ERROR! Scenario Init! id: ', id)
+            id = id + 1
+        self.scenario5 = DTNScenario(list_scena[4], list_idrouting)
+        self.scenaDict.update({list_scena[4]: self.scenario5})
+
+        return list_scena

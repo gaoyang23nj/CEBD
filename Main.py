@@ -14,14 +14,15 @@ np.random.seed(1)
 # tf.set_random_seed(1)
 
 MAX_NODE_NUM = 10
-MAX_TIME_INDEX = 10000
+# 执行时间 36000*12个间隔, 即12hour
+MAX_RUNNING_TIMES = 36000*12
 
 def runRandomWalk():
     showsize = 500
     realsize = 1000
     # 每100个timestep(<模拟>10s)刷新一次界面, 通信范围100m, 每6000个timestep(<模拟>600s)产生一次报文
     theViewer = DTNSimGUI(showsize, realsize)
-    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000)
+    theController = DTNController(theViewer, showtimes=100, com_range=50, genfreq_cnt=6000, totaltimes=MAX_RUNNING_TIMES)
     listNodes = []
     for node_id in range(MAX_NODE_NUM):
         # 每个timestep = <模拟>0.1s
@@ -40,7 +41,7 @@ def runHelsinkSPM():
     # 100倍速度执行
     # theGUI = DTNSimGUIMap(size, pathreader, 100)
     theViewer = DTNSimGUIMap(pathreader, showsize, isshowconn=True)
-    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000)
+    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=MAX_RUNNING_TIMES)
     listNodes = []
     for node_id in range(MAX_NODE_NUM):
         # 0.1s 一个间隔
