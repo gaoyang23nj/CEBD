@@ -243,14 +243,14 @@ class DTNController(object):
         list_idrouting = []
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
-        self.scenario1 = DTNScenario(list_scena[0], list_idrouting)
+        self.scenario1 = DTNScenario(list_scena[0], list_idrouting, 'DTNPkt')
         self.scenaDict.update({list_scena[0]: self.scenario1})
 
         # ===============================场景2 全sw routing===================================
         list_idrouting = []
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
-        self.scenario2 = DTNScenario(list_scena[1], list_idrouting)
+        self.scenario2 = DTNScenario(list_scena[1], list_idrouting, 'DTNSWPkt')
         self.scenaDict.update({list_scena[1]: self.scenario2})
 
         # ===============================场景3 设置10%的dropping node===================================
@@ -268,7 +268,7 @@ class DTNController(object):
             else:
                 print('ERROR! Scenario Init!')
             id = id + 1
-        self.scenario3 = DTNScenario(list_scena[2], list_idrouting)
+        self.scenario3 = DTNScenario(list_scena[2], list_idrouting, 'DTNSWPkt')
         self.scenaDict.update({list_scena[2]: self.scenario3})
 
         # ===============================场景4 设置30%的dropping node===================================
@@ -286,7 +286,7 @@ class DTNController(object):
             else:
                 print('ERROR! Scenario Init!')
             id = id + 1
-        self.scenario4 = DTNScenario(list_scena[3], list_idrouting)
+        self.scenario4 = DTNScenario(list_scena[3], list_idrouting, 'DTNSWPkt')
         self.scenaDict.update({list_scena[3]: self.scenario4})
 
         # ===============================场景5 设置50%的dropping node===================================
@@ -304,7 +304,7 @@ class DTNController(object):
             else:
                 print('ERROR! Scenario Init! id: ', id)
             id = id + 1
-        self.scenario5 = DTNScenario(list_scena[4], list_idrouting)
+        self.scenario5 = DTNScenario(list_scena[4], list_idrouting, 'DTNSWPkt')
         self.scenaDict.update({list_scena[4]: self.scenario5})
 
         return list_scena

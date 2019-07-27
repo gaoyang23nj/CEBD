@@ -5,13 +5,13 @@ from RoutingBase import RoutingBase
 # 需要在pkt里加一个token属性
 class DTNSWPkt(DTNPkt):
     def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size, token):
-        super(DTNSWPkt, self).__init__(self, pkt_id, src_id, dst_id, gentime, pkt_size)
+        super(DTNSWPkt, self).__init__(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.token = token
 
-
-    def __init__(self, dtnpkt, token):
-        super(DTNSWPkt, self).__init__(dtnpkt.pkt_id, dtnpkt.src_id, dtnpkt.dst_id, dtnpkt.gentime, dtnpkt.pkt_size)
-        self.token = token
+    #
+    # def __init__(self, dtnpkt, token):
+    #     super(DTNSWPkt, self).__init__(dtnpkt.pkt_id, dtnpkt.src_id, dtnpkt.dst_id, dtnpkt.gentime, dtnpkt.pkt_size)
+    #     self.token = token
 
 
 class RoutingSparyandWait(RoutingBase):

@@ -99,9 +99,6 @@ class DTNNodeBuffer(object):
     # 保证内存空间足够 并把pkt放在内存里; isgen 是否是生成新pkt
     def mkroomaddpkt(self, newpkt, isgen):
         # 按照需要 改装pkt
-        if isgen and isinstance(self.router, RoutingSparyandWait):
-            newpkt = DTNSWPkt(newpkt, self.router.inittoken)
-
         # 如果需要删除pkt以提供内存空间 按照drop old原则
         if self.occupied_size + newpkt.pkt_size > self.maxsize:
             self.__deletepktbysize(newpkt.pkt_size)

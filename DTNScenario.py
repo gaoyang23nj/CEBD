@@ -5,10 +5,13 @@ import numpy as np
 from DTNPkt import DTNPkt
 from DTNNodeBuffer import DTNNodeBuffer
 from DTNLogFiles import DTNLogFiles
+from RoutingSparyandWait import *
+
 class DTNScenario(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, list_idrouting):
+    def __init__(self, scenarioname, list_idrouting, pkytype):
         self.scenarioname = scenarioname
+        self.PktType = pkytype
         # 传输速度 500kb/s
         self.transmitspeed = 500
         # 时间间隔 0.1s
@@ -52,7 +55,14 @@ class DTNScenario(object):
 
     # 通知newpkt.src_id: 新pkt生成<内存空间可能需要开辟>
     def __notifygennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
+        # 按照需要 改装pkt
+        if self.PktType == 'DTNPkt':
+            newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
+        elif self.PktType == 'DTNSWPkt':
+            init_token = 2
+            newpkt = DTNSWPkt(pkt_id, src_id, dst_id, gentime, pkt_size, init_token)
+        else:
+            print('ERROR! no this pkt type')
         self.listNodeBuffer[src_id].mkroomaddpkt(newpkt, isgen=True)
 
 
