@@ -14,8 +14,8 @@ class DTNNodeBuffer(object):
     # 报文被b_id接收了 (接收 或者 隐式拒绝)
     Rece_Code_AcceptPkt = 3
 
-    # buffersize = 100*1000 k, 即100M
-    def __init__(self, scenario, node_id, routingname, maxsize=100*1000):
+    # buffersize = 10*1000 k, 即10M; 每个报文100k
+    def __init__(self, scenario, node_id, routingname, maxsize=10*1000):
         self.dtnscenario = scenario
         self.node_id = node_id
         self.maxsize = maxsize

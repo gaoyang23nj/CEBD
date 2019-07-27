@@ -228,11 +228,13 @@ class DTNController(object):
             value.linkdown(self.RunningTime, a_id, b_id)
 
     # 各个scenario显示结果
-    def __scenarioshowres(self):
+    def __scenarioshowres(self, showdetail = False):
         for key, value in self.scenaDict.items():
             succ_num, stroutput = value.showres()
             print('\n{} succ_num:{}'.format(key, succ_num))
-            print(stroutput)
+            # 显示细节
+            if showdetail:
+                print(stroutput)
 
    # 初始化各个路由场景 并返回 场景名的list
     def __scenarioinit(self):
