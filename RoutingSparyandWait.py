@@ -41,13 +41,6 @@ class RoutingSparyandWait(RoutingBase):
         return totran_pktlist
 
 
-    # 发送i_pkt给b_id 以后，决定要不要 从内存中删除
-    # 依赖于 浅拷贝, 才能修改 a_id里的 token值
-    def decideDelafterSend(self, b_id, i_pkt):
-        isDel = False
-        i_pkt.token = math.ceil(i_pkt.token / 2)
-        return isDel
-
 
     # 作为relay, 接收a_id发来的i_pkt吗？
     # 依赖于 浅拷贝, 才能修改 a_id里的 token值
@@ -61,3 +54,11 @@ class RoutingSparyandWait(RoutingBase):
             print('ERROR! SWRouting token补救措施!')
             isAdd = False
         return isAdd
+
+
+    # 发送i_pkt给b_id 以后，决定要不要 从内存中删除
+    # 依赖于 浅拷贝, 才能修改 a_id里的 token值
+    def decideDelafterSend(self, b_id, i_pkt):
+        isDel = False
+        i_pkt.token = math.ceil(i_pkt.token / 2)
+        return isDel

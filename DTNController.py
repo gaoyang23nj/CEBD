@@ -168,6 +168,8 @@ class DTNController(object):
                     if self.mt_linkstate[a_id][b_id] == 0:
                         self.filelog.insertlog('eve','[time_{}] [link_up] a(node_{})<->b(node_{})\n'.format(
                             self.RunningTime, a_id, b_id))
+                        self.__scenariolinkup(a_id, b_id)
+                        self.__scenariolinkup(b_id, a_id)
                     self.mt_linkstate[a_id][b_id] = 1
                     self.__scenarioswap(a_id, b_id)
                     self.mt_linkstate[b_id][a_id] = 1
@@ -197,7 +199,7 @@ class DTNController(object):
                         self.__scenariolinkdown(b_id, a_id)
 
 
-    # =========提供给 scenario的接口, init gennewpkt swap linkdown showres============================
+    # =========调用scenario的接口, init gennewpkt swap linkdown showres============================
     # 各个scenario生成报文
     def __scenariogenpkt(self):
         src_index = np.random.randint(len(self.list_node))
@@ -226,6 +228,13 @@ class DTNController(object):
     def __scenariolinkdown(self, a_id, b_id):
         for key, value in self.scenaDict.items():
             value.linkdown(self.RunningTime, a_id, b_id)
+
+
+    # 各个scenario收到linkup事件
+    def __scenariolinkup(self, a_id, b_id):
+        for key, value in self.scenaDict.items():
+            value.linkup(self.RunningTime, a_id, b_id)
+
 
     # 各个scenario显示结果
     def __scenarioshowres(self, showdetail = False):

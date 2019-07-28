@@ -4,6 +4,7 @@ from RoutingBase import RoutingBase
 from RoutingEpidemic import RoutingEpidemic
 from RoutingSparyandWait import *
 from RoutingBlackhole import RoutingBlackhole
+from RoutingSDBG import RoutingSDBG
 
 class DTNNodeBuffer(object):
     # b_id 将要复制pkt之前 给a_id的返回码 (a_id据此作出操作)
@@ -15,15 +16,17 @@ class DTNNodeBuffer(object):
     Rece_Code_AcceptPkt = 3
 
     # buffersize = 10*1000 k, 即10M; 每个报文100k
-    def __init__(self, scenario, node_id, routingname, maxsize=10*1000):
+    def __init__(self, scenario, node_id, routingname, numofnodes, maxsize=100*1000):
         self.dtnscenario = scenario
         self.node_id = node_id
+        self.numofnodes = numofnodes
         self.maxsize = maxsize
         self.occupied_size = 0
         # <内存> 实时存储的pkt list
         self.listofpkt = []
         # 为了记录和对照方便 为每个节点记录成功投递的pkt list
         self.listofsuccpkt = []
+        self.routingname = routingname
         self.__attachRouter(routingname)
 
 
@@ -34,6 +37,8 @@ class DTNNodeBuffer(object):
             self.router = RoutingSparyandWait(self, inittoken=2)
         elif routingname == 'RoutingBlackhole':
             self.router = RoutingBlackhole(self)
+        elif routingname == 'RoutingSDBG':
+            self.router = RoutingSDBG(self, self.numofnodes)
         else:
             print('ERROR! 未知的router!')
 
@@ -105,27 +110,9 @@ class DTNNodeBuffer(object):
         self.__addpkt(newpkt)
 
 
-    # 收到Scenario上的通知 i_pkt已经传输; 在runningtime时候 发送i_pkt给b_id
-    def notifysentpkt(self, runningtime, codeRece, b_id, i_pkt):
-        # 若报文已经抵达目的, a_id同时做个验证保证真实
-        if codeRece == DTNNodeBuffer.Rece_Code_ToDst and b_id == i_pkt.dst_id:
-            isDelete = True
-            self.__deletepktbypktid(i_pkt.pkt_id)
-        # 若报文不被接收
-        elif codeRece == DTNNodeBuffer.Rece_Code_DenyPkt:
-            # do nothing
-            return
-        elif codeRece == DTNNodeBuffer.Rece_Code_AcceptPkt:
-            isDelete = self.router.decideDelafterSend(b_id, i_pkt)
-            if isDelete == True:
-                self.__deletepktbypktid(i_pkt.pkt_id)
-            return
-        else:
-            print('ERROR! DTNBuffer 未知的接受码')
-            pass
-
-
-    # 收到Scenario上的通知 i_pkt已经传输; 在runningtime时候 发送i_pkt给b_id
+    # =========================== 获取router的指导意见，调制pkt存储,  提供给Scenario接口=========================
+    # 重要功能 事关报文复制！！！！
+    # 收到Scenario上的通知 在runningtime时候 可以准备从a_id 拷贝i_pkt
     def notifyreceivedpkt(self, runningtime, a_id, i_pkt):
         #================================ code_1 成功抵达
         if i_pkt.dst_id == self.node_id:
@@ -154,3 +141,49 @@ class DTNNodeBuffer(object):
         if isReceive == True:
             self.mkroomaddpkt(target_pkt, isgen=False)
         return DTNNodeBuffer.Rece_Code_AcceptPkt
+
+
+    # 收到Scenario上的通知 i_pkt已经传输; 在runningtime时候 发送i_pkt给b_id
+    def notifysentpkt(self, runningtime, codeRece, b_id, i_pkt):
+        # 若报文已经抵达目的, a_id同时做个验证保证真实
+        if codeRece == DTNNodeBuffer.Rece_Code_ToDst and b_id == i_pkt.dst_id:
+            isDelete = True
+            self.__deletepktbypktid(i_pkt.pkt_id)
+        # 若报文不被接收
+        elif codeRece == DTNNodeBuffer.Rece_Code_DenyPkt:
+            # do nothing
+            return
+        elif codeRece == DTNNodeBuffer.Rece_Code_AcceptPkt:
+            isDelete = self.router.decideDelafterSend(b_id, i_pkt)
+            if isDelete == True:
+                self.__deletepktbypktid(i_pkt.pkt_id)
+            return
+        else:
+            print('ERROR! DTNBuffer 未知的接受码')
+            pass
+
+
+    # 通知a_id： 与b_id 的 linkup事件
+    def notifylinkup(self, b_id, runningtime, *args):
+        self.router.notifylinkup(b_id, runningtime, *args)
+        pass
+
+
+    # 通知a_id： 与b_id 的 linkdown事件
+    def notifylinkdown(self, b_id, runningtime, *args):
+        self.router.notifylinkdown(b_id, runningtime, *args)
+        pass
+
+    # 某些routing算法下 在linkdown之前 需要给对方node的router传值
+    def getValuesRouterBeforeDown(self):
+        if self.routingname == 'RoutingSDBG':
+            return self.router.getSnSigRouter()
+        else:
+            return
+
+    # 某些routing算法下 在linkup之前 需要给对方node的router传值
+    def getValuesRouterBeforeUp(self):
+        if self.routingname == 'RoutingSDBG':
+            return self.router.getERWforlinkdown()
+        else:
+            return

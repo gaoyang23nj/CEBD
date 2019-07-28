@@ -11,19 +11,20 @@ class DTNScenario(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_idrouting, pkytype):
         self.scenarioname = scenarioname
+        # 生成时候的pkt类型
         self.PktType = pkytype
         # 传输速度 500kb/s
         self.transmitspeed = 500
         # 时间间隔 0.1s
         self.timestep = 0.1
+        # 为了记录和对照方便 为每个节点记录成功投递的pkt list
+        self.numofnodes = len(list_idrouting)
         # 为各个node建立虚拟空间 <内存+router>
         self.listNodeBuffer = []
         for idrouting_tunple in list_idrouting:
             (node_id, routingname) = idrouting_tunple
-            tmpBuffer = DTNNodeBuffer(self, node_id, routingname, maxsize=100*1000)
+            tmpBuffer = DTNNodeBuffer(self, node_id, routingname, self.numofnodes, maxsize=100*1000)
             self.listNodeBuffer.append(tmpBuffer)
-        # 为了记录和对照方便 为每个节点记录成功投递的pkt list
-        self.numofnodes = len(list_idrouting)
         # 建立正在传输的pkt_id 和 传输进度 的矩阵
         self.link_transmitpktid = np.zeros((self.numofnodes, self.numofnodes), dtype='int')
         self.link_transmitprocess = np.zeros((self.numofnodes, self.numofnodes), dtype='int')
@@ -32,25 +33,15 @@ class DTNScenario(object):
         self.filelog.initlog(self.scenarioname)
         return
 
-    # ==========================挂载在Scenario 上的 received、sent、gen接口=========================
+    # ==========================调用NodeBuffer 接口=========================
     # a_id -> b_id 传输pkt: 传输量已经足够 正在拷贝
     def __sendandreceivepkt(self, a_id, b_id, runningtime, target_pkt):
-        # self.__notifypktreceived(runningtime, b_id, a_id, target_pkt)
-        # self.__notifypktsent(runningtime, a_id, b_id, target_pkt)
         # b_id被通知: 将要收到来自a_id的pkt.
         # b_id做出对a_id的回应, b_id是否复制<开辟内存空间,修改字段>/是否欺骗
         codeRece = self.listNodeBuffer[b_id].notifyreceivedpkt(runningtime, a_id, target_pkt)
         # a_id被b_id通知: b_id已经收到了target_pkt
         # a_id将可能执行：修改原pkt字段(token), 删除pkt
         self.listNodeBuffer[a_id].notifysentpkt(runningtime, codeRece, b_id, target_pkt)
-
-    # def __notifypktsent(self, runningtime, a_id, b_id, i_pkt):
-    #     self.listNodeBuffer[a_id].notifysentpkt(runningtime, b_id, i_pkt)
-    #     return
-    # # 通知b_id: pkt需要接收<内存空间可能需要开辟>
-    # def __notifypktreceived(self, runningtime, b_id, a_id, i_pkt):
-    #     self.listNodeBuffer[b_id].notifyreceivedpkt(runningtime, a_id, i_pkt)
-    #     return
 
 
     # 通知newpkt.src_id: 新pkt生成<内存空间可能需要开辟>
@@ -92,12 +83,22 @@ class DTNScenario(object):
 
     # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkdown事件
     def linkdown(self, runningtime, a_id, b_id):
+        # 1)从b_id获取对应参数*args 2) 通知a_id： 与b_id 的 linkup事件
+        values = self.listNodeBuffer[b_id].getValuesRouterBeforeDown()
+        self.listNodeBuffer[a_id].notifylinkdown(b_id, runningtime, values)
+        # 设置link正在传输值参数
         self.link_transmitpktid[a_id][b_id] = 0
         self.link_transmitprocess[a_id][b_id] = 0
         self.filelog.insertlog(self.scenarioname, '[time_{}] [linkdown] a(node_{})<->b(node_{})\n'.format(
             runningtime, a_id, b_id))
         return
 
+    # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkup事件
+    def linkup(self, runningtime, a_id, b_id):
+        # 1)获取对面给出的参数以便评价 2)通知a_id： 与b_id 的 linkdown事件
+        values = self.listNodeBuffer[b_id].getValuesRouterBeforeUp()
+        self.listNodeBuffer[a_id].notifylinkup(b_id, runningtime, values)
+        return
 
     # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id
     def swappkt(self, runningtime, a_id, b_id):
