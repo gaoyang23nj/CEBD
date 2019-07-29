@@ -24,12 +24,13 @@ class RoutingBase(object):
         return totran_pktlist
 
 
-    def notifylinkup(self, b_id, runningtime):
+    def notifylinkup(self, b_id, runningtime, *args):
         pass
 
 
-    def notifylinkdown(self, b_id, runningtime):
+    def notifylinkdown(self, b_id, runningtime, *args):
         pass
+
 
     @classmethod
     def decideDelafterSend(cls, b_id, i_pkt):

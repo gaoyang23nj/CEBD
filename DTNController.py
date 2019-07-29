@@ -213,8 +213,8 @@ class DTNController(object):
         for key, value in self.scenaDict.items():
             value.gennewpkt(self.pktid_nextgen, src_index, dst_index, self.RunningTime, 100)
         # 生成报文生成的log
-        self.filelog.insertlog('eve','[time_{}] [packet gen] pkt_{}:src(node_{})->dst(node_{})\n'.format(
-                  self.RunningTime, self.pktid_nextgen, src_index, dst_index))
+        self.filelog.insertlog('eve','[time_{}] [packet gen cnt:{}] pkt_{}:src(node_{})->dst(node_{})\n'.format(
+                  self.RunningTime, self.cnt_genpkt, self.pktid_nextgen, src_index, dst_index))
         self.pktid_nextgen = self.pktid_nextgen + 1
         return
 

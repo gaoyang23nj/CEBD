@@ -1,4 +1,5 @@
 import math
+import traceback
 from DTNPkt import DTNPkt
 from RoutingBase import RoutingBase
 
@@ -51,7 +52,9 @@ class RoutingSparyandWait(RoutingBase):
         # 正常情况下 发起tran之前 a_id已经保证pkt有足够的token
         # 接收时 不会出现token不够的情况
         else:
-            print('ERROR! SWRouting token补救措施!')
+            # 刚好pkt传输 同时发起两个传送 所以不能传送了 token不够分
+            # print('ERROR! SWRouting token补救措施!')
+            # traceback.print_stack()
             isAdd = False
         return isAdd
 
