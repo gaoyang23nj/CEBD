@@ -23,7 +23,7 @@ class DTNScenario(object):
         self.listNodeBuffer = []
         for idrouting_tunple in list_idrouting:
             (node_id, routingname) = idrouting_tunple
-            tmpBuffer = DTNNodeBuffer(self, node_id, routingname, self.numofnodes, maxsize=100*1000)
+            tmpBuffer = DTNNodeBuffer(self, node_id, routingname, self.numofnodes)
             self.listNodeBuffer.append(tmpBuffer)
         # 建立正在传输的pkt_id 和 传输进度 的矩阵
         self.link_transmitpktid = np.zeros((self.numofnodes, self.numofnodes), dtype='int')
