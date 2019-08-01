@@ -1,0 +1,71 @@
+    showsize = 500
+    realsize = 2000
+    # 每100个timestep(<模拟>10s)刷新一次界面, 通信范围100m, 每600个timestep(<模拟>60s)产生一次报文
+    theViewer = DTNSimGUI(showsize, realsize)
+    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=600, totaltimes=MAX_RUNNING_TIMES)
+
+"F:\Program Files\Python37\python.exe" F:/Simulation_ONE/Main.py
+1920x1080
+
+ gen_num:720
+
+scenario1 succ_num:415 normal_num:415 selfish_num:0
+	 normal_node:20
+	 succ_total_ratio:0.5763888888888888
+
+scenario2 succ_num:524 normal_num:524 selfish_num:0
+	 normal_node:20
+	 succ_total_ratio:0.7277777777777777
+
+scenario3 succ_num:495 normal_num:445 selfish_num:50
+	 normal_node:18 selfish_node:2
+	 succ_total_ratio:0.6875 succ_normal_ratio:0.6877897990726429
+
+scenario4 succ_num:477 normal_num:328 selfish_num:149
+	 normal_node:14 selfish_node:6
+	 succ_total_ratio:0.6625 succ_normal_ratio:0.6721311475409836
+
+scenario5 succ_num:455 normal_num:214 selfish_num:241
+	 normal_node:10 selfish_node:10
+	 succ_total_ratio:0.6319444444444444 succ_normal_ratio:0.5911602209944752
+2019-07-30 21:46:11
+2019-07-30 22:12:05
+
+
+
+
+#######################################################
+
+    showsize = 500
+    realsize = 2000
+    # 每100个timestep(<模拟>10s)刷新一次界面, 通信范围100m, 每600个timestep(<模拟>60s)产生一次报文
+    theViewer = DTNSimGUI(showsize, realsize)
+    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=300, totaltimes=MAX_RUNNING_TIMES)
+
+
+"F:\Program Files\Python37\python.exe" F:/Simulation_ONE/Main.py
+1920x1080
+
+ gen_num:1440
+
+scenario1 succ_num:699 normal_num:699 selfish_num:0
+	 normal_node:20
+	 succ_total_ratio:0.48541666666666666
+
+scenario2 succ_num:775 normal_num:775 selfish_num:0
+	 normal_node:20
+	 succ_total_ratio:0.5381944444444444
+
+scenario3 succ_num:755 normal_num:677 selfish_num:78
+	 normal_node:18 selfish_node:2
+	 succ_total_ratio:0.5243055555555556 succ_normal_ratio:0.5183767228177641
+
+scenario4 succ_num:742 normal_num:502 selfish_num:240
+	 normal_node:14 selfish_node:6
+	 succ_total_ratio:0.5152777777777777 succ_normal_ratio:0.5065590312815338
+
+scenario5 succ_num:730 normal_num:367 selfish_num:363
+	 normal_node:10 selfish_node:10
+	 succ_total_ratio:0.5069444444444444 succ_normal_ratio:0.49129852744310576
+2019-07-31 09:59:40
+2019-07-31 10:32:15

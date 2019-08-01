@@ -108,13 +108,16 @@ class DTNSimGUI(DTNSimBase):
         # 点了closing  先暂停，如果确定就退出 否则就恢复更新
         self.DTNController.setTimerRunning(False)
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.DTNController.closeApp()
-            # 删除窗口
-            self.window.destroy()
+            self.closeall()
         else:
             self.DTNController.setTimerRunning(True)
             self.DTNController.updateViewer()
 
+
+    def closeall(self):
+        self.DTNController.closeApp()
+        # 删除窗口
+        self.window.destroy()
 
     def getscenaname(self):
         return self.cbbox_scena.get()

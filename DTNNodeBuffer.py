@@ -71,14 +71,17 @@ class DTNNodeBuffer(object):
 
     # ==========================提供给Scenario的功能===========================================================================
     # 显示结果
-    def showres(self):
-        str = ''
+    def getlocalusage(self):
+        # str = ''
+        succinlocalnode = []
         for pkt in self.listofsuccpkt:
-            strtmp = 'pkt_{}:src_id(node_{})->dst_id(node_{}); '.format(pkt.pkt_id, pkt.src_id, pkt.dst_id)
-            str = str + strtmp
-        if len(self.listofsuccpkt) > 0:
-            str = str + '\n'
-        return len(self.listofsuccpkt), str
+            # strtmp = 'pkt_{}:src_id(node_{})->dst_id(node_{}); '.format(pkt.pkt_id, pkt.src_id, pkt.dst_id)
+            # str = str + strtmp
+            pktinfo = (pkt.pkt_id, pkt.src_id, pkt.dst_id)
+            succinlocalnode.append(pktinfo)
+        # if len(self.listofsuccpkt) > 0:
+        #     str = str + '\n'
+        return len(self.listofsuccpkt), succinlocalnode
 
     # 按照id 找到pkt
     def findpktbyid(self, id):

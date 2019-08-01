@@ -21,9 +21,13 @@ class DTNScenario(object):
         self.numofnodes = len(list_idrouting)
         # 为各个node建立虚拟空间 <内存+router>
         self.listNodeBuffer = []
+        # 记录坏节点的个数
+        self.listselfishid = []
         for idrouting_tunple in list_idrouting:
             (node_id, routingname) = idrouting_tunple
             tmpBuffer = DTNNodeBuffer(self, node_id, routingname, self.numofnodes)
+            if routingname == 'RoutingBlackhole':
+                self.listselfishid.append(node_id)
             self.listNodeBuffer.append(tmpBuffer)
         # 建立正在传输的pkt_id 和 传输进度 的矩阵
         self.link_transmitpktid = np.zeros((self.numofnodes, self.numofnodes), dtype='int')
@@ -63,16 +67,24 @@ class DTNScenario(object):
         return self.listNodeBuffer[node_id].getlistpkt()
 
 
+    def getselfishlist(self):
+        return self.listselfishid
+
     # scenario收到DTNcontroller指令, 打印routing结果
     def showres(self):
         # 获取成功投递的个数
         succnum = 0
+        succnum_selfish = 0
         stroutput = self.scenarioname + 'succ_list: '
         for tmpnodebuffer in self.listNodeBuffer:
-            tmpsuccnum, tmpstroutput = tmpnodebuffer.showres()
-            stroutput = stroutput + tmpstroutput
+            tmpsuccnum, tmpsucclist = tmpnodebuffer.getlocalusage()
+            # stroutput = stroutput + tmpstroutput
+            for pktinfo in tmpsucclist:
+                (pkt_id, src_id, dst_id) = pktinfo
+                if src_id in self.listselfishid:
+                    succnum_selfish = succnum_selfish + 1
             succnum = succnum + tmpsuccnum
-        return succnum, stroutput
+        return succnum, succnum-succnum_selfish, succnum_selfish
 
 
     # scenario收到DTNcontroller指令, 在srcid生成一个pkt(srcid->dstid)

@@ -14,7 +14,7 @@ from DTNController import DTNController
 np.random.seed(1)
 # tf.set_random_seed(1)
 
-MAX_NODE_NUM = 50
+MAX_NODE_NUM = 20
 # 执行时间 36000*12个间隔, 即12hour
 MAX_RUNNING_TIMES = 36000*12
 

@@ -100,8 +100,8 @@ class DTNController(object):
             return
         else:
             # 到结束的时候, 打印routing结果
-            self.__scenarioshowres()
-            self.DTNView.on_closing()
+            # self.__scenarioshowres()
+            self.DTNView.closeall()
             return
 
 
@@ -238,9 +238,27 @@ class DTNController(object):
 
     # 各个scenario显示结果
     def __scenarioshowres(self, showdetail = False):
+        gen_total_num = len(self.list_genpkt)
+        print('\n gen_num:{}'.format(gen_total_num))
         for key, value in self.scenaDict.items():
-            succ_num, stroutput = value.showres()
-            print('\n{} succ_num:{}'.format(key, succ_num))
+            succ_total_num, succ_normal_num, succ_selfish_num = value.showres()
+            print('\n{} succ_num:{} normal_num:{} selfish_num:{}'.format(key, succ_total_num, succ_normal_num,
+                                                                         succ_selfish_num))
+            gen_selfish_num = 0
+            listselfishid = value.getselfishlist()
+            if len(listselfishid) > 0:
+                for pkt in self.list_genpkt:
+                    (id, src, dst) = pkt
+                    if src in listselfishid:
+                        gen_selfish_num = gen_selfish_num + 1
+                gen_normal_num = gen_total_num - gen_selfish_num
+                print('\t normal_node:{} selfish_node:{}'.format(len(self.list_node)-len(listselfishid), len(listselfishid)))
+                print('\t succ_total_ratio:{} succ_normal_ratio:{}'.format(succ_total_num/gen_total_num, succ_normal_num/gen_normal_num))
+            else:
+                print('\t normal_node:{}'.format(len(self.list_node)))
+                print('\t succ_total_ratio:{}'.format(succ_total_num/gen_total_num))
+
+
             # 显示细节
             if showdetail:
                 print(stroutput)
@@ -266,9 +284,10 @@ class DTNController(object):
 
         # ===============================场景3 设置10%的dropping node===================================
         # 随机生成序列
+        percent_selfish = 0.1
         indices = np.random.permutation(len(self.list_node))
-        malicious_indices = indices[: int(0.5 * len(self.list_node))]
-        normal_indices = indices[int(0.5 * len(self.list_node)):]
+        malicious_indices = indices[: int(percent_selfish * len(self.list_node))]
+        normal_indices = indices[int(percent_selfish * len(self.list_node)):]
         list_idrouting = []
         id = 0
         for movenode in self.list_node:
@@ -284,9 +303,10 @@ class DTNController(object):
 
         # ===============================场景4 设置30%的dropping node===================================
         # 随机生成序列
+        percent_selfish = 0.3
         indices = np.random.permutation(len(self.list_node))
-        malicious_indices = indices[: int(0.5 * len(self.list_node))]
-        normal_indices = indices[int(0.5 * len(self.list_node)):]
+        malicious_indices = indices[: int(percent_selfish * len(self.list_node))]
+        normal_indices = indices[int(percent_selfish * len(self.list_node)):]
         list_idrouting = []
         id = 0
         for movenode in self.list_node:
@@ -302,9 +322,10 @@ class DTNController(object):
 
         # ===============================场景5 设置50%的dropping node===================================
         # 随机生成序列
+        percent_selfish = 0.5
         indices = np.random.permutation(len(self.list_node))
-        malicious_indices = indices[: int(0.5 * len(self.list_node))]
-        normal_indices = indices[int(0.5 * len(self.list_node)):]
+        malicious_indices = indices[: int(percent_selfish * len(self.list_node))]
+        normal_indices = indices[int(percent_selfish * len(self.list_node)):]
         list_idrouting = []
         id = 0
         for movenode in self.list_node:
