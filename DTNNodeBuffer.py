@@ -3,6 +3,8 @@ from DTNPkt import DTNPkt
 from RoutingBase import RoutingBase
 from RoutingEpidemic import RoutingEpidemic
 from RoutingSparyandWait import *
+from RoutingProphet import RoutingProphet
+
 from RoutingBlackhole import RoutingBlackhole
 from RoutingSDBG import RoutingSDBG
 
@@ -17,7 +19,7 @@ class DTNNodeBuffer(object):
 
     # buffersize = 10*1000 k, 即10M; 每个报文100k
     def __init__(self, scenario, node_id, routingname, numofnodes, maxsize=20*1000):
-        self.dtnscenario = scenario
+        self.theScenario = scenario
         self.node_id = node_id
         self.numofnodes = numofnodes
         self.maxsize = maxsize
@@ -32,13 +34,15 @@ class DTNNodeBuffer(object):
 
     def __attachRouter(self, routingname):
         if routingname == 'RoutingEpidemic':
-            self.router = RoutingEpidemic(self)
+            self.theRouter = RoutingEpidemic(self)
         elif routingname == 'RoutingSparyandWait':
-            self.router = RoutingSparyandWait(self, inittoken=2)
+            self.theRouter = RoutingSparyandWait(self)
+        elif routingname == 'RoutingProphet':
+            self.theRouter = RoutingProphet(self, self.numofnodes)
         elif routingname == 'RoutingBlackhole':
-            self.router = RoutingBlackhole(self)
+            self.theRouter = RoutingBlackhole(self)
         elif routingname == 'RoutingSDBG':
-            self.router = RoutingSDBG(self, self.numofnodes)
+            self.theRouter = RoutingSDBG(self, self.numofnodes)
         else:
             print('ERROR! 未知的router!')
 
@@ -95,8 +99,8 @@ class DTNNodeBuffer(object):
 
 
     # 询问router 准备传输的pkt 组成的list;  参照对方pktlist 现状, 计算准备传输的pktlist
-    def gettranpktlist(self, b_id, listpkt):
-        return self.router.gettranpktlist(b_id, listpkt, self.node_id, self.listofpkt)
+    def gettranpktlist(self, runningtime, b_id, listpkt):
+        return self.theRouter.gettranpktlist(runningtime, b_id, listpkt, self.node_id, self.listofpkt)
 
 
     # 获取内存中的pkt_id list
@@ -140,7 +144,7 @@ class DTNNodeBuffer(object):
         # 拷贝出一份 以防要修改一些值 hop; track; token等
         target_pkt = copy.deepcopy(i_pkt)
         # router决定是否真的要接收
-        isReceive = self.router.decideAddafterRece(a_id, target_pkt)
+        isReceive = self.theRouter.decideAddafterRece(a_id, target_pkt)
         if isReceive == True:
             self.mkroomaddpkt(target_pkt, isgen=False)
         return DTNNodeBuffer.Rece_Code_AcceptPkt
@@ -157,7 +161,7 @@ class DTNNodeBuffer(object):
             # do nothing
             return
         elif codeRece == DTNNodeBuffer.Rece_Code_AcceptPkt:
-            isDelete = self.router.decideDelafterSend(b_id, i_pkt)
+            isDelete = self.theRouter.decideDelafterSend(b_id, i_pkt)
             if isDelete == True:
                 self.__deletepktbypktid(i_pkt.pkt_id)
             return
@@ -168,25 +172,45 @@ class DTNNodeBuffer(object):
 
     # 通知a_id： 与b_id 的 linkup事件
     def notifylinkup(self, b_id, runningtime, *args):
-        self.router.notifylinkup(b_id, runningtime, *args)
+        self.theRouter.notifylinkup(b_id, runningtime, *args)
         pass
 
 
     # 通知a_id： 与b_id 的 linkdown事件
     def notifylinkdown(self, b_id, runningtime, *args):
-        self.router.notifylinkdown(b_id, runningtime, *args)
+        self.theRouter.notifylinkdown(b_id, runningtime, *args)
         pass
 
     # 某些routing算法下 在linkdown之前 需要给对方node的router传值
     def getValuesRouterBeforeDown(self):
         if self.routingname == 'RoutingSDBG':
-            return self.router.getSnSigRouter()
+            return self.theRouter.getSnSigRouter()
         else:
             return
 
     # 某些routing算法下 在linkup之前 需要给对方node的router传值
     def getValuesRouterBeforeUp(self):
         if self.routingname == 'RoutingSDBG':
-            return self.router.getERWforlinkdown()
+            return self.theRouter.getERWforlinkdown()
         else:
             return
+
+    # ===================================== 提供给ProphetRouting的方法
+    # ProphetRouter使用, 获取对方的 delivery prob 矩阵
+    def getdeliverprobM(self, b_id):
+        if b_id == self.node_id:
+            assert isinstance(self.theRouter, RoutingProphet)
+            return self.theRouter.getdeliverprobM(b_id)
+        else:
+            return self.theScenario.getdeliverprobM(b_id)
+
+
+    def getCntPredFor(self, runningtime, a_id, b_id):
+        assert(a_id != self.node_id)
+        return self.theScenario.getCntPredFor(runningtime, a_id, b_id)
+
+    def getPredFor(self, runningtime, a_id, b_id):
+        assert(a_id == self.node_id)
+        assert(isinstance(self.theRouter, RoutingProphet))
+        return self.theRouter.getPredFor(runningtime, a_id, b_id)
+

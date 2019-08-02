@@ -60,6 +60,14 @@ class DTNScenario(object):
             print('ERROR! no this pkt type')
         self.listNodeBuffer[src_id].mkroomaddpkt(newpkt, isgen=True)
 
+    # ============== 提供给 ProphetRouter 使用 ======================
+    # 提供给 ProphetRouter 使用, 获取对方的 delivery prob 矩阵
+    def getdeliverprobM(self, b_id):
+        return self.listNodeBuffer[b_id].getdeliverprobM(b_id)
+
+    # 获取指定a_id 里保存的 P_a_b
+    def getCntPredFor(self, runningtime, a_id, b_id):
+        return self.listNodeBuffer[a_id].getPredFor(runningtime, a_id, b_id)
 
     # =======================提供给DTNController的功能============================================
     # 提供给界面show的接口
@@ -170,7 +178,7 @@ class DTNScenario(object):
         # 如果没有正在传输的pkt, 从a的buffer里 顺序查找 b的buffer里没有的pkt
         # 建立准备传输的pkt列表(这应该是一个优先级的list)
         listpkt = self.listNodeBuffer[b_id].getlistpkt()
-        totran_pktlist = self.listNodeBuffer[a_id].gettranpktlist(b_id, listpkt)
+        totran_pktlist = self.listNodeBuffer[a_id].gettranpktlist(runningtime, b_id, listpkt)
         for target_pkt in totran_pktlist:
             self.filelog.insertlog(self.scenarioname, '[time_{}] [tran] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
                 runningtime, a_id, b_id, target_pkt.pkt_id))

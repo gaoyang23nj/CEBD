@@ -6,7 +6,7 @@ class RoutingBase(object):
 
     # 根据对方node的pkt存储状态 和 自身存储状态, router 提供 准备传输的pktlist
     # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
-    def gettranpktlist(self, b_id, listb, a_id, lista):
+    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista):
         totran_pktlist = []
         for i_pkt in lista:
             isiexist = False

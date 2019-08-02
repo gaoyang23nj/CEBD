@@ -263,25 +263,23 @@ class DTNController(object):
             if showdetail:
                 print(stroutput)
 
-   # 初始化各个路由场景 并返回 场景名的list
-    def __scenarioinit(self):
+
+    # =================== 场景初始化 ============================
+    def __TestScienario1_init(self):
         list_scena = ['scenario1', 'scenario2', 'scenario3', 'scenario4', 'scenario5']
         self.scenaDict = {}
-
         # ===============================场景1 全ep routing===================================
         list_idrouting = []
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
         self.scenario1 = DTNScenario(list_scena[0], list_idrouting, 'DTNPkt')
         self.scenaDict.update({list_scena[0]: self.scenario1})
-
         # ===============================场景2 全sw routing===================================
         list_idrouting = []
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
         self.scenario2 = DTNScenario(list_scena[1], list_idrouting, 'DTNSWPkt')
         self.scenaDict.update({list_scena[1]: self.scenario2})
-
         # ===============================场景3 设置10%的dropping node===================================
         # 随机生成序列
         percent_selfish = 0.1
@@ -300,7 +298,6 @@ class DTNController(object):
             id = id + 1
         self.scenario3 = DTNScenario(list_scena[2], list_idrouting, 'DTNSWPkt')
         self.scenaDict.update({list_scena[2]: self.scenario3})
-
         # ===============================场景4 设置30%的dropping node===================================
         # 随机生成序列
         percent_selfish = 0.3
@@ -319,7 +316,6 @@ class DTNController(object):
             id = id + 1
         self.scenario4 = DTNScenario(list_scena[3], list_idrouting, 'DTNSWPkt')
         self.scenaDict.update({list_scena[3]: self.scenario4})
-
         # ===============================场景5 设置50%的dropping node===================================
         # 随机生成序列
         percent_selfish = 0.5
@@ -338,5 +334,44 @@ class DTNController(object):
             id = id + 1
         self.scenario5 = DTNScenario(list_scena[4], list_idrouting, 'DTNSWPkt')
         self.scenaDict.update({list_scena[4]: self.scenario5})
-
         return list_scena
+
+
+
+    def __TestScienario2_init(self):
+        self.scenaDict = {}
+        idx = 0
+        # ===============================场景1 全ep routing===================================
+        idx = idx + 1
+        list_idrouting = []
+        for movenode in self.list_node:
+            list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
+        tmp_senario_name = 'scenario' + str(idx)
+        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting, 'DTNPkt')
+        self.scenaDict.update({tmp_senario_name: tmp_scenario})
+        # ===============================场景2 全sw routing===================================
+        idx = idx + 1
+        list_idrouting = []
+        for movenode in self.list_node:
+            list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+        tmp_senario_name = 'scenario' + str(idx)
+        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting, 'DTNSWPkt')
+        self.scenaDict.update({tmp_senario_name: tmp_scenario})
+        # ===============================场景3 全prophet routing===================================
+        idx = idx + 1
+        list_idrouting = []
+        for movenode in self.list_node:
+            list_idrouting.append((movenode.node_id, 'RoutingProphet'))
+        tmp_senario_name = 'scenario' + str(idx)
+        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting, 'DTNPkt')
+        self.scenaDict.update({tmp_senario_name: tmp_scenario})
+        # ======================================================================================
+        list_scena = list(self.scenaDict.keys())
+        return list_scena
+
+
+   # 初始化各个路由场景 并返回 场景名的list
+    def __scenarioinit(self):
+        list_scena = self.__TestScienario2_init()
+        return list_scena
+

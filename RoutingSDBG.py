@@ -211,7 +211,7 @@ class RoutingSDBG(RoutingBase):
 
     # =============================Router的核心函数 1)转发哪些pkt; 2)转发优先级调整=============================
     # 如果是恶意节点 不与它交互 不发不收
-    def gettranpktlist(self, b_id, listb, a_id, lista):
+    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista):
         if self.MS[b_id, 3] < self.Th_mal:
             return []
         totran_pktlist = super().gettranpktlist()

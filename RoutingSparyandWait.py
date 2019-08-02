@@ -16,13 +16,13 @@ class DTNSWPkt(DTNPkt):
 
 
 class RoutingSparyandWait(RoutingBase):
-    def __init__(self, theBufferNode, inittoken = 8):
+    def __init__(self, theBufferNode):
         super(RoutingSparyandWait, self).__init__(theBufferNode)
-        self.inittoken = inittoken
-
+        # self.inittoken = inittoken
+        # InitToken值目前由 Scenario.__notifygennewpkt 直接设定好 下发下来
 
     # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
-    def gettranpktlist(self, b_id, listb, a_id, lista):
+    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista):
         totran_pktlist = []
         for i_pkt in lista:
             isiexist = False
