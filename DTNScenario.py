@@ -62,8 +62,8 @@ class DTNScenario(object):
 
     # ============== 提供给 ProphetRouter 使用 ======================
     # 提供给 ProphetRouter 使用, 获取对方的 delivery prob 矩阵
-    def getdeliverprobM(self, b_id):
-        return self.listNodeBuffer[b_id].getdeliverprobM(b_id)
+    def getCntdeliverprobM(self, runningtime, b_id):
+        return self.listNodeBuffer[b_id].getdeliverprobM(runningtime, b_id)
 
     # 获取指定a_id 里保存的 P_a_b
     def getCntPredFor(self, runningtime, a_id, b_id):
@@ -105,7 +105,7 @@ class DTNScenario(object):
     def linkdown(self, runningtime, a_id, b_id):
         # 1)从b_id获取对应参数*args 2) 通知a_id： 与b_id 的 linkup事件
         values = self.listNodeBuffer[b_id].getValuesRouterBeforeDown()
-        self.listNodeBuffer[a_id].notifylinkdown(b_id, runningtime, values)
+        self.listNodeBuffer[a_id].notifylinkdown(runningtime, b_id, values)
         # 设置link正在传输值参数
         self.link_transmitpktid[a_id][b_id] = 0
         self.link_transmitprocess[a_id][b_id] = 0
@@ -117,7 +117,7 @@ class DTNScenario(object):
     def linkup(self, runningtime, a_id, b_id):
         # 1)获取对面给出的参数以便评价 2)通知a_id： 与b_id 的 linkdown事件
         values = self.listNodeBuffer[b_id].getValuesRouterBeforeUp()
-        self.listNodeBuffer[a_id].notifylinkup(b_id, runningtime, values)
+        self.listNodeBuffer[a_id].notifylinkup(runningtime, b_id, values)
         return
 
     # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id

@@ -197,20 +197,26 @@ class DTNNodeBuffer(object):
 
     # ===================================== 提供给ProphetRouting的方法
     # ProphetRouter使用, 获取对方的 delivery prob 矩阵
-    def getdeliverprobM(self, b_id):
-        if b_id == self.node_id:
-            assert isinstance(self.theRouter, RoutingProphet)
-            return self.theRouter.getdeliverprobM(b_id)
-        else:
-            return self.theScenario.getdeliverprobM(b_id)
-
-
     def getCntPredFor(self, runningtime, a_id, b_id):
         assert(a_id != self.node_id)
         return self.theScenario.getCntPredFor(runningtime, a_id, b_id)
+
 
     def getPredFor(self, runningtime, a_id, b_id):
         assert(a_id == self.node_id)
         assert(isinstance(self.theRouter, RoutingProphet))
         return self.theRouter.getPredFor(runningtime, a_id, b_id)
+
+
+    def getCntdeliverprobM(self, runningtime, b_id):
+        assert(b_id != self.node_id)
+        return self.theScenario.getCntdeliverprobM(runningtime, b_id)
+
+
+    def getdeliverprobM(self, runningtime, b_id):
+        assert(b_id == self.node_id)
+        assert(isinstance(self.theRouter, RoutingProphet))
+        return self.theRouter.getdeliverprobM(runningtime, b_id)
+
+    # =================================== 提供给 MaxProp的接口 ================================
 

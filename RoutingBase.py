@@ -45,5 +45,11 @@ class RoutingBase(object):
         :return:
         '''
 
+    def getValuesRouterBeforeUp(self):
+        pass
+
+    def getValuesRouterBeforeDown(self):
+        pass
+
 
 
