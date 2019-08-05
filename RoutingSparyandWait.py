@@ -9,11 +9,6 @@ class DTNSWPkt(DTNPkt):
         super(DTNSWPkt, self).__init__(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.token = token
 
-    #
-    # def __init__(self, dtnpkt, token):
-    #     super(DTNSWPkt, self).__init__(dtnpkt.pkt_id, dtnpkt.src_id, dtnpkt.dst_id, dtnpkt.gentime, dtnpkt.pkt_size)
-    #     self.token = token
-
 
 class RoutingSparyandWait(RoutingBase):
     def __init__(self, theBufferNode):

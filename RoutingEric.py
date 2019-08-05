@@ -1,8 +1,8 @@
-
+from RoutingBase import RoutingBase
 # 2018TONSM
 # A Dynamic Trust Framework for Opportunistic Mobile Social Networks
 # 2019-07-27
-from RoutingBase import RoutingBase
+
 
 
 class RoutingEric(RoutingBase):

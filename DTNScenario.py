@@ -9,10 +9,8 @@ from RoutingSparyandWait import *
 
 class DTNScenario(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, list_idrouting, pkytype):
+    def __init__(self, scenarioname, list_idrouting):
         self.scenarioname = scenarioname
-        # 生成时候的pkt类型
-        self.PktType = pkytype
         # 传输速度 500kb/s
         self.transmitspeed = 500
         # 时间间隔 0.1s
@@ -50,15 +48,7 @@ class DTNScenario(object):
 
     # 通知newpkt.src_id: 新pkt生成<内存空间可能需要开辟>
     def __notifygennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        # 按照需要 改装pkt
-        if self.PktType == 'DTNPkt':
-            newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
-        elif self.PktType == 'DTNSWPkt':
-            init_token = 2
-            newpkt = DTNSWPkt(pkt_id, src_id, dst_id, gentime, pkt_size, init_token)
-        else:
-            print('ERROR! no this pkt type')
-        self.listNodeBuffer[src_id].mkroomaddpkt(newpkt, isgen=True)
+        self.listNodeBuffer[src_id].notifygennewpkt(pkt_id, src_id, dst_id, gentime, pkt_size)
 
     # ============== 提供给 ProphetRouter 使用 ======================
     # 提供给 ProphetRouter 使用, 获取对方的 delivery prob 矩阵
@@ -99,7 +89,6 @@ class DTNScenario(object):
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         self.__notifygennewpkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         return
-
 
     # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkdown事件
     def linkdown(self, runningtime, a_id, b_id):

@@ -272,13 +272,13 @@ class DTNController(object):
         list_idrouting = []
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
-        self.scenario1 = DTNScenario(list_scena[0], list_idrouting, 'DTNPkt')
+        self.scenario1 = DTNScenario(list_scena[0], list_idrouting)
         self.scenaDict.update({list_scena[0]: self.scenario1})
         # ===============================场景2 全sw routing===================================
         list_idrouting = []
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
-        self.scenario2 = DTNScenario(list_scena[1], list_idrouting, 'DTNSWPkt')
+        self.scenario2 = DTNScenario(list_scena[1], list_idrouting)
         self.scenaDict.update({list_scena[1]: self.scenario2})
         # ===============================场景3 设置10%的dropping node===================================
         # 随机生成序列
@@ -296,7 +296,7 @@ class DTNController(object):
             else:
                 print('ERROR! Scenario Init!')
             id = id + 1
-        self.scenario3 = DTNScenario(list_scena[2], list_idrouting, 'DTNSWPkt')
+        self.scenario3 = DTNScenario(list_scena[2], list_idrouting)
         self.scenaDict.update({list_scena[2]: self.scenario3})
         # ===============================场景4 设置30%的dropping node===================================
         # 随机生成序列
@@ -314,7 +314,7 @@ class DTNController(object):
             else:
                 print('ERROR! Scenario Init!')
             id = id + 1
-        self.scenario4 = DTNScenario(list_scena[3], list_idrouting, 'DTNSWPkt')
+        self.scenario4 = DTNScenario(list_scena[3], list_idrouting)
         self.scenaDict.update({list_scena[3]: self.scenario4})
         # ===============================场景5 设置50%的dropping node===================================
         # 随机生成序列
@@ -332,7 +332,7 @@ class DTNController(object):
             else:
                 print('ERROR! Scenario Init! id: ', id)
             id = id + 1
-        self.scenario5 = DTNScenario(list_scena[4], list_idrouting, 'DTNSWPkt')
+        self.scenario5 = DTNScenario(list_scena[4], list_idrouting)
         self.scenaDict.update({list_scena[4]: self.scenario5})
         return list_scena
 
@@ -347,7 +347,7 @@ class DTNController(object):
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
         tmp_senario_name = 'scenario' + str(idx)
-        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting, 'DTNPkt')
+        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting)
         self.scenaDict.update({tmp_senario_name: tmp_scenario})
         # ===============================场景2 全sw routing===================================
         idx = idx + 1
@@ -355,7 +355,7 @@ class DTNController(object):
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
         tmp_senario_name = 'scenario' + str(idx)
-        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting, 'DTNSWPkt')
+        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting)
         self.scenaDict.update({tmp_senario_name: tmp_scenario})
         # ===============================场景3 全prophet routing===================================
         idx = idx + 1
@@ -363,7 +363,7 @@ class DTNController(object):
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingProphet'))
         tmp_senario_name = 'scenario' + str(idx)
-        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting, 'DTNPkt')
+        tmp_scenario = DTNScenario(tmp_senario_name, list_idrouting)
         self.scenaDict.update({tmp_senario_name: tmp_scenario})
         # ======================================================================================
         list_scena = list(self.scenaDict.keys())

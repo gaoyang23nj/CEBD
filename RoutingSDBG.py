@@ -157,18 +157,16 @@ class RoutingSDBG(RoutingBase):
 
 
 
-    # =============================================router 收到 DTNNodeBuffer的通知======================================================
-    # 返回 ER_sn 和 签名; 方便对面node_router 写入新的ER
-    def getSnSigRouter(self):
-        return self.ER_sn, self.sig
-
-
+    #============================================ router 收到 DTNNodeBuffer的通知 ===================================================
     # 返回ERW, 方便对面node_router 根据ERW进行TR评价
-    def getERWforlinkdown(self):
+    def notify_link_up(self, running_time, b_id, *args):
         return copy.deepcopy(self.ER_List)
 
+    # 返回 ER_sn 和 签名; 方便对面node_router 写入新的ER
+    def notify_link_down(self, running_time, b_id, *args):
+        return self.ER_sn, self.sig
 
-    def notifylinkup(self, b_id, runningtime, *args):
+    def notify_link_up(self, running_time, b_id, *args):
         # 准备新ER的增加
         self.tmpRSLs_js.append(b_id)
         self.tmpSLs.append([])
@@ -177,9 +175,8 @@ class RoutingSDBG(RoutingBase):
         ERW = args[0]
         self.main_process(b_id, ERW)
 
-
     # linkdown事件 传输结束 生成ER
-    def notifylinkdown(self, b_id, runningtime, *args):
+    def notify_link_down(self, running_time, b_id, *args):
         j_sn, j_sig = args[0:]
         idx = self.tmpRSLs_js.index(b_id)
         j_SL = copy.deepcopy(self.tmpSLs[idx])

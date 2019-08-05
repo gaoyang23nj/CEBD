@@ -4,6 +4,7 @@ from RoutingBase import RoutingBase
 from RoutingEpidemic import RoutingEpidemic
 from RoutingSparyandWait import *
 from RoutingProphet import RoutingProphet
+from RoutingMaxProp import *
 
 from RoutingBlackhole import RoutingBlackhole
 from RoutingSDBG import RoutingSDBG
@@ -118,6 +119,17 @@ class DTNNodeBuffer(object):
 
 
     # =========================== 获取router的指导意见，调制pkt存储,  提供给Scenario接口=========================
+    def notifygennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
+        # 按照需要 改装pkt
+        if isinstance(self.theRouter, RoutingSparyandWait):
+            init_token = 2
+            newpkt = DTNSWPkt(pkt_id, src_id, dst_id, gentime, pkt_size, init_token)
+        elif isinstance(self.theRouter, RoutingMaxProp):
+            newpkt = DTNTrackPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
+        else:
+            newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
+        self.mkroomaddpkt(newpkt, isgen=True)
+
     # 重要功能 事关报文复制！！！！
     # 收到Scenario上的通知 在runningtime时候 可以准备从a_id 拷贝i_pkt
     def notifyreceivedpkt(self, runningtime, a_id, i_pkt):

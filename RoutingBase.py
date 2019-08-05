@@ -23,14 +23,24 @@ class RoutingBase(object):
                     totran_pktlist.append(i_pkt)
         return totran_pktlist
 
+    def notify_link_up(self, running_time, b_id, *args):
+        pass
 
-    def notifylinkup(self, b_id, runningtime, *args):
+    def notify_link_down(self, running_time, b_id, *args):
+        pass
+
+    def get_values_before_up(self):
+        pass
+
+    def get_values_before_down(self):
         pass
 
 
-    def notifylinkdown(self, b_id, runningtime, *args):
-        pass
-
+    @classmethod
+    def decideAddafterRece(cls, a_id, i_pkt):
+        '''
+        :return:
+        '''
 
     @classmethod
     def decideDelafterSend(cls, b_id, i_pkt):
@@ -39,17 +49,7 @@ class RoutingBase(object):
         :return:
         '''
 
-    @classmethod
-    def decideAddafterRece(cls, a_id, i_pkt):
-        '''
-        :return:
-        '''
 
-    def getValuesRouterBeforeUp(self):
-        pass
-
-    def getValuesRouterBeforeDown(self):
-        pass
 
 
 

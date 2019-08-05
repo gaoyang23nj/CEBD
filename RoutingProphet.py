@@ -86,7 +86,7 @@ class RoutingProphet(RoutingBase):
         self.__update(runningtime, a_id, b_id)
         self.__transitive(runningtime, a_id, b_id)
 
-   # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
+    # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
     def gettranpktlist(self, runningtime, b_id, listb, a_id, lista):
         assert(a_id == self.theBufferNode.node_id)
         totran_pktlist_high = []
