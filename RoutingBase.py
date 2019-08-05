@@ -23,6 +23,7 @@ class RoutingBase(object):
                     totran_pktlist.append(i_pkt)
         return totran_pktlist
 
+    # 响应 linkup linkdown事件
     def notify_link_up(self, running_time, b_id, *args):
         pass
 

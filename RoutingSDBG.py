@@ -158,14 +158,7 @@ class RoutingSDBG(RoutingBase):
 
 
     #============================================ router 收到 DTNNodeBuffer的通知 ===================================================
-    # 返回ERW, 方便对面node_router 根据ERW进行TR评价
-    def notify_link_up(self, running_time, b_id, *args):
-        return copy.deepcopy(self.ER_List)
-
-    # 返回 ER_sn 和 签名; 方便对面node_router 写入新的ER
-    def notify_link_down(self, running_time, b_id, *args):
-        return self.ER_sn, self.sig
-
+    # 响应 linkup linkdown事件
     def notify_link_up(self, running_time, b_id, *args):
         # 准备新ER的增加
         self.tmpRSLs_js.append(b_id)
@@ -188,6 +181,14 @@ class RoutingSDBG(RoutingBase):
         self.tmpSLs.pop(idx)
         self.tmpRLs.pop(idx)
 
+    # 返回ERW, 方便对面node_router 根据ERW进行TR评价
+    def get_values_before_up(self):
+        # 得到 ERW 传给对方
+        return self.ER_List
+
+    # 返回 ER_sn 和 签名; 方便对面node_router 写入新的ER
+    def get_values_before_down(self):
+        return self.ER_sn, self.sig
 
     # 收到报文 更新RL
     def decideAddafterRece(self, a_id, i_pkt):
@@ -198,13 +199,11 @@ class RoutingSDBG(RoutingBase):
         self.tmpRLs[idx].append((i_pkt.pkt_id, i_pkt.src_id, i_pkt.dst_id))
         return True
 
-
     # 发送报文 更新SL
     def decideDelafterSend(self, b_id, i_pkt):
         idx = self.tmpRSLs_js.index(b_id)
         self.tmpSLs[idx].append((i_pkt.pkt_id, i_pkt.src_id, i_pkt.dst_id))
         return False
-
 
     # =============================Router的核心函数 1)转发哪些pkt; 2)转发优先级调整=============================
     # 如果是恶意节点 不与它交互 不发不收

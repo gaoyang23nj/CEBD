@@ -181,31 +181,31 @@ class DTNNodeBuffer(object):
             print('ERROR! DTNBuffer 未知的接受码')
             pass
 
+    # 某些routing算法下 在linkup之前 需要给对方node的router传值
+    def get_values_router_before_up(self):
+        return self.theRouter.get_values_before_up()
+        # if self.routingname == 'RoutingSDBG':
+        #     return self.theRouter.getERWforlinkdown()
+        # else:
+        #     return
 
     # 通知a_id： 与b_id 的 linkup事件
-    def notifylinkup(self, b_id, runningtime, *args):
-        self.theRouter.notifylinkup(b_id, runningtime, *args)
-        pass
-
-
-    # 通知a_id： 与b_id 的 linkdown事件
-    def notifylinkdown(self, b_id, runningtime, *args):
-        self.theRouter.notifylinkdown(b_id, runningtime, *args)
+    def notify_link_up(self, b_id, running_time, *args):
+        self.theRouter.notify_link_up(b_id, running_time, *args)
         pass
 
     # 某些routing算法下 在linkdown之前 需要给对方node的router传值
-    def getValuesRouterBeforeDown(self):
-        if self.routingname == 'RoutingSDBG':
-            return self.theRouter.getSnSigRouter()
-        else:
-            return
+    def get_values_router_before_down(self):
+        return self.theRouter.get_values_before_down()
+        # if self.routingname == 'RoutingSDBG':
+        #     return self.theRouter.getSnSigRouter()
+        # else:
+        #     return
 
-    # 某些routing算法下 在linkup之前 需要给对方node的router传值
-    def getValuesRouterBeforeUp(self):
-        if self.routingname == 'RoutingSDBG':
-            return self.theRouter.getERWforlinkdown()
-        else:
-            return
+    # 通知a_id： 与b_id 的 linkdown事件
+    def notify_link_down(self, b_id, running_time, *args):
+        self.theRouter.notify_link_down(b_id, running_time, *args)
+        pass
 
     # ===================================== 提供给ProphetRouting的方法
     # ProphetRouter使用, 获取对方的 delivery prob 矩阵

@@ -23,7 +23,7 @@ def runRandomWalk():
     realsize = 2000
     # 每100个timestep(<模拟>10s)刷新一次界面, 通信范围100m, 每600个timestep(<模拟>60s)产生一次报文
     theViewer = DTNSimGUI(showsize, realsize)
-    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=300, totaltimes=MAX_RUNNING_TIMES)
+    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=150, totaltimes=MAX_RUNNING_TIMES)
     listNodes = []
     for node_id in range(MAX_NODE_NUM):
         # 每个timestep = <模拟>0.1s

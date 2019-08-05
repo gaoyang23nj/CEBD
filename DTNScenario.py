@@ -91,22 +91,27 @@ class DTNScenario(object):
         return
 
     # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkdown事件
-    def linkdown(self, runningtime, a_id, b_id):
+    def linkdown(self, running_time, a_id, b_id):
         # 1)从b_id获取对应参数*args 2) 通知a_id： 与b_id 的 linkup事件
-        values = self.listNodeBuffer[b_id].getValuesRouterBeforeDown()
-        self.listNodeBuffer[a_id].notifylinkdown(runningtime, b_id, values)
+        values_a = self.listNodeBuffer[a_id].get_values_router_before_down()
+        values_b = self.listNodeBuffer[b_id].get_values_router_before_down()
+        self.listNodeBuffer[a_id].notify_link_down(running_time, b_id, values_b)
+        self.listNodeBuffer[b_id].notify_link_down(running_time, a_id, values_a)
         # 设置link正在传输值参数
         self.link_transmitpktid[a_id][b_id] = 0
         self.link_transmitprocess[a_id][b_id] = 0
         self.filelog.insertlog(self.scenarioname, '[time_{}] [linkdown] a(node_{})<->b(node_{})\n'.format(
-            runningtime, a_id, b_id))
+            running_time, a_id, b_id))
         return
 
     # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkup事件
-    def linkup(self, runningtime, a_id, b_id):
+    # 更新 a b的 内部状态, 交换信息
+    def linkup(self, running_time, a_id, b_id):
         # 1)获取对面给出的参数以便评价 2)通知a_id： 与b_id 的 linkdown事件
-        values = self.listNodeBuffer[b_id].getValuesRouterBeforeUp()
-        self.listNodeBuffer[a_id].notifylinkup(runningtime, b_id, values)
+        values_a = self.listNodeBuffer[a_id].get_values_router_before_up()
+        values_b = self.listNodeBuffer[b_id].get_values_router_before_up()
+        self.listNodeBuffer[a_id].notify_link_up(running_time, b_id, values_b)
+        self.listNodeBuffer[b_id].notify_link_up(running_time, a_id, values_a)
         return
 
     # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id
