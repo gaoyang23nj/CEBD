@@ -8,13 +8,10 @@ from RoutingBase import RoutingBase
 # 2006 infocom
 # 为难！！ 需要两个list 阈值还要重新调整
 
-
 class DTNTrackPkt(DTNPkt):
     def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         super(DTNTrackPkt, self).__init__(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.track = [src_id]
-
-
 
 class RoutingMaxProp(RoutingBase):
     def __init__(self, theBufferNode, numofnodes):
@@ -33,22 +30,26 @@ class RoutingMaxProp(RoutingBase):
                 continue
             for j in range(self.numofnodes):
                 self.all_probs[i, j] = 0
-        # 记录传输量
-        self.connet_record.append()
+        # 记录传输量 X
+        self.connet_record = []
 
-    def get_values_before_up(self):
-        self.probs[b_id] = self.probs[b_id] + 1
-        self.probs = self.probs * (1 / np.sum(self.probs))
+    # 新的相遇事件 加1 然后归一化
+    def get_values_before_up(self, runningtime):
         return self.probs
-
-    def get_values_before_down(self):
-        pass
 
     # 响应 linkup 事件, 调整两个node之间的delivery prob
     # args 带的是 对方的prob
     def notify_link_up(self, running_time, b_id, *args):
         tmp_prob_b = args[0]
+        # 对端还没来及执行: 1)加1; 2）归一化
+        tmp_prob_b[self.theBufferNode.node_id] = self.probs[self.theBufferNode.node_id] + 1
+        tmp_prob_b = tmp_prob_b * (1 / np.sum(tmp_prob_b))
+        # 本端 执行更新
+        self.probs[b_id] = self.probs[b_id] + 1
+        self.probs = self.probs * (1 / np.sum(self.probs))
+        # 对端的信息放入 node的全局视图里
         self.all_probs[b_id, :] = tmp_prob_b
+        self.connet_record.append([b_id])
 
     # error! 计算接触时间间隔 得到X 调整阈值
     def notify_link_down(self, running_time, b_id, *args):
@@ -84,7 +85,7 @@ class RoutingMaxProp(RoutingBase):
         return res_cost
 
     # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
-    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista):
+    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista, *args):
         assert(a_id == self.theBufferNode.node_id)
         totran_pktlist_high = []
         totran_pktlist_low = []
@@ -113,11 +114,15 @@ class RoutingMaxProp(RoutingBase):
     # 作为relay, 接收a_id发来的i_pkt吗？
     def decideAddafterRece(self, a_id, i_pkt):
         isAdd = True
+        # 记录这个pkt
+
         return isAdd
 
     # 发送i_pkt给b_id 以后，决定要不要 从内存中删除
     def decideDelafterSend(self, b_id, i_pkt):
         isDel = False
+        # 记录这个pkt
+
         return isDel
 
 

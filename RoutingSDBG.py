@@ -3,6 +3,7 @@
 # Detecting Colluding Blackhole and Greyhole Attacks in Delay Tolerant Networks
 # SDBG
 # 我估计在 应对 bad-mouth 方面 不够好
+# 实际上 我怀疑 该paper 只是通过复杂的sn sig机制, 给出了RR、SFR等指标 不能被node 蒙蔽的理由~
 import numpy as np
 from RoutingBase import RoutingBase
 import copy
