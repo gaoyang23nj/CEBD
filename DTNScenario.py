@@ -35,21 +35,6 @@ class DTNScenario(object):
         self.filelog.initlog(self.scenarioname)
         return
 
-    # ==========================调用NodeBuffer 接口=========================
-    # a_id -> b_id 传输pkt: 传输量已经足够 正在拷贝
-    def __sendandreceivepkt(self, a_id, b_id, runningtime, target_pkt):
-        # b_id被通知: 将要收到来自a_id的pkt.
-        # b_id做出对a_id的回应, b_id是否复制<开辟内存空间,修改字段>/是否欺骗
-        codeRece = self.listNodeBuffer[b_id].notifyreceivedpkt(runningtime, a_id, target_pkt)
-        # a_id被b_id通知: b_id已经收到了target_pkt
-        # a_id将可能执行：修改原pkt字段(token), 删除pkt
-        self.listNodeBuffer[a_id].notifysentpkt(runningtime, codeRece, b_id, target_pkt)
-
-
-    # 通知newpkt.src_id: 新pkt生成<内存空间可能需要开辟>
-    def __notifygennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        self.listNodeBuffer[src_id].notifygennewpkt(pkt_id, src_id, dst_id, gentime, pkt_size)
-
     # ============== 提供给 ProphetRouter 使用 ======================
     # 提供给 ProphetRouter 使用, 获取对方的 delivery prob 矩阵
     def getCntdeliverprobM(self, runningtime, b_id):
@@ -84,10 +69,11 @@ class DTNScenario(object):
             succnum = succnum + tmpsuccnum
         return succnum, succnum-succnum_selfish, succnum_selfish
 
-
+    # ==================== 核心接口 生成报文 响应linkdown linkup 交换报文 等事件 =====================================
     # scenario收到DTNcontroller指令, 在srcid生成一个pkt(srcid->dstid)
+    # 通知newpkt.src_id: 新pkt生成<内存空间可能需要开辟>
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        self.__notifygennewpkt(pkt_id, src_id, dst_id, gentime, pkt_size)
+        self.listNodeBuffer[src_id].notifygennewpkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         return
 
     # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkdown事件
@@ -95,7 +81,9 @@ class DTNScenario(object):
         # 1)从b_id获取对应参数*args 2) 通知a_id： 与b_id 的 linkup事件
         values_a = self.listNodeBuffer[a_id].get_values_router_before_down()
         values_b = self.listNodeBuffer[b_id].get_values_router_before_down()
+        # 告诉 a linkup事件, 并传给a 有关b的控制信息
         self.listNodeBuffer[a_id].notify_link_down(running_time, b_id, values_b)
+        # 告诉 b linkup事件, 并传给b 有关a的控制信息
         self.listNodeBuffer[b_id].notify_link_down(running_time, a_id, values_a)
         # 设置link正在传输值参数
         self.link_transmitpktid[a_id][b_id] = 0
@@ -107,7 +95,7 @@ class DTNScenario(object):
     # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkup事件
     # 更新 a b的 内部状态, 交换信息
     def linkup(self, running_time, a_id, b_id):
-        # 1)获取对面给出的参数以便评价 2)通知a_id： 与b_id 的 linkdown事件
+        # 1)获取对面给出的参数以便评价 2)通知a_id： 与b_id 的 linkdown事件; [同上]
         values_a = self.listNodeBuffer[a_id].get_values_router_before_up()
         values_b = self.listNodeBuffer[b_id].get_values_router_before_up()
         self.listNodeBuffer[a_id].notify_link_up(running_time, b_id, values_b)
@@ -125,9 +113,7 @@ class DTNScenario(object):
         self.__transmitting(runningtime, a_id, b_id, transmitvolume)
         return
 
-
-    # 如果a和b正在传输某个pkt, 则此时间间隔内 应当继续传输 之前的pkt
-    # 返回 剩余的可传输量
+    # 如果a和b正在传输某个pkt, 则此时间间隔内 应当继续传输 之前的pkt, 返回 剩余的可传输量
     def __c_transmitting(self, runningtime, a_id, b_id, transmitvolume):
         # 继续传输之前的pkt
         tmp_pktid = self.link_transmitpktid[a_id][b_id]
@@ -166,7 +152,6 @@ class DTNScenario(object):
             self.__sendandreceivepkt(a_id, b_id, runningtime, target_pkt)
             return 0
 
-
     # a_id -> b_id
     def __transmitting(self, runningtime, a_id, b_id, transmitvolume):
         # 如果没有正在传输的pkt, 从a的buffer里 顺序查找 b的buffer里没有的pkt
@@ -189,4 +174,11 @@ class DTNScenario(object):
                 break
         return
 
-
+    # a_id -> b_id 传输pkt: 传输量已经足够 正在拷贝
+    def __sendandreceivepkt(self, a_id, b_id, runningtime, target_pkt):
+        # b_id被通知: 将要收到来自a_id的pkt.
+        # b_id做出对a_id的回应, b_id是否复制<开辟内存空间,修改字段>/是否欺骗
+        codeRece = self.listNodeBuffer[b_id].notifyreceivedpkt(runningtime, a_id, target_pkt)
+        # a_id被b_id通知: b_id已经收到了target_pkt
+        # a_id将可能执行：修改原pkt字段(token), 删除pkt
+        self.listNodeBuffer[a_id].notifysentpkt(runningtime, codeRece, b_id, target_pkt)

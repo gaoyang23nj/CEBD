@@ -30,10 +30,9 @@ class DTNNodeBuffer(object):
         # 为了记录和对照方便 为每个节点记录成功投递的pkt list
         self.listofsuccpkt = []
         self.routingname = routingname
-        self.__attachRouter(routingname)
+        self.__attach_router(routingname)
 
-
-    def __attachRouter(self, routingname):
+    def __attach_router(self, routingname):
         if routingname == 'RoutingEpidemic':
             self.theRouter = RoutingEpidemic(self)
         elif routingname == 'RoutingSparyandWait':
@@ -46,7 +45,6 @@ class DTNNodeBuffer(object):
             self.theRouter = RoutingSDBG(self, self.numofnodes)
         else:
             print('ERROR! 未知的router!')
-
 
     # 内存中增加pkt newpkt
     def __addpkt(self, newpkt):
@@ -65,14 +63,12 @@ class DTNNodeBuffer(object):
                 isOK = True
         return isOK
 
-
     # 老化机制 从头删除报文 提供至少pkt_size的空间
     def __deletepktbysize(self, pkt_size):
         while self.occupied_size + pkt_size > self.maxsize:
             self.occupied_size = self.occupied_size - self.listofpkt[0].pkt_size
             self.listofpkt.pop(0)
         return
-
 
     # ==========================提供给Scenario的功能===========================================================================
     # 显示结果
@@ -98,16 +94,9 @@ class DTNNodeBuffer(object):
                break
         return isFound, pkt
 
-
-    # 询问router 准备传输的pkt 组成的list;  参照对方pktlist 现状, 计算准备传输的pktlist
-    def gettranpktlist(self, runningtime, b_id, listpkt):
-        return self.theRouter.gettranpktlist(runningtime, b_id, listpkt, self.node_id, self.listofpkt)
-
-
     # 获取内存中的pkt_id list
     def getlistpkt(self):
         return self.listofpkt
-
 
     # 保证内存空间足够 并把pkt放在内存里; isgen 是否是生成新pkt
     def mkroomaddpkt(self, newpkt, isgen):
@@ -117,8 +106,11 @@ class DTNNodeBuffer(object):
             self.__deletepktbysize(newpkt.pkt_size)
         self.__addpkt(newpkt)
 
+    # =========================== 核心接口 提供传输pkt的名录; 生成报文; 接收报文
+    # 询问router 准备传输的pkt 组成的list;  参照对方pktlist 现状, 计算准备传输的pktlist
+    def gettranpktlist(self, runningtime, b_id, listpkt):
+        return self.theRouter.gettranpktlist(runningtime, b_id, listpkt, self.node_id, self.listofpkt)
 
-    # =========================== 获取router的指导意见，调制pkt存储,  提供给Scenario接口=========================
     def notifygennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         # 按照需要 改装pkt
         if isinstance(self.theRouter, RoutingSparyandWait):
@@ -161,7 +153,6 @@ class DTNNodeBuffer(object):
             self.mkroomaddpkt(target_pkt, isgen=False)
         return DTNNodeBuffer.Rece_Code_AcceptPkt
 
-
     # 收到Scenario上的通知 i_pkt已经传输; 在runningtime时候 发送i_pkt给b_id
     def notifysentpkt(self, runningtime, codeRece, b_id, i_pkt):
         # 若报文已经抵达目的, a_id同时做个验证保证真实
@@ -181,6 +172,7 @@ class DTNNodeBuffer(object):
             print('ERROR! DTNBuffer 未知的接受码')
             pass
 
+    # ====================== 核心接口 linkup linkdown时刻 a和 b 交换<控制信息>
     # 某些routing算法下 在linkup之前 需要给对方node的router传值
     def get_values_router_before_up(self):
         return self.theRouter.get_values_before_up()
@@ -192,7 +184,6 @@ class DTNNodeBuffer(object):
     # 通知a_id： 与b_id 的 linkup事件
     def notify_link_up(self, b_id, running_time, *args):
         self.theRouter.notify_link_up(b_id, running_time, *args)
-        pass
 
     # 某些routing算法下 在linkdown之前 需要给对方node的router传值
     def get_values_router_before_down(self):

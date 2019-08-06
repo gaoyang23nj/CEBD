@@ -197,7 +197,7 @@ class DTNController(object):
                         self.mt_linkstate[b_id][a_id] = 0
                         self.__scenario_link_down(a_id, b_id)
 
-    # =========调用scenario的接口, init gennewpkt swap linkdown showres============================
+    # ========================= 核心接口 调用scenario的接口, init gennewpkt swap linkdown showres============================
     # 各个scenario生成报文
     def __scenariogenpkt(self):
         src_index = np.random.randint(len(self.list_node))
@@ -216,21 +216,21 @@ class DTNController(object):
         self.pktid_nextgen = self.pktid_nextgen + 1
         return
 
-    # 各个scenario开始交换报文
-    def __scenarioswap(self, a_id, b_id):
+    # =========================== 核心接口 调用 scenario类的成员函数 执行linkup linkdown事件中控制信息的交换, 执行报文交换
+    # 各个scenario收到linkup事件
+    def __scenario_link_up(self, a_id, b_id):
         for key, value in self.scenaDict.items():
-            value.swappkt(self.RunningTime, a_id, b_id)
+            value.linkup(self.RunningTime, a_id, b_id)
 
     # 各个scenario收到linkdown事件
     def __scenario_link_down(self, a_id, b_id):
         for key, value in self.scenaDict.items():
             value.linkdown(self.RunningTime, a_id, b_id)
 
-    # 各个scenario收到linkup事件
-    def __scenario_link_up(self, a_id, b_id):
+    # 各个scenario开始交换报文
+    def __scenarioswap(self, a_id, b_id):
         for key, value in self.scenaDict.items():
-            value.linkup(self.RunningTime, a_id, b_id)
-
+            value.swappkt(self.RunningTime, a_id, b_id)
 
     # 各个scenario显示结果
     def __scenarioshowres(self, showdetail = False):
