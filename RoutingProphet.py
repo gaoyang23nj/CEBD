@@ -25,7 +25,6 @@ class RoutingProphet(RoutingBase):
         self.lastAgeUpdate = 0
         self.waiting_time = np.zeros((self.numofnodes, self.numofnodes), dtype='double')
 
-
     # ===============================================  Prophet内部逻辑  ================================
     # 每隔一段时间执行 老化效应
     def __aging(self, running_time):
@@ -36,59 +35,47 @@ class RoutingProphet(RoutingBase):
         self.delivery_prob = self.delivery_prob * math.pow(self.Gamma, k)
         self.lastAgeUpdate = running_time
 
-
     # a 和 b 相遇 更新prob
     def __update(self, runningtime, a_id, b_id):
         # 取值之前要更新
-        P_a_b = self.getPredFor(runningtime, a_id, b_id)
+        P_a_b = self.__getPredFor(runningtime, a_id, b_id)
         self.delivery_prob[b_id] = P_a_b + (1 - P_a_b) * self.P_init
 
-
     # 传递效应, 遇见就更新
-    def __transitive(self, runningtime, a_id, b_id):
+    def __transitive(self, runningtime, a_id, b_id, P_b_any):
         # 获取的时候 会进行老化操作
-        P_a_b = self.getPredFor(runningtime, a_id, b_id)
+        P_a_b = self.__getPredFor(runningtime, a_id, b_id)
         # 获取b_id的delivery prob矩阵 的副本
-        P_b_any = self.getCntdeliverprobM(runningtime, b_id)
         for c_id in range(self.numofnodes):
             if c_id == b_id or c_id == a_id:
                 continue
             self.delivery_prob[c_id] = self.delivery_prob[c_id] + (1 - self.delivery_prob[c_id]) * self.delivery_prob[b_id] * P_b_any[c_id] * self.Beta
 
-
-    # ========================== 用于取值的两个接口==============================================================
-    def getPredFor(self, runningtime, a_id, b_id):
+    def __getPredFor(self, runningtime, a_id, b_id):
         assert(a_id == self.theBufferNode.node_id)
         self.__aging(runningtime)
         return self.delivery_prob[b_id]
 
-
-    # 获得对端node 的 delivery prob
-    def getCntPredFor(self, runningtime, a_id, b_id):
-        assert(a_id != self.theBufferNode.node_id)
-        return self.theBufferNode.getCntPredFor(runningtime, a_id, b_id)
-
-    # 获取b_id的 delivery prob 向上取 和 向下执行
-    def getdeliverprobM(self, runningtime, b_id):
-        assert(b_id == self.theBufferNode.node_id)
+    # ========================= 提供给上层的功能 ======================================
+    # 更新后, 提供 本node 的 delivery prob Matrix 给对端
+    def get_values_before_up(self, runningtime):
         self.__aging(runningtime)
         return self.delivery_prob
 
-    # 获得对端node 的 delivery prob Matrix
-    def getCntdeliverprobM(self, runningtime, b_id):
-        assert(b_id != self.theBufferNode.node_id)
-        return self.theBufferNode.getCntdeliverprobM(runningtime, b_id)
-
-    # ========================= 提供给上层的功能 ======================================
     # 当a->b 相遇(linkup时候) 更新a->b相应的值
     def notifylinkup(self, runningtime, b_id, *args):
+        P_b_any = args[0]
         a_id = self.theBufferNode.node_id
         self.__update(runningtime, a_id, b_id)
-        self.__transitive(runningtime, a_id, b_id)
+        self.__transitive(runningtime, a_id, b_id, P_b_any)
+
+    def get_values_before_tran(self, runningtime):
+        return self.get_values_before_up(runningtime)
 
     # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
-    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista):
+    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista, *args):
         assert(a_id == self.theBufferNode.node_id)
+        P_b_any = args[0]
         totran_pktlist_high = []
         totran_pktlist_low = []
         for i_pkt in lista:
@@ -104,8 +91,8 @@ class RoutingProphet(RoutingBase):
                     totran_pktlist_high.append(i_pkt)
                 # 作为relay 只有devliery prob更大 的时候 才转发
                 else:
-                    tmp = self.getCntPredFor(runningtime, b_id, i_pkt.dst_id)
-                    if tmp > self.getPredFor(runningtime, a_id, i_pkt.dst_id):
+                    P_b_c = P_b_any[i_pkt.dst_id]
+                    if P_b_c > self.__getPredFor(runningtime, a_id, i_pkt.dst_id):
                         totran_pktlist_low.append((tmp, i_pkt))
         totran_pktlist = totran_pktlist_high
         if len(totran_pktlist_low) > 0:
@@ -115,12 +102,10 @@ class RoutingProphet(RoutingBase):
                 totran_pktlist.append(tunple[1])
         return totran_pktlist
 
-
     # 增加 不需要检查
     def decideAddafterRece(self, a_id, target_pkt):
         isAdd = True
         return isAdd
-
 
     # Prophet 单副本转发
     def decideDelafterSend(self, b_id, i_pkt):

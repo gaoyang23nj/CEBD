@@ -155,7 +155,7 @@ class RoutingSDBG(RoutingBase):
 
     # ============================核心接口 响应 router 收到 DTNNodeBuffer的通知 =================
     # 返回ERW, 方便对面node_router 根据ERW进行TR评价
-    def get_values_before_up(self):
+    def get_values_before_up(self, runningtime):
         # 得到 ERW 传给对方
         return self.ER_List
 
@@ -170,7 +170,7 @@ class RoutingSDBG(RoutingBase):
         self.__main_process(b_id, ERW)
 
     # 返回 ER_sn 和 签名; 方便对面node_router 写入新的ER
-    def get_values_before_down(self):
+    def get_values_before_down(self, runningtime):
         return self.ER_sn, self.sig
 
     # linkdown事件 传输结束 生成ER
@@ -202,11 +202,11 @@ class RoutingSDBG(RoutingBase):
         self.tmpSLs[idx].append((i_pkt.pkt_id, i_pkt.src_id, i_pkt.dst_id))
         return False
 
-    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista):
+    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista, *args):
         # 如果对方节点 reputation 小于 mal阈值; 不与它交互, 不发给它 报文
         if self.MS[b_id, 3] < self.Th_mal:
             return []
-        totran_pktlist = super().gettranpktlist()
+        totran_pktlist = super().gettranpktlist(runningtime, b_id, listb, a_id, lista, *args)
         # 我所设计的 senario 传输规则 是 任何conn都是全双工; 上下带宽一致;
         # 例如 a->b<-c 情境下 a 和 c 各传各的, 没有优先级抢占问题
         if self.MS[b_id, 3] >= self.Th_good:

@@ -17,7 +17,7 @@ class RoutingSparyandWait(RoutingBase):
         # InitToken值目前由 Scenario.__notifygennewpkt 直接设定好 下发下来
 
     # 顺序地得到准备传输的list(b_id里没有的pkt), dst_id是b_id的pkt应该最先传
-    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista):
+    def gettranpktlist(self, runningtime, b_id, listb, a_id, lista, *args):
         totran_pktlist = []
         for i_pkt in lista:
             isiexist = False
@@ -36,8 +36,6 @@ class RoutingSparyandWait(RoutingBase):
                         totran_pktlist.append(i_pkt)
         return totran_pktlist
 
-
-
     # 作为relay, 接收a_id发来的i_pkt吗？
     # 依赖于 浅拷贝, 才能修改 a_id里的 token值
     def decideAddafterRece(self, a_id, target_pkt):
@@ -52,7 +50,6 @@ class RoutingSparyandWait(RoutingBase):
             # traceback.print_stack()
             isAdd = False
         return isAdd
-
 
     # 发送i_pkt给b_id 以后，决定要不要 从内存中删除
     # 依赖于 浅拷贝, 才能修改 a_id里的 token值

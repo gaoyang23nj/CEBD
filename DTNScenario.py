@@ -35,20 +35,10 @@ class DTNScenario(object):
         self.filelog.initlog(self.scenarioname)
         return
 
-    # ============== 提供给 ProphetRouter 使用 ======================
-    # 提供给 ProphetRouter 使用, 获取对方的 delivery prob 矩阵
-    def getCntdeliverprobM(self, runningtime, b_id):
-        return self.listNodeBuffer[b_id].getdeliverprobM(runningtime, b_id)
-
-    # 获取指定a_id 里保存的 P_a_b
-    def getCntPredFor(self, runningtime, a_id, b_id):
-        return self.listNodeBuffer[a_id].getPredFor(runningtime, a_id, b_id)
-
     # =======================提供给DTNController的功能============================================
     # 提供给界面show的接口
     def getnodelist(self, node_id):
         return self.listNodeBuffer[node_id].getlistpkt()
-
 
     def getselfishlist(self):
         return self.listselfishid
@@ -79,8 +69,8 @@ class DTNScenario(object):
     # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkdown事件
     def linkdown(self, running_time, a_id, b_id):
         # 1)从b_id获取对应参数*args 2) 通知a_id： 与b_id 的 linkup事件
-        values_a = self.listNodeBuffer[a_id].get_values_router_before_down()
-        values_b = self.listNodeBuffer[b_id].get_values_router_before_down()
+        values_a = self.listNodeBuffer[a_id].get_values_router_before_down(running_time)
+        values_b = self.listNodeBuffer[b_id].get_values_router_before_down(running_time)
         # 告诉 a linkup事件, 并传给a 有关b的控制信息
         self.listNodeBuffer[a_id].notify_link_down(running_time, b_id, values_b)
         # 告诉 b linkup事件, 并传给b 有关a的控制信息
@@ -96,8 +86,8 @@ class DTNScenario(object):
     # 更新 a b的 内部状态, 交换信息
     def linkup(self, running_time, a_id, b_id):
         # 1)获取对面给出的参数以便评价 2)通知a_id： 与b_id 的 linkdown事件; [同上]
-        values_a = self.listNodeBuffer[a_id].get_values_router_before_up()
-        values_b = self.listNodeBuffer[b_id].get_values_router_before_up()
+        values_a = self.listNodeBuffer[a_id].get_values_router_before_up(running_time)
+        values_b = self.listNodeBuffer[b_id].get_values_router_before_up(running_time)
         self.listNodeBuffer[a_id].notify_link_up(running_time, b_id, values_b)
         self.listNodeBuffer[b_id].notify_link_up(running_time, a_id, values_a)
         return
@@ -122,7 +112,7 @@ class DTNScenario(object):
         (isfound, target_pkt) = self.listNodeBuffer[a_id].findpktbyid(tmp_pktid)
         # 如果发生这种情况就是 刚好a_id把pkt传走了； 准备转发下一个pkt吧
         if isfound == False:
-            self.filelog.insertlog(self.scenarioname,'[time_{}] [c_tran_intrupt] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
+            self.filelog.insertlog(self.scenarioname, '[time_{}] [c_tran_intrupt] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
                                        runningtime, a_id, b_id, tmp_pktid))
             self.link_transmitpktid[a_id][b_id] = 0
             self.link_transmitprocess[a_id][b_id] = 0
@@ -155,9 +145,12 @@ class DTNScenario(object):
     # a_id -> b_id
     def __transmitting(self, runningtime, a_id, b_id, transmitvolume):
         # 如果没有正在传输的pkt, 从a的buffer里 顺序查找 b的buffer里没有的pkt
-        # 建立准备传输的pkt列表(这应该是一个优先级的list)
+        # 1）建立准备传输的pkt列表(这应该是一个优先级的list)
         listpkt = self.listNodeBuffer[b_id].getlistpkt()
-        totran_pktlist = self.listNodeBuffer[a_id].gettranpktlist(runningtime, b_id, listpkt)
+        # 2）传输前 对端node 提供一些 控制信息 协助判断是否要 转发该报文// i.e. Prophet
+        values_b = self.listNodeBuffer[b_id].get_values_router_before_tran(runningtime)
+        # 3) 由router判断哪些pkt需要传输
+        totran_pktlist = self.listNodeBuffer[a_id].gettranpktlist(runningtime, b_id, listpkt, values_b)
         for target_pkt in totran_pktlist:
             self.filelog.insertlog(self.scenarioname, '[time_{}] [tran] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
                 runningtime, a_id, b_id, target_pkt.pkt_id))

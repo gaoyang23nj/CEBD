@@ -107,10 +107,6 @@ class DTNNodeBuffer(object):
         self.__addpkt(newpkt)
 
     # =========================== 核心接口 提供传输pkt的名录; 生成报文; 接收报文
-    # 询问router 准备传输的pkt 组成的list;  参照对方pktlist 现状, 计算准备传输的pktlist
-    def gettranpktlist(self, runningtime, b_id, listpkt):
-        return self.theRouter.gettranpktlist(runningtime, b_id, listpkt, self.node_id, self.listofpkt)
-
     def notifygennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         # 按照需要 改装pkt
         if isinstance(self.theRouter, RoutingSparyandWait):
@@ -174,52 +170,27 @@ class DTNNodeBuffer(object):
 
     # ====================== 核心接口 linkup linkdown时刻 a和 b 交换<控制信息>
     # 某些routing算法下 在linkup之前 需要给对方node的router传值
-    def get_values_router_before_up(self):
-        return self.theRouter.get_values_before_up()
-        # if self.routingname == 'RoutingSDBG':
-        #     return self.theRouter.getERWforlinkdown()
-        # else:
-        #     return
+    def get_values_router_before_up(self, runningtime):
+        return self.theRouter.get_values_before_up(runningtime)
 
     # 通知a_id： 与b_id 的 linkup事件
     def notify_link_up(self, b_id, running_time, *args):
         self.theRouter.notify_link_up(b_id, running_time, *args)
 
     # 某些routing算法下 在linkdown之前 需要给对方node的router传值
-    def get_values_router_before_down(self):
-        return self.theRouter.get_values_before_down()
-        # if self.routingname == 'RoutingSDBG':
-        #     return self.theRouter.getSnSigRouter()
-        # else:
-        #     return
+    def get_values_router_before_down(self, runningtime):
+        return self.theRouter.get_values_before_down(runningtime)
 
     # 通知a_id： 与b_id 的 linkdown事件
     def notify_link_down(self, b_id, running_time, *args):
         self.theRouter.notify_link_down(b_id, running_time, *args)
-        pass
 
-    # ===================================== 提供给ProphetRouting的方法
-    # ProphetRouter使用, 获取对方的 delivery prob 矩阵
-    def getCntPredFor(self, runningtime, a_id, b_id):
-        assert(a_id != self.node_id)
-        return self.theScenario.getCntPredFor(runningtime, a_id, b_id)
+    def get_values_router_before_tran(self, runningtime):
+        return self.theRouter.get_values_before_tran(runningtime)
 
-
-    def getPredFor(self, runningtime, a_id, b_id):
-        assert(a_id == self.node_id)
-        assert(isinstance(self.theRouter, RoutingProphet))
-        return self.theRouter.getPredFor(runningtime, a_id, b_id)
-
-
-    def getCntdeliverprobM(self, runningtime, b_id):
-        assert(b_id != self.node_id)
-        return self.theScenario.getCntdeliverprobM(runningtime, b_id)
-
-
-    def getdeliverprobM(self, runningtime, b_id):
-        assert(b_id == self.node_id)
-        assert(isinstance(self.theRouter, RoutingProphet))
-        return self.theRouter.getdeliverprobM(runningtime, b_id)
+    # 询问router 准备传输的pkt 组成的list;  参照对方pktlist 现状, 计算准备传输的pktlist
+    def gettranpktlist(self, runningtime, b_id, listpkt, *args):
+        return self.theRouter.gettranpktlist(runningtime, b_id, listpkt, self.node_id, self.listofpkt, *args)
 
     # =================================== 提供给 MaxProp的接口 ================================
 
