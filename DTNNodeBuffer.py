@@ -25,7 +25,7 @@ class DTNNodeBuffer(object):
         self.numofnodes = numofnodes
         self.maxsize = maxsize
         self.occupied_size = 0
-        # <内存> 实时存储的pkt list
+        # <内存> 实时存储的pkt list, 从前往后（从0开始）pkt越来越老
         self.listofpkt = []
         # 为了记录和对照方便 为每个节点记录成功投递的pkt list
         self.listofsuccpkt = []
@@ -50,11 +50,14 @@ class DTNNodeBuffer(object):
     def __addpkt(self, newpkt):
         cppkt = copy.deepcopy(newpkt)
         self.occupied_size = self.occupied_size + cppkt.pkt_size
+        # 如果需要记录 track
+        if isinstance(cppkt, DTNTrackPkt):
+            cppkt.track.append(self.node_id)
         self.listofpkt.append(cppkt)
         return
 
     # 按照pkt_id删掉pkt
-    def __deletepktbypktid(self, pkt_id):
+    def deletepktbypktid(self, pkt_id):
         isOK = False
         for pkt in self.listofpkt:
             if pkt_id == pkt.pkt_id:
@@ -100,7 +103,6 @@ class DTNNodeBuffer(object):
 
     # 保证内存空间足够 并把pkt放在内存里; isgen 是否是生成新pkt
     def mkroomaddpkt(self, newpkt, isgen):
-        # 按照需要 改装pkt
         # 如果需要删除pkt以提供内存空间 按照drop old原则
         if self.occupied_size + newpkt.pkt_size > self.maxsize:
             self.__deletepktbysize(newpkt.pkt_size)
@@ -144,8 +146,8 @@ class DTNNodeBuffer(object):
         # 拷贝出一份 以防要修改一些值 hop; track; token等
         target_pkt = copy.deepcopy(i_pkt)
         # router决定是否真的要接收
-        isReceive = self.theRouter.decideAddafterRece(a_id, target_pkt)
-        if isReceive == True:
+        is_receive = self.theRouter.decideAddafterRece(a_id, target_pkt)
+        if is_receive:
             self.mkroomaddpkt(target_pkt, isgen=False)
         return DTNNodeBuffer.Rece_Code_AcceptPkt
 
@@ -154,15 +156,16 @@ class DTNNodeBuffer(object):
         # 若报文已经抵达目的, a_id同时做个验证保证真实
         if codeRece == DTNNodeBuffer.Rece_Code_ToDst and b_id == i_pkt.dst_id:
             isDelete = True
-            self.__deletepktbypktid(i_pkt.pkt_id)
+            self.deletepktbypktid(i_pkt.pkt_id)
         # 若报文不被接收
         elif codeRece == DTNNodeBuffer.Rece_Code_DenyPkt:
             # do nothing
             return
+        # 如果对端已经接收了 and 本端Routing认为可以delete
         elif codeRece == DTNNodeBuffer.Rece_Code_AcceptPkt:
-            isDelete = self.theRouter.decideDelafterSend(b_id, i_pkt)
-            if isDelete == True:
-                self.__deletepktbypktid(i_pkt.pkt_id)
+            is_delete = self.theRouter.decideDelafterSend(b_id, i_pkt)
+            if is_delete:
+                self.deletepktbypktid(i_pkt.pkt_id)
             return
         else:
             print('ERROR! DTNBuffer 未知的接受码')
@@ -192,5 +195,4 @@ class DTNNodeBuffer(object):
     def gettranpktlist(self, runningtime, b_id, listpkt, *args):
         return self.theRouter.gettranpktlist(runningtime, b_id, listpkt, self.node_id, self.listofpkt, *args)
 
-    # =================================== 提供给 MaxProp的接口 ================================
 
