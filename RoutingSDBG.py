@@ -8,6 +8,7 @@ import numpy as np
 from RoutingBase import RoutingBase
 import copy
 
+
 class RoutingSDBG(RoutingBase):
     def __init__(self, theBufferNode, numofnodes):
         super(RoutingSDBG, self).__init__(theBufferNode)
