@@ -5,9 +5,11 @@ from RoutingEpidemic import RoutingEpidemic
 from RoutingSparyandWait import *
 from RoutingProphet import RoutingProphet
 from RoutingMaxProp import *
+from RoutingProvest import RoutingProvest
 
 from RoutingBlackhole import RoutingBlackhole
 from RoutingSDBG import RoutingSDBG
+
 
 class DTNNodeBuffer(object):
     # b_id 将要复制pkt之前 给a_id的返回码 (a_id据此作出操作)
@@ -114,7 +116,7 @@ class DTNNodeBuffer(object):
         if isinstance(self.theRouter, RoutingSparyandWait):
             init_token = 2
             newpkt = DTNSWPkt(pkt_id, src_id, dst_id, gentime, pkt_size, init_token)
-        elif isinstance(self.theRouter, RoutingMaxProp):
+        elif isinstance(self.theRouter, RoutingMaxProp) or isinstance(self.theRouter, RoutingProvest):
             newpkt = DTNTrackPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         else:
             newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
