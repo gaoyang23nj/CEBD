@@ -23,16 +23,16 @@ class RoutingBase(object):
         return totran_pktlist
 
     # 响应 linkup linkdown事件
-    def notify_link_up(self, running_time, b_id, *args):
-        pass
-
-    def notify_link_down(self, running_time, b_id, *args):
-        pass
-
     def get_values_before_up(self, runningtime):
         pass
 
+    def notify_link_up(self, running_time, b_id, *args):
+        pass
+
     def get_values_before_down(self, runningtime):
+        pass
+
+    def notify_link_down(self, running_time, b_id, *args):
         pass
 
     def get_values_before_tran(self, runningtime):

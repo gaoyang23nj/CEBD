@@ -222,6 +222,8 @@ class RoutingMaxProp(RoutingBase):
             while self.theBufferNode.occupied_size + i_pkt.pkt_size > self.theBufferNode.maxsize:
                 self.theBufferNode.occupied_size -= copy_list[-1].pkt_size
                 self.theBufferNode.deletepktbypktid(copy_list[-1].pkt_id)
+        # pkt 的 track 增加
+        i_pkt.track.append(self.theBufferNode.node_id)
         # 记录这个pkt
         idx = self.tmpRSLid.index(a_id)
         self.tmpRSL[idx].append((i_pkt.pkt_id, i_pkt.src_id, i_pkt.dst_id, i_pkt.pkt_size))

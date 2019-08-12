@@ -86,10 +86,14 @@ class RoutingProvest(RoutingBase):
 
     #
     def notify_link_down(self, running_time, b_id, *args):
-        self.__update_trust_direct_eve(b_id)
+
 
     def decideAddafterRece(self, a_id, i_pkt):
-        return Ture
+        # pkt 的 track 增加
+        i_pkt.track.append(self.theBufferNode.node_id)
+        # 收到报文
+        self.__update_trust_direct_eve(a_id)
+
 
 
 
