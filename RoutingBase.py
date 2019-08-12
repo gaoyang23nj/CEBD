@@ -38,6 +38,10 @@ class RoutingBase(object):
     def get_values_before_tran(self, runningtime):
         pass
 
+    # 从a_id收到报文i_pkt (本次传输是最后一跳 投递到了目的节点)
+    def notify_receive_succ(self, a_id, i_pkt):
+        pass
+
     @classmethod
     def decideAddafterRece(cls, a_id, i_pkt):
         '''

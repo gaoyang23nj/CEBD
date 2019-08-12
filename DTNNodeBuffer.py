@@ -130,7 +130,7 @@ class DTNNodeBuffer(object):
             # 成功接收 加入成功接收的list
             isduplicate = False
             # 通知Router已经收到报文了
-            self.theRouter.
+            self.theRouter.notify_receive_succ(a_id, i_pkt)
             for j_pkt in self.listofsuccpkt:
                 if i_pkt.pkt_id == j_pkt.pkt_id:
                     isduplicate = True
