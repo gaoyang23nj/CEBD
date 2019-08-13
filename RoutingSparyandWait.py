@@ -38,8 +38,8 @@ class RoutingSparyandWait(RoutingBase):
 
     # 作为relay, 接收a_id发来的i_pkt吗？
     # 依赖于 浅拷贝, 才能修改 a_id里的 token值
-    def decideAddafterRece(self, a_id, target_pkt):
-        isAdd = True
+    def decideAddafterRece(self, runningtime, a_id, target_pkt):
+        is_add = True
         if math.floor(target_pkt.token/2) >= 1:
             target_pkt.token = math.floor(target_pkt.token / 2)
         # 正常情况下 发起tran之前 a_id已经保证pkt有足够的token
@@ -48,8 +48,8 @@ class RoutingSparyandWait(RoutingBase):
             # 刚好pkt传输 同时发起两个传送 所以不能传送了 token不够分
             # print('ERROR! SWRouting token补救措施!')
             # traceback.print_stack()
-            isAdd = False
-        return isAdd
+            is_add = False
+        return is_add, RoutingBase.Rece_Code_AcceptPkt
 
     # 发送i_pkt给b_id 以后，决定要不要 从内存中删除
     # 依赖于 浅拷贝, 才能修改 a_id里的 token值

@@ -9,6 +9,7 @@ from RoutingBase import RoutingBase
 # 2006 infocom
 # 为难！！ 需要两个list 阈值还要重新调整
 
+
 class DTNTrackPkt(DTNPkt):
     def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         super(DTNTrackPkt, self).__init__(pkt_id, src_id, dst_id, gentime, pkt_size)
@@ -214,8 +215,8 @@ class RoutingMaxProp(RoutingBase):
 
     # 作为relay, 接收a_id发来的i_pkt吗？
     # 记得 增加跳数
-    def decideAddafterRece(self, a_id, i_pkt):
-        isAdd = True
+    def decideAddafterRece(self, runningtime, a_id, i_pkt):
+        is_add = True
         # 获取 内存状态 给出准备清除的pktlist
         if self.theBufferNode.occupied_size + i_pkt.pkt_size > self.theBufferNode.maxsize:
             copy_list = sorted(self.theBufferNode.list_pkt, key=cmp_to_key(self.__compare_msg))
@@ -227,15 +228,15 @@ class RoutingMaxProp(RoutingBase):
         # 记录这个pkt
         idx = self.tmpRSLid.index(a_id)
         self.tmpRSL[idx].append((i_pkt.pkt_id, i_pkt.src_id, i_pkt.dst_id, i_pkt.pkt_size))
-        return isAdd
+        return is_add, RoutingBase.Rece_Code_AcceptPkt
 
     # 发送i_pkt给b_id 以后，决定要不要 从内存中删除
     def decideDelafterSend(self, b_id, i_pkt):
-        isDel = False
+        is_del = False
         # 记录这个pkt
         idx = self.tmpRSLid.index(b_id)
         self.tmpRSL[idx].append((i_pkt.pkt_id, i_pkt.src_id, i_pkt.dst_id, i_pkt.pkt_size))
-        return isDel
+        return is_del
 
 
 

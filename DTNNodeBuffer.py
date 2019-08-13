@@ -5,21 +5,15 @@ from RoutingEpidemic import RoutingEpidemic
 from RoutingSparyandWait import *
 from RoutingProphet import RoutingProphet
 from RoutingMaxProp import *
-from RoutingProvest import RoutingProvest
 
 from RoutingBlackhole import RoutingBlackhole
+
+from RoutingProvest import RoutingProvest
+from RoutingEric import RoutingEric
 from RoutingSDBG import RoutingSDBG
 
 
 class DTNNodeBuffer(object):
-    # b_id 将要复制pkt之前 给a_id的返回码 (a_id据此作出操作)
-    # 报文投递至dst_id == b_id, 通知a_id可以删除了
-    Rece_Code_ToDst = 1
-    # 报文被b_id拒绝了 (显式拒绝)
-    Rece_Code_DenyPkt = 2
-    # 报文被b_id接收了 (接收 或者 隐式拒绝)
-    Rece_Code_AcceptPkt = 3
-
     # buffersize = 10*1000 k, 即10M; 每个报文100k
     def __init__(self, scenario, node_id, routingname, numofnodes, maxsize=20*1000):
         self.theScenario = scenario
@@ -116,7 +110,8 @@ class DTNNodeBuffer(object):
         if isinstance(self.theRouter, RoutingSparyandWait):
             init_token = 2
             newpkt = DTNSWPkt(pkt_id, src_id, dst_id, gentime, pkt_size, init_token)
-        elif isinstance(self.theRouter, RoutingMaxProp) or isinstance(self.theRouter, RoutingProvest):
+        elif isinstance(self.theRouter, RoutingMaxProp) or isinstance(self.theRouter, RoutingProvest)\
+                or isinstance(self.theRouter, RoutingEric):
             newpkt = DTNTrackPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         else:
             newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
@@ -130,7 +125,7 @@ class DTNNodeBuffer(object):
             # 成功接收 加入成功接收的list
             isduplicate = False
             # 通知Router已经收到报文了
-            self.theRouter.notify_receive_succ(a_id, i_pkt)
+            self.theRouter.notify_receive_succ(runningtime, a_id, i_pkt)
             for j_pkt in self.listofsuccpkt:
                 if i_pkt.pkt_id == j_pkt.pkt_id:
                     isduplicate = True
@@ -140,33 +135,34 @@ class DTNNodeBuffer(object):
                 # append之前 需要 deepcopy
                 target_pkt = copy.deepcopy(i_pkt)
                 self.listofsuccpkt.append(target_pkt)
-            return DTNNodeBuffer.Rece_Code_ToDst
+            return RoutingBase.Rece_Code_ToDst
         #================================ code_2 显式拒绝
         # 竟然找到了这个pkt, 在这个pkt转发的过程中, 本pkt的其他副本已经成功
-        isFound, pkt = self.findpktbyid(i_pkt.pkt_id)
-        if isFound == True:
-            return DTNNodeBuffer.Rece_Code_DenyPkt
+        is_found, pkt = self.findpktbyid(i_pkt.pkt_id)
+        if is_found:
+            return RoutingBase.Rece_Code_DenyPkt
         # ================================ code_3 (显、隐)接收 隐拒绝
         # 拷贝出一份 以防要修改一些值 hop; track; token等
         target_pkt = copy.deepcopy(i_pkt)
         # router决定是否真的要接收
-        is_receive = self.theRouter.decideAddafterRece(a_id, target_pkt)
+        is_receive, rece_code = self.theRouter.decideAddafterRece(runningtime, a_id, target_pkt)
         if is_receive:
             self.mkroomaddpkt(target_pkt, isgen=False)
-        return DTNNodeBuffer.Rece_Code_AcceptPkt
+        return rece_code
 
     # 收到Scenario上的通知 i_pkt已经传输; 在runningtime时候 发送i_pkt给b_id
     def notifysentpkt(self, runningtime, codeRece, b_id, i_pkt):
         # 若报文已经抵达目的, a_id同时做个验证保证真实
-        if codeRece == DTNNodeBuffer.Rece_Code_ToDst and b_id == i_pkt.dst_id:
+        if codeRece == RoutingBase.Rece_Code_ToDst and b_id == i_pkt.dst_id:
             isDelete = True
             self.deletepktbypktid(i_pkt.pkt_id)
         # 若报文不被接收
-        elif codeRece == DTNNodeBuffer.Rece_Code_DenyPkt:
-            # do nothing
+        elif codeRece == RoutingBase.Rece_Code_DenyPkt:
+            # do nothing 对端拒绝接收 本端发给它的报文
+            self.theRouter.notify_deny(b_id, i_pkt)
             return
         # 如果对端已经接收了 and 本端Routing认为可以delete
-        elif codeRece == DTNNodeBuffer.Rece_Code_AcceptPkt:
+        elif codeRece == RoutingBase.Rece_Code_AcceptPkt:
             is_delete = self.theRouter.decideDelafterSend(b_id, i_pkt)
             if is_delete:
                 self.deletepktbypktid(i_pkt.pkt_id)

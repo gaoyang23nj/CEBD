@@ -124,9 +124,10 @@ class RoutingProvest(RoutingBase):
             self.all_rsu_[tmp_id, :] = self.all_rsu_[tmp_id, :] + indirect_eve
 
     # 从 a_id 获取一个报文 i_pkt
-    def decideAddafterRece(self, a_id, i_pkt):
+    def decideAddafterRece(self, runningtime, a_id, i_pkt):
         # pkt 的 track 增加
         i_pkt.track.append(self.theBufferNode.node_id)
+        return True, RoutingBase.Rece_Code_AcceptPkt
 
     # linkdown时候 准备结束本次记录
     def notify_link_down(self, running_time, b_id, *args):
@@ -140,7 +141,7 @@ class RoutingProvest(RoutingBase):
         if self.T[b_id] > self.T_min:
             return super().gettranpktlist(runningtime, b_id, listb, a_id, lista, args)
         else:
-            []
+            return []
 
 
 

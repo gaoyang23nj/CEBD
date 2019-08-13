@@ -189,14 +189,14 @@ class RoutingSDBG(RoutingBase):
         self.tmpRLs.pop(idx)
 
     # 收到报文 更新RL
-    def decideAddafterRece(self, a_id, i_pkt):
+    def decideAddafterRece(self, runningtime, a_id, i_pkt):
         # 第 4 页
         # 如果对方节点 reputation 小于 mal阈值; 不与它交互, 不接收它的报文
         if self.MS[a_id, 3] < self.Th_mal:
-            return False
+            return False, RoutingBase.Rece_Code_DenyPkt
         idx = self.tmpRSLs_js.index(a_id)
         self.tmpRLs[idx].append((i_pkt.pkt_id, i_pkt.src_id, i_pkt.dst_id))
-        return True
+        return True, RoutingBase.Rece_Code_AcceptPkt
 
     # 发送报文 更新SL
     def decideDelafterSend(self, b_id, i_pkt):

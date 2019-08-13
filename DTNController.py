@@ -254,7 +254,6 @@ class DTNController(object):
                 print('\t normal_node:{}'.format(len(self.list_node)))
                 print('\t succ_total_ratio:{}'.format(succ_total_num/gen_total_num))
 
-
             # 显示细节
             if showdetail:
                 print(stroutput)

@@ -103,14 +103,14 @@ class RoutingProphet(RoutingBase):
         return totran_pktlist
 
     # 增加 不需要检查
-    def decideAddafterRece(self, a_id, target_pkt):
-        isAdd = True
-        return isAdd
+    def decideAddafterRece(self, runningtime, a_id, target_pkt):
+        is_add = True
+        return is_add, RoutingBase.Rece_Code_AcceptPkt
 
     # Prophet 单副本转发
     def decideDelafterSend(self, b_id, i_pkt):
-        isDel = True
-        return isDel
+        is_del = True
+        return is_del
 
 
 

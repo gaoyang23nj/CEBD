@@ -1,5 +1,13 @@
 # -*- coding: UTF-8 -*-
 class RoutingBase(object):
+    # b_id 将要复制pkt之前 给a_id的返回码 (a_id据此作出操作)
+    # 报文投递至dst_id == b_id, 通知a_id可以删除了
+    Rece_Code_ToDst = 1
+    # 报文被b_id拒绝了 (显式拒绝)
+    Rece_Code_DenyPkt = 2
+    # 报文被b_id接收了 (接收 或者 隐式拒绝)
+    Rece_Code_AcceptPkt = 3
+
     def __init__(self, theBufferNode):
         self.theBufferNode = theBufferNode
 
@@ -39,11 +47,15 @@ class RoutingBase(object):
         pass
 
     # 从a_id收到报文i_pkt (本次传输是最后一跳 投递到了目的节点)
-    def notify_receive_succ(self, a_id, i_pkt):
+    def notify_receive_succ(self, runningtime, a_id, i_pkt):
+        pass
+
+    # 如果对端拒绝 本端发给它的报文
+    def notify_deny(self, b_id, i_pkt):
         pass
 
     @classmethod
-    def decideAddafterRece(cls, a_id, i_pkt):
+    def decideAddafterRece(cls, runningtime, a_id, i_pkt):
         '''
         :return:
         '''
