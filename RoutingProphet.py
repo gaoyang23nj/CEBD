@@ -93,7 +93,7 @@ class RoutingProphet(RoutingBase):
                 else:
                     P_b_c = P_b_any[i_pkt.dst_id]
                     if P_b_c > self.__getPredFor(runningtime, a_id, i_pkt.dst_id):
-                        totran_pktlist_low.append((tmp, i_pkt))
+                        totran_pktlist_low.append((P_b_c, i_pkt))
         totran_pktlist = totran_pktlist_high
         if len(totran_pktlist_low) > 0:
             # 按照优先级决定 传输顺序

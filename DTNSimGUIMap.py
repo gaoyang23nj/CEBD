@@ -80,6 +80,14 @@ class DTNSimGUIMap(DTNSimBase):
         # 画布 绘制node移动
         self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.ShowSize, width=self.ShowSize)
         self.canvas.place(x=0, y=0, anchor='nw')
+        frm_time = tk.Frame(frm_canvas)
+        frm_time.config(bg='Black', height=20, width=120)
+        frm_time.place(x=0, y=self.ShowSize, anchor='nw')
+        self.text_time = tk.StringVar()
+        self.text_time.set('text_time')
+        tk.Label(frm_time, bg='Yellow', textvariable=self.text_time, height=2, width=100, justify='left').\
+            place(x=0, y=0, height=20, width=100, anchor='nw')
+
         # 显示信息
         self.cbbox_scena = ttk.Combobox(frm_infoshow)
         self.cbbox_scena.pack()
@@ -158,8 +166,7 @@ class DTNSimGUIMap(DTNSimBase):
         if self.isShowConn:
             self.__drawConn(encounter_list)
 
-
-    def updateInfoShow(self, node_list, pkt_list):
+    def updateInfoShow(self, node_list, pkt_list, info_time):
         strinfo_nodelist = '<info>pkt list in the node: \n'
         for node in node_list:
             (node_id, pktlistofnode) = node
@@ -179,7 +186,7 @@ class DTNSimGUIMap(DTNSimBase):
             cnt = cnt + 1
         self.text_nodelist.set(strinfo_nodelist)
         self.text_pktlist.set(strinfo_pktlist)
-
+        self.text_time.set('Time:'+str(info_time))
 
     def __drawPointandLine(self, node_id, loc, dest):
         node_id = str(node_id)

@@ -117,6 +117,7 @@ class DTNController(object):
         for node in self.list_node:
             tunple = (node.getNodeId(), node.getNodeLoc(), node.getNodeDest())
             tunple_list.append(tunple)
+        # 更新node位置 在画布里显示
         self.DTNView.updateCanvaShow(tunple_list, encounter_list)
         # 提供给Viewer info
         scenaobj = self.__getscenarioname(self.DTNView.getscenaname())
@@ -129,7 +130,7 @@ class DTNController(object):
             tunple = (node_id, scenaobj.getnodelist(node_id))
             info_nodelist.append(tunple)
         info_pktlist = self.list_genpkt
-        self.DTNView.updateInfoShow(info_nodelist, info_pktlist)
+        self.DTNView.updateInfoShow(info_nodelist, info_pktlist, self.RunningTime)
 
     # 完成一个timestep的移动 计算 routing
     def run_onetimestep(self):

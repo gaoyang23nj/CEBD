@@ -62,9 +62,19 @@ class DTNSimGUI(DTNSimBase):
         tk.Label(frm_control, bg='White', textvariable=self.text_ctlinfo, height=2, width=500,justify='left').\
             place(x=420, y=5, height=30, width=500, anchor='nw')
 
+
         # 画布 绘制node移动
         self.canvas = tk.Canvas(frm_canvas, bg='gray', height=self.ShowSize, width=self.ShowSize)
         self.canvas.place(x=0, y=0, anchor='nw')
+
+        # 显示时间
+        frm_time = tk.Frame(frm_canvas)
+        frm_time.config(bg='Black', height=20, width=120)
+        frm_time.place(x=0, y=self.ShowSize, anchor='nw')
+        self.text_time = tk.StringVar()
+        self.text_time.set('text_time')
+        tk.Label(frm_time, bg='Yellow', textvariable=self.text_time, height=2, width=100, justify='left').\
+            place(x=0, y=0, height=20, width=100, anchor='nw')
 
         # 显示信息
         self.cbbox_scena = ttk.Combobox(frm_infoshow)
@@ -80,7 +90,7 @@ class DTNSimGUI(DTNSimBase):
 
 
     def initshow(self, infotext, list_scena):
-        infotext = infotext + ' SimSize:'+ str(self.RealSize)
+        infotext = infotext + ' SimSize:' + str(self.RealSize)
         self.text_ctlinfo.set(infotext)
         self.cbbox_scena["values"] = list_scena
         self.cbbox_scena.current(1)
@@ -122,7 +132,7 @@ class DTNSimGUI(DTNSimBase):
     def getscenaname(self):
         return self.cbbox_scena.get()
 
-
+    # 更新 node 的位置显示
     def updateCanvaShow(self, listtunple, encounter_list):
         # 显示
         for tunple in listtunple:
@@ -131,8 +141,10 @@ class DTNSimGUI(DTNSimBase):
         if self.isShowConn:
             self.__drawConn(encounter_list)
 
-
-    def updateInfoShow(self, node_list, pkt_list):
+    # 更新 node 的信息显示;
+    # 参数1 node下有哪些pkt id; 参数2 各个pkt 的源和目的是哪些
+    # 参数3 事件戳变化 等
+    def updateInfoShow(self, node_list, pkt_list, info_time):
         strinfo_nodelist = '<info>pkt list in the node: \n'
         for node in node_list:
             (node_id, pktlistofnode) = node
@@ -147,12 +159,12 @@ class DTNSimGUI(DTNSimBase):
         for pkt in pkt_list:
             (pkt_id, src_id, dst_id) = pkt
             strinfo_pktlist = strinfo_pktlist + ' p'+str(pkt_id)+ ':'+str(src_id)+'->'+str(dst_id)+' '
-            if cnt%5==0:
+            if cnt % 5 == 0:
                 strinfo_pktlist = strinfo_pktlist + '\n'
             cnt = cnt + 1
         self.text_nodelist.set(strinfo_nodelist)
         self.text_pktlist.set(strinfo_pktlist)
-
+        self.text_time.set('Time:'+str(info_time))
 
     def __drawPointandLine(self, node_id, loc, dest):
         node_id = str(node_id)
