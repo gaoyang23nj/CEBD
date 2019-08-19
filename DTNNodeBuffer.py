@@ -72,16 +72,11 @@ class DTNNodeBuffer(object):
     # ==========================提供给Scenario的功能===========================================================================
     # 显示结果
     def getlocalusage(self):
-        # str = ''
         succinlocalnode = []
         for pkt in self.listofsuccpkt:
-            # strtmp = 'pkt_{}:src_id(node_{})->dst_id(node_{}); '.format(pkt.pkt_id, pkt.src_id, pkt.dst_id)
-            # str = str + strtmp
-            pktinfo = (pkt.pkt_id, pkt.src_id, pkt.dst_id)
+            pktinfo = (pkt.pkt_id, pkt.src_id, pkt.dst_id, pkt.gentime, pkt.succ_time)
             succinlocalnode.append(pktinfo)
-        # if len(self.listofsuccpkt) > 0:
-        #     str = str + '\n'
-        return len(self.listofsuccpkt), succinlocalnode
+        return succinlocalnode
 
     # 按照id 找到pkt
     def findpktbyid(self, id):
@@ -134,6 +129,7 @@ class DTNNodeBuffer(object):
             if isduplicate == False:
                 # append之前 需要 deepcopy
                 target_pkt = copy.deepcopy(i_pkt)
+                target_pkt.succ_time = runningtime
                 self.listofsuccpkt.append(target_pkt)
             return RoutingBase.Rece_Code_ToDst
         #================================ code_2 显式拒绝

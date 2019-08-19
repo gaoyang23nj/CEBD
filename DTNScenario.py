@@ -46,18 +46,27 @@ class DTNScenario(object):
     # scenario收到DTNcontroller指令, 打印routing结果
     def showres(self):
         # 获取成功投递的个数
-        succnum = 0
-        succnum_selfish = 0
-        stroutput = self.scenarioname + 'succ_list: '
+        total_succnum = 0
+        # selfish->normal normal->selfish selfish->selfish
+        selfish_succnum = 0
+        # normal->normal
+        normal_succnum = 0
+        total_succ_delay = 0
+        selfish_succ_delay = 0
+        normal_succ_delay = 0
         for tmpnodebuffer in self.listNodeBuffer:
-            tmpsuccnum, tmpsucclist = tmpnodebuffer.getlocalusage()
-            # stroutput = stroutput + tmpstroutput
+            tmpsucclist = tmpnodebuffer.getlocalusage()
             for pktinfo in tmpsucclist:
-                (pkt_id, src_id, dst_id) = pktinfo
-                if src_id in self.listselfishid:
-                    succnum_selfish = succnum_selfish + 1
-            succnum = succnum + tmpsuccnum
-        return succnum, succnum-succnum_selfish, succnum_selfish
+                (pkt_id, src_id, dst_id, gentime, succtime) = pktinfo
+                if (src_id in self.listselfishid) or (dst_id in self.listselfishid):
+                    selfish_succnum += 1
+                    selfish_succ_delay += succtime - gentime
+                total_succ_delay += (succtime - gentime)
+            total_succnum = total_succnum + len(tmpsucclist)
+        normal_succnum = total_succnum-selfish_succnum
+        normal_succ_delay = total_succ_delay - selfish_succ_delay
+        return total_succnum, normal_succnum, selfish_succnum, \
+               total_succ_delay, normal_succ_delay, selfish_succ_delay
 
     # ==================== 核心接口 生成报文 响应linkdown linkup 交换报文 等事件 =====================================
     # scenario收到DTNcontroller指令, 在srcid生成一个pkt(srcid->dstid)

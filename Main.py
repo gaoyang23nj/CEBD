@@ -18,20 +18,21 @@ MAX_NODE_NUM = 20
 # 执行时间 36000*12个间隔, 即12hour
 MAX_RUNNING_TIMES = 36000*12
 
-def runRandomWalk():
+def runRandomWalk(numofnodes):
     showsize = 500
     realsize = 2000
     # 每100个timestep(<模拟>10s)刷新一次界面, 通信范围100m, 每600个timestep(<模拟>60s)产生一次报文
     theViewer = DTNSimGUI(showsize, realsize)
-    theController = DTNController(theViewer, showtimes=100, com_range=100, genfreq_cnt=150, totaltimes=MAX_RUNNING_TIMES)
+    theController = DTNController(theViewer, times_showtstep=100, range_comm=100, genfreq_cnt=150, totaltimes=MAX_RUNNING_TIMES)
     listNodes = []
-    for node_id in range(MAX_NODE_NUM):
+    for node_id in range(numofnodes):
         # 每个timestep = <模拟>0.1s
         node = DTNNode('RandomWalk', node_id, 0.1, realsize, realsize)
         listNodes.append(node)
     theController.attachnodelist(listNodes)
     theViewer.attachController(theController)
     theController.run()
+    theController.printRes()
 
 
 def runHelsinkSPM():
@@ -54,14 +55,16 @@ def runHelsinkSPM():
 
 
 if __name__ == "__main__":
-    beginTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    runRandomWalk()
-    # runHelsinkSPM()
-
-    endTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(beginTime)
-    print(endTime)
+    # 执行多次 不同的node个数对性能的影响;
+    # 场景 EPRouting Balckhole 10% 30% 50%
+    listvalue = {20,40,60,80,100}
+    for value_nnodes in listvalue:
+        for i in range(10):
+            beginTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            runRandomWalk(value_nnodes)
+            endTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print('from:'+beginTime)
+            print('to:'+endTime)
 
 
 

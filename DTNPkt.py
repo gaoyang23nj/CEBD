@@ -8,5 +8,6 @@ class DTNPkt(object):
         self.pkt_size = pkt_size
         self.TTL = 0
         self.hops = 0
+        self.succ_time = -1
 
 

@@ -1,15 +1,16 @@
 import numpy as np
 import threading
+import datetime
 from DTNLogFiles import DTNLogFiles
 from DTNScenario import DTNScenario
 
 class DTNController(object):
-    def __init__(self, dtnview, showtimes=100, com_range=100, genfreq_cnt=6000, totaltimes=36000):
+    def __init__(self, dtnview, times_showtstep=100, range_comm=100, genfreq_cnt=6000, totaltimes=36000):
         self.DTNView = dtnview
         # 一次刷新view 内部更新的timstep个数
-        self.times_showtstep = showtimes
+        self.times_showtstep = times_showtstep
         # 通信范围
-        self.range_comm = com_range
+        self.range_comm = range_comm
 
         # 保留node的list
         self.list_node = []
@@ -178,7 +179,6 @@ class DTNController(object):
                     encounter_list.append((a_id, b_id, a_loc, b_loc))
         return encounter_list
 
-
     # 检测linkdown事件
     def detectlinkdown(self):
         for a_index in range(len(self.list_node)):
@@ -238,45 +238,49 @@ class DTNController(object):
         gen_total_num = len(self.list_genpkt)
         print('\n gen_num:{}'.format(gen_total_num))
         for key, value in self.scenaDict.items():
-            succ_total_num, succ_normal_num, succ_selfish_num = value.showres()
-            print('\n{} succ_num:{} normal_num:{} selfish_num:{}'.format(key, succ_total_num, succ_normal_num,
-                                                                         succ_selfish_num))
+            total_succnum, normal_succnum, selfish_succnum, \
+            total_delay, normal_delay, selfish_delay = value.showres()
+            print('\n{} total_succnum:{} normal_succnum:{} selfish_succnum:{} '
+                  'total_delay:{}, normal_delay:{}, selfish_delay:{}'.format(
+                key, total_succnum, normal_succnum, selfish_succnum,
+                total_delay, normal_delay, selfish_delay))
             gen_selfish_num = 0
             listselfishid = value.getselfishlist()
             if len(listselfishid) > 0:
                 for pkt in self.list_genpkt:
                     (id, src, dst) = pkt
-                    if src in listselfishid:
-                        gen_selfish_num = gen_selfish_num + 1
+                    if (src in listselfishid) or (dst in listselfishid):
+                        gen_selfish_num += 1
                 gen_normal_num = gen_total_num - gen_selfish_num
-                print('\t normal_node:{} selfish_node:{}'.format(len(self.list_node)-len(listselfishid), len(listselfishid)))
-                print('\t succ_total_ratio:{} succ_normal_ratio:{}'.format(succ_total_num/gen_total_num, succ_normal_num/gen_normal_num))
+                print('\t normal_node:{} selfish_node:{}'.format(
+                    len(self.list_node)-len(listselfishid), len(listselfishid)))
+                print('\t total_succratio:{} normal_succratio:{}'.format(
+                    total_succnum/gen_total_num, normal_succnum/gen_normal_num))
+                # 单位 一个timestep
+                if total_succnum > 0:
+                    print('\t total_avgdelay:{} normal_avgdelay:{}'.format(
+                        total_delay/total_succnum, normal_delay/normal_succnum))
+                if normal_succnum > 0:
+                    print('\t normal_avgdelay:{}'.format(normal_delay/normal_succnum))
             else:
                 print('\t normal_node:{}'.format(len(self.list_node)))
-                print('\t succ_total_ratio:{}'.format(succ_total_num/gen_total_num))
-
-            # 显示细节
-            if showdetail:
-                print(stroutput)
-
+                print('\t total_succratio:{}'.format(total_succnum/gen_total_num))
+                if total_succnum > 0:
+                    print('\t total_avgdelay:{}'.format(total_delay/total_succnum))
 
     # =================== 场景初始化 ============================
     def __TestScienario1_init(self):
-        list_scena = ['scenario1', 'scenario2', 'scenario3', 'scenario4', 'scenario5']
         self.scenaDict = {}
+        index = 0
         # ===============================场景1 全ep routing===================================
         list_idrouting = []
         for movenode in self.list_node:
             list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
-        self.scenario1 = DTNScenario(list_scena[0], list_idrouting)
-        self.scenaDict.update({list_scena[0]: self.scenario1})
-        # ===============================场景2 全sw routing===================================
-        list_idrouting = []
-        for movenode in self.list_node:
-            list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
-        self.scenario2 = DTNScenario(list_scena[1], list_idrouting)
-        self.scenaDict.update({list_scena[1]: self.scenario2})
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario(tmp_senario_name, list_idrouting)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景3 设置10%的dropping node===================================
+        index += 1
         # 随机生成序列
         percent_selfish = 0.1
         indices = np.random.permutation(len(self.list_node))
@@ -286,15 +290,17 @@ class DTNController(object):
         id = 0
         for movenode in self.list_node:
             if id in normal_indices:
-                list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+                list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
             elif id in malicious_indices:
                 list_idrouting.append((movenode.node_id, 'RoutingBlackhole'))
             else:
                 print('ERROR! Scenario Init!')
             id = id + 1
-        self.scenario3 = DTNScenario(list_scena[2], list_idrouting)
-        self.scenaDict.update({list_scena[2]: self.scenario3})
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario(tmp_senario_name, list_idrouting)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景4 设置30%的dropping node===================================
+        index += 1
         # 随机生成序列
         percent_selfish = 0.3
         indices = np.random.permutation(len(self.list_node))
@@ -304,15 +310,17 @@ class DTNController(object):
         id = 0
         for movenode in self.list_node:
             if id in normal_indices:
-                list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+                list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
             elif id in malicious_indices:
                 list_idrouting.append((movenode.node_id, 'RoutingBlackhole'))
             else:
                 print('ERROR! Scenario Init!')
             id = id + 1
-        self.scenario4 = DTNScenario(list_scena[3], list_idrouting)
-        self.scenaDict.update({list_scena[3]: self.scenario4})
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario(tmp_senario_name, list_idrouting)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景5 设置50%的dropping node===================================
+        index += 1
         # 随机生成序列
         percent_selfish = 0.5
         indices = np.random.permutation(len(self.list_node))
@@ -322,17 +330,17 @@ class DTNController(object):
         id = 0
         for movenode in self.list_node:
             if id in normal_indices:
-                list_idrouting.append((movenode.node_id, 'RoutingSparyandWait'))
+                list_idrouting.append((movenode.node_id, 'RoutingEpidemic'))
             elif id in malicious_indices:
                 list_idrouting.append((movenode.node_id, 'RoutingBlackhole'))
             else:
                 print('ERROR! Scenario Init! id: ', id)
             id = id + 1
-        self.scenario5 = DTNScenario(list_scena[4], list_idrouting)
-        self.scenaDict.update({list_scena[4]: self.scenario5})
+        tmp_senario_name = 'scenario'+str(index)
+        tmpscenario = DTNScenario(tmp_senario_name, list_idrouting)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        list_scena = list(self.scenaDict.keys())
         return list_scena
-
-
 
     def __TestScienario2_init(self):
         self.scenaDict = {}
@@ -365,9 +373,43 @@ class DTNController(object):
         list_scena = list(self.scenaDict.keys())
         return list_scena
 
-
    # 初始化各个路由场景 并返回 场景名的list
     def __scenarioinit(self):
-        list_scena = self.__TestScienario2_init()
+        list_scena = self.__TestScienario1_init()
         return list_scena
+
+    # 打印出结果
+    def printRes(self):
+        short_time = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+        file_name = 'result_'+short_time+'.res'
+        file_object = open(file_name, "w+", encoding="utf-8")
+        file_object.write('\n range_comm:{} genfreq_cnt:{} RunningTime_Max:{}'.format(
+            self.range_comm, self.thr_genpkt, self.RunningTime_Max))
+        gen_total_num = len(self.list_genpkt)
+        file_object.write('\n gen_num:{}'.format(gen_total_num))
+        for key, value in self.scenaDict.items():
+            total_succnum, normal_succnum, selfish_succnum, \
+            total_delay, normal_delay, selfish_delay = value.showres()
+            file_object.write('\n{} total_succnum:{} normal_succnum:{} selfish_succnum:{}'.format(
+                key, total_succnum, normal_succnum, selfish_succnum))
+            gen_selfish_num = 0
+            listselfishid = value.getselfishlist()
+            if len(listselfishid) > 0:
+                for pkt in self.list_genpkt:
+                    (id, src, dst) = pkt
+                    if (src in listselfishid) or (dst in listselfishid):
+                        gen_selfish_num += 1
+                gen_normal_num = gen_total_num - gen_selfish_num
+                file_object.write('\t normal_node:{} selfish_node:{}'.format(
+                    len(self.list_node) - len(listselfishid), len(listselfishid)))
+                file_object.write('\t total_succratio:{} normal_succratio:{}'.format(
+                    total_succnum / gen_total_num, normal_succnum / gen_normal_num))
+                # 单位 一个timestep
+                file_object.write('\t total_avgdelay:{} normal_avgdelay:{}'.format(
+                    total_delay / total_succnum, normal_delay / normal_succnum))
+            else:
+                file_object.write('\t normal_node:{}'.format(len(self.list_node)))
+                file_object.write('\t total_succratio:{}'.format(total_succnum / gen_total_num))
+                file_object.write('\t total_avgdelay:{}'.format(total_delay / total_succnum))
+        file_object.close()
 
