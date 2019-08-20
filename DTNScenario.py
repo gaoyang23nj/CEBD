@@ -31,8 +31,8 @@ class DTNScenario(object):
         self.link_transmitpktid = np.zeros((self.numofnodes, self.numofnodes), dtype='int')
         self.link_transmitprocess = np.zeros((self.numofnodes, self.numofnodes), dtype='int')
         # 启动log
-        self.filelog = DTNLogFiles()
-        self.filelog.initlog(self.scenarioname)
+        # self.filelog = DTNLogFiles()
+        # self.filelog.initlog(self.scenarioname)
         return
 
     # =======================提供给DTNController的功能============================================
@@ -87,8 +87,8 @@ class DTNScenario(object):
         # 设置link正在传输值参数
         self.link_transmitpktid[a_id][b_id] = 0
         self.link_transmitprocess[a_id][b_id] = 0
-        self.filelog.insertlog(self.scenarioname, '[time_{}] [linkdown] a(node_{})<->b(node_{})\n'.format(
-            running_time, a_id, b_id))
+        # self.filelog.insertlog(self.scenarioname, '[time_{}] [linkdown] a(node_{})<->b(node_{})\n'.format(
+        #     running_time, a_id, b_id))
         return
 
     # scenario收到DTNcontroller指令, a_id <-> b_id 的 linkup事件
@@ -116,13 +116,13 @@ class DTNScenario(object):
     def __c_transmitting(self, runningtime, a_id, b_id, transmitvolume):
         # 继续传输之前的pkt
         tmp_pktid = self.link_transmitpktid[a_id][b_id]
-        self.filelog.insertlog(self.scenarioname, '[time_{}] [c_tran] a(node_{})->b(node_{}):pkt(pkt_{}),progress({})\n'.format(
-                                   runningtime, a_id, b_id, tmp_pktid, self.link_transmitprocess[a_id][b_id]))
+        # self.filelog.insertlog(self.scenarioname, '[time_{}] [c_tran] a(node_{})->b(node_{}):pkt(pkt_{}),progress({})\n'.format(
+        #                            runningtime, a_id, b_id, tmp_pktid, self.link_transmitprocess[a_id][b_id]))
         (isfound, target_pkt) = self.listNodeBuffer[a_id].findpktbyid(tmp_pktid)
         # 如果发生这种情况就是 刚好a_id把pkt传走了； 准备转发下一个pkt吧
         if isfound == False:
-            self.filelog.insertlog(self.scenarioname, '[time_{}] [c_tran_intrupt] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
-                                       runningtime, a_id, b_id, tmp_pktid))
+            # self.filelog.insertlog(self.scenarioname, '[time_{}] [c_tran_intrupt] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
+            #                            runningtime, a_id, b_id, tmp_pktid))
             self.link_transmitpktid[a_id][b_id] = 0
             self.link_transmitprocess[a_id][b_id] = 0
             return transmitvolume
@@ -161,8 +161,8 @@ class DTNScenario(object):
         # 3) 由router判断哪些pkt需要传输
         totran_pktlist = self.listNodeBuffer[a_id].gettranpktlist(runningtime, b_id, listpkt, values_b)
         for target_pkt in totran_pktlist:
-            self.filelog.insertlog(self.scenarioname, '[time_{}] [tran] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
-                runningtime, a_id, b_id, target_pkt.pkt_id))
+            # self.filelog.insertlog(self.scenarioname, '[time_{}] [tran] a(node_{})->b(node_{}):pkt(pkt_{})\n'.format(
+            #     runningtime, a_id, b_id, target_pkt.pkt_id))
             # 开始传输i_pkt 可传输量消耗
             if target_pkt.pkt_size <= transmitvolume:
                 transmitvolume = transmitvolume - target_pkt.pkt_size
