@@ -327,11 +327,14 @@ class DTNControllerNoShow(object):
                     if (src in listselfishid) or (dst in listselfishid):
                         gen_selfish_num += 1
                 gen_normal_num = gen_total_num - gen_selfish_num
-                if gen_normal_num > 0 and normal_succnum > 0:
-                    file_object.write('\n normal_succratio:{} normal_avgdelay:{}'.format(
-                        normal_succnum / gen_normal_num, normal_delay / normal_succnum))
-            if gen_total_num > 0 and total_succnum > 0:
-                    file_object.write('\n total_succratio:{} total_avgdelay:{}'.format(
-                        total_succnum / gen_total_num, total_delay / total_succnum))
+                if gen_normal_num > 0:
+                    file_object.write('\n normal_succratio:{}'.format(normal_succnum / gen_normal_num))
+                    if normal_succnum > 0:
+                        file_object.write(' normal_avgdelay:{}'.format(normal_delay / normal_succnum))
+            if gen_total_num > 0:
+                file_object.write('\n total_succratio:{}'.format(total_succnum / gen_total_num))
+                if total_succnum > 0:
+                    file_object.write(' total_avgdelay:{}'.format(total_delay / total_succnum))
+
         file_object.close()
 
