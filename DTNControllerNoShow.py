@@ -295,8 +295,8 @@ class DTNControllerNoShow(object):
     # 打印出结果
     def print_tmp_res(self):
         gen_total_num = len(self.list_genpkt)
-        print('\n range_comm:{} genfreq:{} RunningTime_Max:{} RunningTime:{} gen_num:{}'.format(
-            self.range_comm, self.thr_genpkt, self.RunningTime_Max, self.RunningTime, gen_total_num))
+        print('\n range_comm:{} genfreq:{} RunningTime_Max:{} RunningTime:{} gen_num:{} nr_nodes:{}'.format(
+            self.range_comm, self.thr_genpkt, self.RunningTime_Max, self.RunningTime, gen_total_num, self.nr_nodes))
         for key, value in self.scenaDict.items():
             total_succnum, normal_succnum, selfish_succnum, \
             total_delay, normal_delay, selfish_delay = value.showres()
@@ -309,8 +309,8 @@ class DTNControllerNoShow(object):
         file_object = open(filename, ctstring, encoding="utf-8")
         gen_total_num = len(self.list_genpkt)
         file_object.write('\n')
-        file_object.write('\n range_comm:{} genfreq:{} RunningTime_Max:{} RunningTime:{} gen_num:{}'.format(
-            self.range_comm, self.thr_genpkt, self.RunningTime_Max, self.RunningTime, gen_total_num))
+        file_object.write('\n range_comm:{} genfreq:{} RunningTime_Max:{} RunningTime:{} gen_num:{} nr_nodes:{}'.format(
+            self.range_comm, self.thr_genpkt, self.RunningTime_Max, self.RunningTime, gen_total_num, self.nr_nodes))
         for key, value in self.scenaDict.items():
             total_succnum, normal_succnum, selfish_succnum, \
             total_delay, normal_delay, selfish_delay = value.showres()

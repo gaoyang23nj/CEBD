@@ -1,9 +1,10 @@
 import numpy as np
 # import tensorflow as tf
-import sys
+# import sys
 import time
-import threading
-import datetime
+# import threading
+# import datetime
+import _thread
 
 from WKTPathReader import WKTPathReader
 from DTNNode import DTNNode
@@ -21,6 +22,7 @@ MAX_RUNNING_TIMES = 36000*12
 
 
 def runRandomWalk_noshow(numofnodes):
+    np.random.seed()
     realsize = 2000
     # 每100个timestep(<模拟>10s)刷新一次界面, 通信范围100m, 每600个timestep(<模拟>60s)产生一次报文
     theController = DTNControllerNoShow(times_showtstep=100, range_comm=100, genfreq_cnt=150, totaltimes=MAX_RUNNING_TIMES, isshowing=False)
@@ -67,20 +69,35 @@ def runHelsinkSPM():
     theViewer.attachController(theController)
     theController.run()
 
-
 if __name__ == "__main__":
-
-    for i in range(10):
-        # # 执行多次 不同的node个数对性能的影响;
-        # # 场景 EPRouting Balckhole 10% 30% 50%
-        listvalue = [20, 40, 60, 80, 100]
-        for value_nnodes in listvalue:
-            print(value_nnodes)
-            beginTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            np.random.seed()
-            runRandomWalk_noshow(value_nnodes)
-            endTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print('from:'+beginTime)
-            print('to:'+endTime)
+    # =================================================
+    # for i in range(10):
+    #     # # 执行多次 不同的node个数对性能的影响;
+    #     # # 场景 EPRouting Balckhole 10% 30% 50%
+    #     listvalue = [20, 40, 60, 80, 100]
+    #     for value_nnodes in listvalue:
+    #         print(value_nnodes)
+    #         beginTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    #         runRandomWalk_noshow(value_nnodes)
+    #         endTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    #         print('from:'+beginTime)
+    #         print('to:'+endTime)
+    # =================================================
+    # for i in range(10):
+    #     print(i)
+    #     np.random.seed()
+    #     _thread.start_new_thread(runRandomWalk_noshow, (20, ))
+    #     _thread.start_new_thread(runRandomWalk_noshow, (40,))
+    #     _thread.start_new_thread(runRandomWalk_noshow, (60,))
+    #     _thread.start_new_thread(runRandomWalk_noshow, (80,))
+    #     _thread.start_new_thread(runRandomWalk_noshow, (100,))
+    # =================================================
+    _thread.start_new_thread(runRandomWalk_noshow, (20,))
+    _thread.start_new_thread(runRandomWalk_noshow, (40,))
+    _thread.start_new_thread(runRandomWalk_noshow, (60,))
+    _thread.start_new_thread(runRandomWalk_noshow, (80,))
+    _thread.start_new_thread(runRandomWalk_noshow, (100,))
+    while 1:
+        pass
 
 
