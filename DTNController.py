@@ -380,7 +380,7 @@ class DTNController(object):
 
     # 打印出结果
     def printRes(self):
-        short_time = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+        short_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         file_name = 'result_'+short_time+'.res'
         file_object = open(file_name, "w+", encoding="utf-8")
         file_object.write('\n range_comm:{} genfreq_cnt:{} RunningTime_Max:{}'.format(
