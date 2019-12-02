@@ -1,4 +1,4 @@
-from MovementModelBase import MovementModelBase
+from EncoHistGenerator.MovementModelBase import MovementModelBase
 import numpy as np
 
 class MovementModelRandomWalk(MovementModelBase):

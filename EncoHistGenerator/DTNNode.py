@@ -1,6 +1,6 @@
-from MovementModelRandomWalk import MovementModelRandomWalk
-from MovementModelShortestPathMap import MovementModelShortestPathMap
-import numpy as np
+from EncoHistGenerator.MovementModelRandomWalk import MovementModelRandomWalk
+from EncoHistGenerator.MovementModelShortestPathMap import MovementModelShortestPathMap
+
 
 class DTNNode(object):
     def __init__(self, *args):

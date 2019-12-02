@@ -1,5 +1,4 @@
-from MovementModelBase import MovementModelBase
-from WKTPathReader import WKTPathReader
+from EncoHistGenerator.MovementModelBase import MovementModelBase
 import numpy as np
 
 class MovementModelShortestPathMap(MovementModelBase):

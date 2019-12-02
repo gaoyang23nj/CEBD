@@ -1,15 +1,14 @@
 import numpy as np
 # import tensorflow as tf
 # import sys
-import time
 # import threading
 # import datetime
 import _thread
 
 from WKTPathReader import WKTPathReader
-from DTNNode import DTNNode
-from DTNSimGUI import DTNSimGUI
-from DTNSimGUIMap import DTNSimGUIMap
+from EncoHistGenerator.DTNNode import DTNNode
+from EncoHistGenerator.DTNSimGUI import DTNSimGUI
+from EncoHistGenerator.DTNSimGUIMap import DTNSimGUIMap
 from DTNController import DTNController
 from DTNControllerNoShow import DTNControllerNoShow
 

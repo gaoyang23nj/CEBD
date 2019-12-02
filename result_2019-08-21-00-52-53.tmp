@@ -1,0 +1,1171 @@
+
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:3600 gen_num:24 nr_nodes:80
+【scenario0】 total_succnum:3 normal_succnum:3 selfish_succnum:0 total_delay:4511 normal_delay:4511 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.125 total_avgdelay:1503.6666666666667
+【scenario1】 total_succnum:3 normal_succnum:3 selfish_succnum:0 total_delay:4511 normal_delay:4511 selfish_delay:0
+ normal_node:72 selfish_node:8
+ normal_succratio:0.13636363636363635 normal_avgdelay:1503.6666666666667
+ total_succratio:0.125 total_avgdelay:1503.6666666666667
+【scenario2】 total_succnum:1 normal_succnum:0 selfish_succnum:1 total_delay:2254 normal_delay:0 selfish_delay:2254
+ normal_node:56 selfish_node:24
+ normal_succratio:0.0
+ total_succratio:0.041666666666666664 total_avgdelay:2254.0
+【scenario3】 total_succnum:1 normal_succnum:0 selfish_succnum:1 total_delay:2254 normal_delay:0 selfish_delay:2254
+ normal_node:40 selfish_node:40
+ normal_succratio:0.0
+ total_succratio:0.041666666666666664 total_avgdelay:2254.0
+【scenario4】 total_succnum:0 normal_succnum:0 selfish_succnum:0 total_delay:0 normal_delay:0 selfish_delay:0
+ normal_node:24 selfish_node:56
+ normal_succratio:0.0
+ total_succratio:0.0
+【scenario5】 total_succnum:0 normal_succnum:0 selfish_succnum:0 total_delay:0 normal_delay:0 selfish_delay:0
+ normal_node:8 selfish_node:72
+ total_succratio:0.0
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:3600 gen_num:24 nr_nodes:100
+【scenario0】 total_succnum:2 normal_succnum:2 selfish_succnum:0 total_delay:3021 normal_delay:3021 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.08333333333333333 total_avgdelay:1510.5
+【scenario1】 total_succnum:2 normal_succnum:1 selfish_succnum:1 total_delay:3021 normal_delay:1761 selfish_delay:1260
+ normal_node:90 selfish_node:10
+ normal_succratio:0.058823529411764705 normal_avgdelay:1761.0
+ total_succratio:0.08333333333333333 total_avgdelay:1510.5
+【scenario2】 total_succnum:2 normal_succnum:1 selfish_succnum:1 total_delay:3021 normal_delay:1260 selfish_delay:1761
+ normal_node:70 selfish_node:30
+ normal_succratio:0.07142857142857142 normal_avgdelay:1260.0
+ total_succratio:0.08333333333333333 total_avgdelay:1510.5
+【scenario3】 total_succnum:2 normal_succnum:1 selfish_succnum:1 total_delay:3021 normal_delay:1761 selfish_delay:1260
+ normal_node:50 selfish_node:50
+ normal_succratio:0.25 normal_avgdelay:1761.0
+ total_succratio:0.08333333333333333 total_avgdelay:1510.5
+【scenario4】 total_succnum:1 normal_succnum:0 selfish_succnum:1 total_delay:1260 normal_delay:0 selfish_delay:1260
+ normal_node:30 selfish_node:70
+ normal_succratio:0.0
+ total_succratio:0.041666666666666664 total_avgdelay:1260.0
+【scenario5】 total_succnum:1 normal_succnum:0 selfish_succnum:1 total_delay:2159 normal_delay:0 selfish_delay:2159
+ normal_node:10 selfish_node:90
+ total_succratio:0.041666666666666664 total_avgdelay:2159.0
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:7200 gen_num:48 nr_nodes:80
+【scenario0】 total_succnum:8 normal_succnum:8 selfish_succnum:0 total_delay:21995 normal_delay:21995 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.16666666666666666 total_avgdelay:2749.375
+【scenario1】 total_succnum:8 normal_succnum:7 selfish_succnum:1 total_delay:22001 normal_delay:20637 selfish_delay:1364
+ normal_node:72 selfish_node:8
+ normal_succratio:0.19444444444444445 normal_avgdelay:2948.1428571428573
+ total_succratio:0.16666666666666666 total_avgdelay:2750.125
+【scenario2】 total_succnum:5 normal_succnum:0 selfish_succnum:5 total_delay:15896 normal_delay:0 selfish_delay:15896
+ normal_node:56 selfish_node:24
+ normal_succratio:0.0
+ total_succratio:0.10416666666666667 total_avgdelay:3179.2
+【scenario3】 total_succnum:4 normal_succnum:1 selfish_succnum:3 total_delay:13483 normal_delay:3864 selfish_delay:9619
+ normal_node:40 selfish_node:40
+ normal_succratio:0.06666666666666667 normal_avgdelay:3864.0
+ total_succratio:0.08333333333333333 total_avgdelay:3370.75
+【scenario4】 total_succnum:1 normal_succnum:0 selfish_succnum:1 total_delay:4559 normal_delay:0 selfish_delay:4559
+ normal_node:24 selfish_node:56
+ normal_succratio:0.0
+ total_succratio:0.020833333333333332 total_avgdelay:4559.0
+【scenario5】 total_succnum:2 normal_succnum:0 selfish_succnum:2 total_delay:9456 normal_delay:0 selfish_delay:9456
+ normal_node:8 selfish_node:72
+ total_succratio:0.041666666666666664 total_avgdelay:4728.0
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:10800 gen_num:72 nr_nodes:80
+【scenario0】 total_succnum:16 normal_succnum:16 selfish_succnum:0 total_delay:57435 normal_delay:57435 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.2222222222222222 total_avgdelay:3589.6875
+【scenario1】 total_succnum:15 normal_succnum:13 selfish_succnum:2 total_delay:53762 normal_delay:50749 selfish_delay:3013
+ normal_node:72 selfish_node:8
+ normal_succratio:0.23636363636363636 normal_avgdelay:3903.769230769231
+ total_succratio:0.20833333333333334 total_avgdelay:3584.133333333333
+【scenario2】 total_succnum:12 normal_succnum:3 selfish_succnum:9 total_delay:50805 normal_delay:20041 selfish_delay:30764
+ normal_node:56 selfish_node:24
+ normal_succratio:0.10714285714285714 normal_avgdelay:6680.333333333333
+ total_succratio:0.16666666666666666 total_avgdelay:4233.75
+【scenario3】 total_succnum:9 normal_succnum:1 selfish_succnum:8 total_delay:32923 normal_delay:3864 selfish_delay:29059
+ normal_node:40 selfish_node:40
+ normal_succratio:0.041666666666666664 normal_avgdelay:3864.0
+ total_succratio:0.125 total_avgdelay:3658.1111111111113
+【scenario4】 total_succnum:4 normal_succnum:0 selfish_succnum:4 total_delay:15077 normal_delay:0 selfish_delay:15077
+ normal_node:24 selfish_node:56
+ normal_succratio:0.0
+ total_succratio:0.05555555555555555 total_avgdelay:3769.25
+【scenario5】 total_succnum:4 normal_succnum:0 selfish_succnum:4 total_delay:12956 normal_delay:0 selfish_delay:12956
+ normal_node:8 selfish_node:72
+ total_succratio:0.05555555555555555 total_avgdelay:3239.0
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:7200 gen_num:48 nr_nodes:100
+【scenario0】 total_succnum:6 normal_succnum:6 selfish_succnum:0 total_delay:18902 normal_delay:18902 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.125 total_avgdelay:3150.3333333333335
+【scenario1】 total_succnum:6 normal_succnum:3 selfish_succnum:3 total_delay:19187 normal_delay:7151 selfish_delay:12036
+ normal_node:90 selfish_node:10
+ normal_succratio:0.09090909090909091 normal_avgdelay:2383.6666666666665
+ total_succratio:0.125 total_avgdelay:3197.8333333333335
+【scenario2】 total_succnum:7 normal_succnum:3 selfish_succnum:4 total_delay:20379 normal_delay:10206 selfish_delay:10173
+ normal_node:70 selfish_node:30
+ normal_succratio:0.08823529411764706 normal_avgdelay:3402.0
+ total_succratio:0.14583333333333334 total_avgdelay:2911.285714285714
+【scenario3】 total_succnum:4 normal_succnum:1 selfish_succnum:3 total_delay:12105 normal_delay:1761 selfish_delay:10344
+ normal_node:50 selfish_node:50
+ normal_succratio:0.1 normal_avgdelay:1761.0
+ total_succratio:0.08333333333333333 total_avgdelay:3026.25
+【scenario4】 total_succnum:3 normal_succnum:1 selfish_succnum:2 total_delay:10344 normal_delay:3454 selfish_delay:6890
+ normal_node:30 selfish_node:70
+ normal_succratio:0.125 normal_avgdelay:3454.0
+ total_succratio:0.0625 total_avgdelay:3448.0
+【scenario5】 total_succnum:3 normal_succnum:0 selfish_succnum:3 total_delay:11687 normal_delay:0 selfish_delay:11687
+ normal_node:10 selfish_node:90
+ total_succratio:0.0625 total_avgdelay:3895.6666666666665
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:14400 gen_num:96 nr_nodes:80
+【scenario0】 total_succnum:23 normal_succnum:23 selfish_succnum:0 total_delay:104499 normal_delay:104499 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.23958333333333334 total_avgdelay:4543.434782608696
+【scenario1】 total_succnum:22 normal_succnum:17 selfish_succnum:5 total_delay:100826 normal_delay:75032 selfish_delay:25794
+ normal_node:72 selfish_node:8
+ normal_succratio:0.2328767123287671 normal_avgdelay:4413.64705882353
+ total_succratio:0.22916666666666666 total_avgdelay:4583.0
+【scenario2】 total_succnum:17 normal_succnum:4 selfish_succnum:13 total_delay:89670 normal_delay:30753 selfish_delay:58917
+ normal_node:56 selfish_node:24
+ normal_succratio:0.1 normal_avgdelay:7688.25
+ total_succratio:0.17708333333333334 total_avgdelay:5274.705882352941
+【scenario3】 total_succnum:17 normal_succnum:4 selfish_succnum:13 total_delay:93566 normal_delay:37427 selfish_delay:56139
+ normal_node:40 selfish_node:40
+ normal_succratio:0.13333333333333333 normal_avgdelay:9356.75
+ total_succratio:0.17708333333333334 total_avgdelay:5503.882352941177
+【scenario4】 total_succnum:9 normal_succnum:1 selfish_succnum:8 total_delay:52366 normal_delay:8020 selfish_delay:44346
+ normal_node:24 selfish_node:56
+ normal_succratio:0.125 normal_avgdelay:8020.0
+ total_succratio:0.09375 total_avgdelay:5818.444444444444
+【scenario5】 total_succnum:7 normal_succnum:0 selfish_succnum:7 total_delay:29871 normal_delay:0 selfish_delay:29871
+ normal_node:8 selfish_node:72
+ normal_succratio:0.0
+ total_succratio:0.07291666666666667 total_avgdelay:4267.285714285715
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:10800 gen_num:72 nr_nodes:100
+【scenario0】 total_succnum:14 normal_succnum:14 selfish_succnum:0 total_delay:59392 normal_delay:59392 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.19444444444444445 total_avgdelay:4242.285714285715
+【scenario1】 total_succnum:14 normal_succnum:11 selfish_succnum:3 total_delay:59677 normal_delay:47641 selfish_delay:12036
+ normal_node:90 selfish_node:10
+ normal_succratio:0.2037037037037037 normal_avgdelay:4331.0
+ total_succratio:0.19444444444444445 total_avgdelay:4262.642857142857
+【scenario2】 total_succnum:11 normal_succnum:5 selfish_succnum:6 total_delay:45540 normal_delay:21224 selfish_delay:24316
+ normal_node:70 selfish_node:30
+ normal_succratio:0.11904761904761904 normal_avgdelay:4244.8
+ total_succratio:0.1527777777777778 total_avgdelay:4140.0
+【scenario3】 total_succnum:11 normal_succnum:3 selfish_succnum:8 total_delay:50472 normal_delay:14078 selfish_delay:36394
+ normal_node:50 selfish_node:50
+ normal_succratio:0.15789473684210525 normal_avgdelay:4692.666666666667
+ total_succratio:0.1527777777777778 total_avgdelay:4588.363636363636
+【scenario4】 total_succnum:5 normal_succnum:2 selfish_succnum:3 total_delay:17842 normal_delay:6533 selfish_delay:11309
+ normal_node:30 selfish_node:70
+ normal_succratio:0.15384615384615385 normal_avgdelay:3266.5
+ total_succratio:0.06944444444444445 total_avgdelay:3568.4
+【scenario5】 total_succnum:3 normal_succnum:0 selfish_succnum:3 total_delay:11687 normal_delay:0 selfish_delay:11687
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.041666666666666664 total_avgdelay:3895.6666666666665
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:18000 gen_num:120 nr_nodes:80
+【scenario0】 total_succnum:31 normal_succnum:31 selfish_succnum:0 total_delay:193386 normal_delay:193386 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.25833333333333336 total_avgdelay:6238.258064516129
+【scenario1】 total_succnum:30 normal_succnum:23 selfish_succnum:7 total_delay:192643 normal_delay:148815 selfish_delay:43828
+ normal_node:72 selfish_node:8
+ normal_succratio:0.25555555555555554 normal_avgdelay:6470.217391304348
+ total_succratio:0.25 total_avgdelay:6421.433333333333
+【scenario2】 total_succnum:23 normal_succnum:6 selfish_succnum:17 total_delay:162919 normal_delay:56678 selfish_delay:106241
+ normal_node:56 selfish_node:24
+ normal_succratio:0.10909090909090909 normal_avgdelay:9446.333333333334
+ total_succratio:0.19166666666666668 total_avgdelay:7083.434782608696
+【scenario3】 total_succnum:23 normal_succnum:5 selfish_succnum:18 total_delay:158597 normal_delay:41758 selfish_delay:116839
+ normal_node:40 selfish_node:40
+ normal_succratio:0.1388888888888889 normal_avgdelay:8351.6
+ total_succratio:0.19166666666666668 total_avgdelay:6895.521739130435
+【scenario4】 total_succnum:15 normal_succnum:2 selfish_succnum:13 total_delay:106231 normal_delay:12351 selfish_delay:93880
+ normal_node:24 selfish_node:56
+ normal_succratio:0.18181818181818182 normal_avgdelay:6175.5
+ total_succratio:0.125 total_avgdelay:7082.066666666667
+【scenario5】 total_succnum:10 normal_succnum:1 selfish_succnum:9 total_delay:50596 normal_delay:4331 selfish_delay:46265
+ normal_node:8 selfish_node:72
+ normal_succratio:0.5 normal_avgdelay:4331.0
+ total_succratio:0.08333333333333333 total_avgdelay:5059.6
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:21600 gen_num:144 nr_nodes:80
+【scenario0】 total_succnum:36 normal_succnum:36 selfish_succnum:0 total_delay:248302 normal_delay:248302 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.25 total_avgdelay:6897.277777777777
+【scenario1】 total_succnum:37 normal_succnum:27 selfish_succnum:10 total_delay:276245 normal_delay:202569 selfish_delay:73676
+ normal_node:72 selfish_node:8
+ normal_succratio:0.24545454545454545 normal_avgdelay:7502.555555555556
+ total_succratio:0.2569444444444444 total_avgdelay:7466.081081081081
+【scenario2】 total_succnum:28 normal_succnum:8 selfish_succnum:20 total_delay:221830 normal_delay:80342 selfish_delay:141488
+ normal_node:56 selfish_node:24
+ normal_succratio:0.125 normal_avgdelay:10042.75
+ total_succratio:0.19444444444444445 total_avgdelay:7922.5
+【scenario3】 total_succnum:27 normal_succnum:6 selfish_succnum:21 total_delay:194745 normal_delay:53973 selfish_delay:140772
+ normal_node:40 selfish_node:40
+ normal_succratio:0.14634146341463414 normal_avgdelay:8995.5
+ total_succratio:0.1875 total_avgdelay:7212.777777777777
+【scenario4】 total_succnum:21 normal_succnum:3 selfish_succnum:18 total_delay:170267 normal_delay:18850 selfish_delay:151417
+ normal_node:24 selfish_node:56
+ normal_succratio:0.25 normal_avgdelay:6283.333333333333
+ total_succratio:0.14583333333333334 total_avgdelay:8107.952380952381
+【scenario5】 total_succnum:15 normal_succnum:1 selfish_succnum:14 total_delay:90131 normal_delay:4331 selfish_delay:85800
+ normal_node:8 selfish_node:72
+ normal_succratio:0.5 normal_avgdelay:4331.0
+ total_succratio:0.10416666666666667 total_avgdelay:6008.733333333334
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:14400 gen_num:96 nr_nodes:100
+【scenario0】 total_succnum:18 normal_succnum:18 selfish_succnum:0 total_delay:101423 normal_delay:101423 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.1875 total_avgdelay:5634.611111111111
+【scenario1】 total_succnum:18 normal_succnum:14 selfish_succnum:4 total_delay:99179 normal_delay:81436 selfish_delay:17743
+ normal_node:90 selfish_node:10
+ normal_succratio:0.1917808219178082 normal_avgdelay:5816.857142857143
+ total_succratio:0.1875 total_avgdelay:5509.944444444444
+【scenario2】 total_succnum:18 normal_succnum:8 selfish_succnum:10 total_delay:108458 normal_delay:52288 selfish_delay:56170
+ normal_node:70 selfish_node:30
+ normal_succratio:0.15384615384615385 normal_avgdelay:6536.0
+ total_succratio:0.1875 total_avgdelay:6025.444444444444
+【scenario3】 total_succnum:16 normal_succnum:4 selfish_succnum:12 total_delay:91982 normal_delay:19073 selfish_delay:72909
+ normal_node:50 selfish_node:50
+ normal_succratio:0.17391304347826086 normal_avgdelay:4768.25
+ total_succratio:0.16666666666666666 total_avgdelay:5748.875
+【scenario4】 total_succnum:7 normal_succnum:2 selfish_succnum:5 total_delay:41081 normal_delay:6533 selfish_delay:34548
+ normal_node:30 selfish_node:70
+ normal_succratio:0.11764705882352941 normal_avgdelay:3266.5
+ total_succratio:0.07291666666666667 total_avgdelay:5868.714285714285
+【scenario5】 total_succnum:4 normal_succnum:0 selfish_succnum:4 total_delay:22287 normal_delay:0 selfish_delay:22287
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.041666666666666664 total_avgdelay:5571.75
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:25200 gen_num:168 nr_nodes:80
+【scenario0】 total_succnum:39 normal_succnum:39 selfish_succnum:0 total_delay:281032 normal_delay:281032 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.23214285714285715 total_avgdelay:7205.948717948718
+【scenario1】 total_succnum:41 normal_succnum:30 selfish_succnum:11 total_delay:327979 normal_delay:235299 selfish_delay:92680
+ normal_node:72 selfish_node:8
+ normal_succratio:0.22900763358778625 normal_avgdelay:7843.3
+ total_succratio:0.24404761904761904 total_avgdelay:7999.487804878048
+【scenario2】 total_succnum:34 normal_succnum:10 selfish_succnum:24 total_delay:291387 normal_delay:96468 selfish_delay:194919
+ normal_node:56 selfish_node:24
+ normal_succratio:0.12658227848101267 normal_avgdelay:9646.8
+ total_succratio:0.20238095238095238 total_avgdelay:8570.20588235294
+【scenario3】 total_succnum:30 normal_succnum:7 selfish_succnum:23 total_delay:227475 normal_delay:69119 selfish_delay:158356
+ normal_node:40 selfish_node:40
+ normal_succratio:0.14285714285714285 normal_avgdelay:9874.142857142857
+ total_succratio:0.17857142857142858 total_avgdelay:7582.5
+【scenario4】 total_succnum:23 normal_succnum:3 selfish_succnum:20 total_delay:186393 normal_delay:18850 selfish_delay:167543
+ normal_node:24 selfish_node:56
+ normal_succratio:0.21428571428571427 normal_avgdelay:6283.333333333333
+ total_succratio:0.13690476190476192 total_avgdelay:8104.04347826087
+【scenario5】 total_succnum:18 normal_succnum:1 selfish_succnum:17 total_delay:114507 normal_delay:4331 selfish_delay:110176
+ normal_node:8 selfish_node:72
+ normal_succratio:0.5 normal_avgdelay:4331.0
+ total_succratio:0.10714285714285714 total_avgdelay:6361.5
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:28800 gen_num:192 nr_nodes:80
+【scenario0】 total_succnum:50 normal_succnum:50 selfish_succnum:0 total_delay:458172 normal_delay:458172 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.2604166666666667 total_avgdelay:9163.44
+【scenario1】 total_succnum:51 normal_succnum:38 selfish_succnum:13 total_delay:483248 normal_delay:355076 selfish_delay:128172
+ normal_node:72 selfish_node:8
+ normal_succratio:0.25675675675675674 normal_avgdelay:9344.105263157895
+ total_succratio:0.265625 total_avgdelay:9475.450980392157
+【scenario2】 total_succnum:45 normal_succnum:11 selfish_succnum:34 total_delay:459960 normal_delay:110438 selfish_delay:349522
+ normal_node:56 selfish_node:24
+ normal_succratio:0.125 normal_avgdelay:10039.818181818182
+ total_succratio:0.234375 total_avgdelay:10221.333333333334
+【scenario3】 total_succnum:41 normal_succnum:10 selfish_succnum:31 total_delay:408981 normal_delay:111605 selfish_delay:297376
+ normal_node:40 selfish_node:40
+ normal_succratio:0.16666666666666666 normal_avgdelay:11160.5
+ total_succratio:0.21354166666666666 total_avgdelay:9975.146341463415
+【scenario4】 total_succnum:31 normal_succnum:4 selfish_succnum:27 total_delay:293199 normal_delay:21363 selfish_delay:271836
+ normal_node:24 selfish_node:56
+ normal_succratio:0.21052631578947367 normal_avgdelay:5340.75
+ total_succratio:0.16145833333333334 total_avgdelay:9458.032258064517
+【scenario5】 total_succnum:25 normal_succnum:1 selfish_succnum:24 total_delay:236468 normal_delay:4331 selfish_delay:232137
+ normal_node:8 selfish_node:72
+ normal_succratio:0.3333333333333333 normal_avgdelay:4331.0
+ total_succratio:0.13020833333333334 total_avgdelay:9458.72
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:18000 gen_num:120 nr_nodes:100
+【scenario0】 total_succnum:29 normal_succnum:29 selfish_succnum:0 total_delay:213249 normal_delay:213249 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.24166666666666667 total_avgdelay:7353.413793103448
+【scenario1】 total_succnum:28 normal_succnum:23 selfish_succnum:5 total_delay:201698 normal_delay:168631 selfish_delay:33067
+ normal_node:90 selfish_node:10
+ normal_succratio:0.23958333333333334 normal_avgdelay:7331.782608695652
+ total_succratio:0.23333333333333334 total_avgdelay:7203.5
+【scenario2】 total_succnum:28 normal_succnum:14 selfish_succnum:14 total_delay:211542 normal_delay:115390 selfish_delay:96152
+ normal_node:70 selfish_node:30
+ normal_succratio:0.22580645161290322 normal_avgdelay:8242.142857142857
+ total_succratio:0.23333333333333334 total_avgdelay:7555.071428571428
+【scenario3】 total_succnum:22 normal_succnum:4 selfish_succnum:18 total_delay:153634 normal_delay:19073 selfish_delay:134561
+ normal_node:50 selfish_node:50
+ normal_succratio:0.17391304347826086 normal_avgdelay:4768.25
+ total_succratio:0.18333333333333332 total_avgdelay:6983.363636363636
+【scenario4】 total_succnum:13 normal_succnum:2 selfish_succnum:11 total_delay:91325 normal_delay:6533 selfish_delay:84792
+ normal_node:30 selfish_node:70
+ normal_succratio:0.10526315789473684 normal_avgdelay:3266.5
+ total_succratio:0.10833333333333334 total_avgdelay:7025.0
+【scenario5】 total_succnum:9 normal_succnum:0 selfish_succnum:9 total_delay:65731 normal_delay:0 selfish_delay:65731
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.075 total_avgdelay:7303.444444444444
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:32400 gen_num:216 nr_nodes:80
+【scenario0】 total_succnum:55 normal_succnum:55 selfish_succnum:0 total_delay:576442 normal_delay:576442 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.25462962962962965 total_avgdelay:10480.763636363636
+【scenario1】 total_succnum:54 normal_succnum:41 selfish_succnum:13 total_delay:557208 normal_delay:429036 selfish_delay:128172
+ normal_node:72 selfish_node:8
+ normal_succratio:0.24550898203592814 normal_avgdelay:10464.292682926829
+ total_succratio:0.25 total_avgdelay:10318.666666666666
+【scenario2】 total_succnum:46 normal_succnum:12 selfish_succnum:34 total_delay:484031 normal_delay:134509 selfish_delay:349522
+ normal_node:56 selfish_node:24
+ normal_succratio:0.12371134020618557 normal_avgdelay:11209.083333333334
+ total_succratio:0.21296296296296297 total_avgdelay:10522.41304347826
+【scenario3】 total_succnum:45 normal_succnum:12 selfish_succnum:33 total_delay:506714 normal_delay:161274 selfish_delay:345440
+ normal_node:40 selfish_node:40
+ normal_succratio:0.1791044776119403 normal_avgdelay:13439.5
+ total_succratio:0.20833333333333334 total_avgdelay:11260.31111111111
+【scenario4】 total_succnum:37 normal_succnum:4 selfish_succnum:33 total_delay:451687 normal_delay:21363 selfish_delay:430324
+ normal_node:24 selfish_node:56
+ normal_succratio:0.2 normal_avgdelay:5340.75
+ total_succratio:0.1712962962962963 total_avgdelay:12207.756756756757
+【scenario5】 total_succnum:28 normal_succnum:1 selfish_succnum:27 total_delay:324977 normal_delay:4331 selfish_delay:320646
+ normal_node:8 selfish_node:72
+ normal_succratio:0.3333333333333333 normal_avgdelay:4331.0
+ total_succratio:0.12962962962962962 total_avgdelay:11606.32142857143
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:21600 gen_num:144 nr_nodes:100
+【scenario0】 total_succnum:38 normal_succnum:38 selfish_succnum:0 total_delay:307836 normal_delay:307836 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.2638888888888889 total_avgdelay:8100.9473684210525
+【scenario1】 total_succnum:41 normal_succnum:33 selfish_succnum:8 total_delay:352886 normal_delay:278820 selfish_delay:74066
+ normal_node:90 selfish_node:10
+ normal_succratio:0.2894736842105263 normal_avgdelay:8449.09090909091
+ total_succratio:0.2847222222222222 total_avgdelay:8606.975609756097
+【scenario2】 total_succnum:36 normal_succnum:16 selfish_succnum:20 total_delay:297721 normal_delay:136134 selfish_delay:161587
+ normal_node:70 selfish_node:30
+ normal_succratio:0.2191780821917808 normal_avgdelay:8508.375
+ total_succratio:0.25 total_avgdelay:8270.027777777777
+【scenario3】 total_succnum:31 normal_succnum:7 selfish_succnum:24 total_delay:257595 normal_delay:55009 selfish_delay:202586
+ normal_node:50 selfish_node:50
+ normal_succratio:0.22580645161290322 normal_avgdelay:7858.428571428572
+ total_succratio:0.2152777777777778 total_avgdelay:8309.516129032258
+【scenario4】 total_succnum:23 normal_succnum:2 selfish_succnum:21 total_delay:208606 normal_delay:6533 selfish_delay:202073
+ normal_node:30 selfish_node:70
+ normal_succratio:0.09090909090909091 normal_avgdelay:3266.5
+ total_succratio:0.1597222222222222 total_avgdelay:9069.826086956522
+【scenario5】 total_succnum:15 normal_succnum:0 selfish_succnum:15 total_delay:118725 normal_delay:0 selfish_delay:118725
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.10416666666666667 total_avgdelay:7915.0
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:36000 gen_num:240 nr_nodes:80
+【scenario0】 total_succnum:58 normal_succnum:58 selfish_succnum:0 total_delay:625833 normal_delay:625833 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.24166666666666667 total_avgdelay:10790.224137931034
+【scenario1】 total_succnum:57 normal_succnum:42 selfish_succnum:15 total_delay:606599 normal_delay:443628 selfish_delay:162971
+ normal_node:72 selfish_node:8
+ normal_succratio:0.22340425531914893 normal_avgdelay:10562.57142857143
+ total_succratio:0.2375 total_avgdelay:10642.087719298246
+【scenario2】 total_succnum:52 normal_succnum:14 selfish_succnum:38 total_delay:614840 normal_delay:169308 selfish_delay:445532
+ normal_node:56 selfish_node:24
+ normal_succratio:0.1308411214953271 normal_avgdelay:12093.42857142857
+ total_succratio:0.21666666666666667 total_avgdelay:11823.846153846154
+【scenario3】 total_succnum:48 normal_succnum:13 selfish_succnum:35 total_delay:553490 normal_delay:165999 selfish_delay:387491
+ normal_node:40 selfish_node:40
+ normal_succratio:0.17105263157894737 normal_avgdelay:12769.153846153846
+ total_succratio:0.2 total_avgdelay:11531.041666666666
+【scenario4】 total_succnum:43 normal_succnum:5 selfish_succnum:38 total_delay:582915 normal_delay:26088 selfish_delay:556827
+ normal_node:24 selfish_node:56
+ normal_succratio:0.23809523809523808 normal_avgdelay:5217.6
+ total_succratio:0.17916666666666667 total_avgdelay:13556.162790697674
+【scenario5】 total_succnum:33 normal_succnum:1 selfish_succnum:32 total_delay:428017 normal_delay:4331 selfish_delay:423686
+ normal_node:8 selfish_node:72
+ normal_succratio:0.3333333333333333 normal_avgdelay:4331.0
+ total_succratio:0.1375 total_avgdelay:12970.212121212122
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:39600 gen_num:264 nr_nodes:80
+【scenario0】 total_succnum:65 normal_succnum:65 selfish_succnum:0 total_delay:799990 normal_delay:799990 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.24621212121212122 total_avgdelay:12307.538461538461
+【scenario1】 total_succnum:64 normal_succnum:47 selfish_succnum:17 total_delay:782752 normal_delay:567618 selfish_delay:215134
+ normal_node:72 selfish_node:8
+ normal_succratio:0.22815533980582525 normal_avgdelay:12076.978723404256
+ total_succratio:0.24242424242424243 total_avgdelay:12230.5
+【scenario2】 total_succnum:60 normal_succnum:21 selfish_succnum:39 total_delay:833935 normal_delay:352840 selfish_delay:481095
+ normal_node:56 selfish_node:24
+ normal_succratio:0.17796610169491525 normal_avgdelay:16801.904761904763
+ total_succratio:0.22727272727272727 total_avgdelay:13898.916666666666
+【scenario3】 total_succnum:53 normal_succnum:14 selfish_succnum:39 total_delay:647382 normal_delay:188419 selfish_delay:458963
+ normal_node:40 selfish_node:40
+ normal_succratio:0.17073170731707318 normal_avgdelay:13458.5
+ total_succratio:0.20075757575757575 total_avgdelay:12214.754716981131
+【scenario4】 total_succnum:51 normal_succnum:5 selfish_succnum:46 total_delay:799349 normal_delay:26088 selfish_delay:773261
+ normal_node:24 selfish_node:56
+ normal_succratio:0.2 normal_avgdelay:5217.6
+ total_succratio:0.19318181818181818 total_avgdelay:15673.509803921568
+【scenario5】 total_succnum:40 normal_succnum:1 selfish_succnum:39 total_delay:610940 normal_delay:4331 selfish_delay:606609
+ normal_node:8 selfish_node:72
+ normal_succratio:0.2 normal_avgdelay:4331.0
+ total_succratio:0.15151515151515152 total_avgdelay:15273.5
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:25200 gen_num:168 nr_nodes:100
+【scenario0】 total_succnum:46 normal_succnum:46 selfish_succnum:0 total_delay:434050 normal_delay:434050 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.27380952380952384 total_avgdelay:9435.869565217392
+【scenario1】 total_succnum:47 normal_succnum:38 selfish_succnum:9 total_delay:449441 normal_delay:358401 selfish_delay:91040
+ normal_node:90 selfish_node:10
+ normal_succratio:0.2878787878787879 normal_avgdelay:9431.605263157895
+ total_succratio:0.27976190476190477 total_avgdelay:9562.574468085106
+【scenario2】 total_succnum:42 normal_succnum:18 selfish_succnum:24 total_delay:387975 normal_delay:167662 selfish_delay:220313
+ normal_node:70 selfish_node:30
+ normal_succratio:0.21428571428571427 normal_avgdelay:9314.555555555555
+ total_succratio:0.25 total_avgdelay:9237.5
+【scenario3】 total_succnum:41 normal_succnum:10 selfish_succnum:31 total_delay:413751 normal_delay:107785 selfish_delay:305966
+ normal_node:50 selfish_node:50
+ normal_succratio:0.29411764705882354 normal_avgdelay:10778.5
+ total_succratio:0.24404761904761904 total_avgdelay:10091.487804878048
+【scenario4】 total_succnum:29 normal_succnum:2 selfish_succnum:27 total_delay:304290 normal_delay:6533 selfish_delay:297757
+ normal_node:30 selfish_node:70
+ normal_succratio:0.08 normal_avgdelay:3266.5
+ total_succratio:0.17261904761904762 total_avgdelay:10492.758620689656
+【scenario5】 total_succnum:19 normal_succnum:0 selfish_succnum:19 total_delay:180686 normal_delay:0 selfish_delay:180686
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.1130952380952381 total_avgdelay:9509.78947368421
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:43200 gen_num:288 nr_nodes:80
+【scenario0】 total_succnum:73 normal_succnum:73 selfish_succnum:0 total_delay:978672 normal_delay:978672 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.2534722222222222 total_avgdelay:13406.465753424658
+【scenario1】 total_succnum:72 normal_succnum:52 selfish_succnum:20 total_delay:932145 normal_delay:652601 selfish_delay:279544
+ normal_node:72 selfish_node:8
+ normal_succratio:0.22807017543859648 normal_avgdelay:12550.01923076923
+ total_succratio:0.25 total_avgdelay:12946.458333333334
+【scenario2】 total_succnum:67 normal_succnum:24 selfish_succnum:43 total_delay:966165 normal_delay:417546 selfish_delay:548619
+ normal_node:56 selfish_node:24
+ normal_succratio:0.18181818181818182 normal_avgdelay:17397.75
+ total_succratio:0.2326388888888889 total_avgdelay:14420.373134328358
+【scenario3】 total_succnum:65 normal_succnum:14 selfish_succnum:51 total_delay:967090 normal_delay:188419 selfish_delay:778671
+ normal_node:40 selfish_node:40
+ normal_succratio:0.1590909090909091 normal_avgdelay:13458.5
+ total_succratio:0.22569444444444445 total_avgdelay:14878.307692307691
+【scenario4】 total_succnum:59 normal_succnum:5 selfish_succnum:54 total_delay:995534 normal_delay:26088 selfish_delay:969446
+ normal_node:24 selfish_node:56
+ normal_succratio:0.18518518518518517 normal_avgdelay:5217.6
+ total_succratio:0.2048611111111111 total_avgdelay:16873.457627118645
+【scenario5】 total_succnum:51 normal_succnum:1 selfish_succnum:50 total_delay:904817 normal_delay:4331 selfish_delay:900486
+ normal_node:8 selfish_node:72
+ normal_succratio:0.2 normal_avgdelay:4331.0
+ total_succratio:0.17708333333333334 total_avgdelay:17741.50980392157
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:46800 gen_num:312 nr_nodes:80
+【scenario0】 total_succnum:87 normal_succnum:87 selfish_succnum:0 total_delay:1311360 normal_delay:1311360 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.27884615384615385 total_avgdelay:15073.103448275862
+【scenario1】 total_succnum:80 normal_succnum:58 selfish_succnum:22 total_delay:1109546 normal_delay:771771 selfish_delay:337775
+ normal_node:72 selfish_node:8
+ normal_succratio:0.23481781376518218 normal_avgdelay:13306.396551724138
+ total_succratio:0.2564102564102564 total_avgdelay:13869.325
+【scenario2】 total_succnum:79 normal_succnum:28 selfish_succnum:51 total_delay:1271760 normal_delay:544704 selfish_delay:727056
+ normal_node:56 selfish_node:24
+ normal_succratio:0.19718309859154928 normal_avgdelay:19453.714285714286
+ total_succratio:0.2532051282051282 total_avgdelay:16098.227848101265
+【scenario3】 total_succnum:78 normal_succnum:15 selfish_succnum:63 total_delay:1269017 normal_delay:233304 selfish_delay:1035713
+ normal_node:40 selfish_node:40
+ normal_succratio:0.16129032258064516 normal_avgdelay:15553.6
+ total_succratio:0.25 total_avgdelay:16269.448717948719
+【scenario4】 total_succnum:71 normal_succnum:5 selfish_succnum:66 total_delay:1331909 normal_delay:26088 selfish_delay:1305821
+ normal_node:24 selfish_node:56
+ normal_succratio:0.16666666666666666 normal_avgdelay:5217.6
+ total_succratio:0.22756410256410256 total_avgdelay:18759.281690140844
+【scenario5】 total_succnum:63 normal_succnum:1 selfish_succnum:62 total_delay:1223104 normal_delay:4331 selfish_delay:1218773
+ normal_node:8 selfish_node:72
+ normal_succratio:0.2 normal_avgdelay:4331.0
+ total_succratio:0.20192307692307693 total_avgdelay:19414.349206349205
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:28800 gen_num:192 nr_nodes:100
+【scenario0】 total_succnum:50 normal_succnum:50 selfish_succnum:0 total_delay:503771 normal_delay:503771 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.2604166666666667 total_avgdelay:10075.42
+【scenario1】 total_succnum:52 normal_succnum:42 selfish_succnum:10 total_delay:536760 normal_delay:422957 selfish_delay:113803
+ normal_node:90 selfish_node:10
+ normal_succratio:0.28187919463087246 normal_avgdelay:10070.404761904761
+ total_succratio:0.2708333333333333 total_avgdelay:10322.307692307691
+【scenario2】 total_succnum:47 normal_succnum:21 selfish_succnum:26 total_delay:470864 normal_delay:220254 selfish_delay:250610
+ normal_node:70 selfish_node:30
+ normal_succratio:0.21212121212121213 normal_avgdelay:10488.285714285714
+ total_succratio:0.24479166666666666 total_avgdelay:10018.382978723404
+【scenario3】 total_succnum:47 normal_succnum:11 selfish_succnum:36 total_delay:524940 normal_delay:133480 selfish_delay:391460
+ normal_node:50 selfish_node:50
+ normal_succratio:0.25 normal_avgdelay:12134.545454545454
+ total_succratio:0.24479166666666666 total_avgdelay:11168.936170212766
+【scenario4】 total_succnum:36 normal_succnum:2 selfish_succnum:34 total_delay:423263 normal_delay:6533 selfish_delay:416730
+ normal_node:30 selfish_node:70
+ normal_succratio:0.08 normal_avgdelay:3266.5
+ total_succratio:0.1875 total_avgdelay:11757.305555555555
+【scenario5】 total_succnum:23 normal_succnum:0 selfish_succnum:23 total_delay:251719 normal_delay:0 selfish_delay:251719
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.11979166666666667 total_avgdelay:10944.304347826086
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:50400 gen_num:336 nr_nodes:80
+【scenario0】 total_succnum:93 normal_succnum:93 selfish_succnum:0 total_delay:1432203 normal_delay:1432203 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.2767857142857143 total_avgdelay:15400.032258064517
+【scenario1】 total_succnum:86 normal_succnum:62 selfish_succnum:24 total_delay:1269129 normal_delay:899788 selfish_delay:369341
+ normal_node:72 selfish_node:8
+ normal_succratio:0.22962962962962963 normal_avgdelay:14512.709677419354
+ total_succratio:0.25595238095238093 total_avgdelay:14757.313953488372
+【scenario2】 total_succnum:86 normal_succnum:32 selfish_succnum:54 total_delay:1469370 normal_delay:670714 selfish_delay:798656
+ normal_node:56 selfish_node:24
+ normal_succratio:0.20915032679738563 normal_avgdelay:20959.8125
+ total_succratio:0.25595238095238093 total_avgdelay:17085.697674418603
+【scenario3】 total_succnum:86 normal_succnum:16 selfish_succnum:70 total_delay:1482928 normal_delay:278373 selfish_delay:1204555
+ normal_node:40 selfish_node:40
+ normal_succratio:0.16494845360824742 normal_avgdelay:17398.3125
+ total_succratio:0.25595238095238093 total_avgdelay:17243.3488372093
+【scenario4】 total_succnum:82 normal_succnum:5 selfish_succnum:77 total_delay:1626379 normal_delay:26088 selfish_delay:1600291
+ normal_node:24 selfish_node:56
+ normal_succratio:0.14705882352941177 normal_avgdelay:5217.6
+ total_succratio:0.24404761904761904 total_avgdelay:19833.89024390244
+【scenario5】 total_succnum:73 normal_succnum:1 selfish_succnum:72 total_delay:1516518 normal_delay:4331 selfish_delay:1512187
+ normal_node:8 selfish_node:72
+ normal_succratio:0.16666666666666666 normal_avgdelay:4331.0
+ total_succratio:0.21726190476190477 total_avgdelay:20774.219178082192
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:32400 gen_num:216 nr_nodes:100
+【scenario0】 total_succnum:56 normal_succnum:56 selfish_succnum:0 total_delay:622096 normal_delay:622096 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.25925925925925924 total_avgdelay:11108.857142857143
+【scenario1】 total_succnum:59 normal_succnum:46 selfish_succnum:13 total_delay:676188 normal_delay:496031 selfish_delay:180157
+ normal_node:90 selfish_node:10
+ normal_succratio:0.26900584795321636 normal_avgdelay:10783.282608695652
+ total_succratio:0.27314814814814814 total_avgdelay:11460.813559322034
+【scenario2】 total_succnum:57 normal_succnum:28 selfish_succnum:29 total_delay:691229 normal_delay:372055 selfish_delay:319174
+ normal_node:70 selfish_node:30
+ normal_succratio:0.24778761061946902 normal_avgdelay:13287.67857142857
+ total_succratio:0.2638888888888889 total_avgdelay:12126.82456140351
+【scenario3】 total_succnum:57 normal_succnum:13 selfish_succnum:44 total_delay:724666 normal_delay:177424 selfish_delay:547242
+ normal_node:50 selfish_node:50
+ normal_succratio:0.2549019607843137 normal_avgdelay:13648.0
+ total_succratio:0.2638888888888889 total_avgdelay:12713.438596491229
+【scenario4】 total_succnum:45 normal_succnum:3 selfish_succnum:42 total_delay:600372 normal_delay:30602 selfish_delay:569770
+ normal_node:30 selfish_node:70
+ normal_succratio:0.1111111111111111 normal_avgdelay:10200.666666666666
+ total_succratio:0.20833333333333334 total_avgdelay:13341.6
+【scenario5】 total_succnum:29 normal_succnum:0 selfish_succnum:29 total_delay:369624 normal_delay:0 selfish_delay:369624
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.13425925925925927 total_avgdelay:12745.655172413793
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:54000 gen_num:360 nr_nodes:80
+【scenario0】 total_succnum:106 normal_succnum:106 selfish_succnum:0 total_delay:1726817 normal_delay:1726817 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.29444444444444445 total_avgdelay:16290.72641509434
+【scenario1】 total_succnum:100 normal_succnum:75 selfish_succnum:25 total_delay:1592653 normal_delay:1217319 selfish_delay:375334
+ normal_node:72 selfish_node:8
+ normal_succratio:0.25862068965517243 normal_avgdelay:16230.92
+ total_succratio:0.2777777777777778 total_avgdelay:15926.53
+【scenario2】 total_succnum:99 normal_succnum:36 selfish_succnum:63 total_delay:1741317 normal_delay:745203 selfish_delay:996114
+ normal_node:56 selfish_node:24
+ normal_succratio:0.22085889570552147 normal_avgdelay:20700.083333333332
+ total_succratio:0.275 total_avgdelay:17589.060606060608
+【scenario3】 total_succnum:102 normal_succnum:20 selfish_succnum:82 total_delay:1893136 normal_delay:409498 selfish_delay:1483638
+ normal_node:40 selfish_node:40
+ normal_succratio:0.1941747572815534 normal_avgdelay:20474.9
+ total_succratio:0.2833333333333333 total_avgdelay:18560.156862745098
+【scenario4】 total_succnum:96 normal_succnum:6 selfish_succnum:90 total_delay:1949546 normal_delay:29247 selfish_delay:1920299
+ normal_node:24 selfish_node:56
+ normal_succratio:0.17142857142857143 normal_avgdelay:4874.5
+ total_succratio:0.26666666666666666 total_avgdelay:20307.770833333332
+【scenario5】 total_succnum:88 normal_succnum:1 selfish_succnum:87 total_delay:1901325 normal_delay:4331 selfish_delay:1896994
+ normal_node:8 selfish_node:72
+ normal_succratio:0.14285714285714285 normal_avgdelay:4331.0
+ total_succratio:0.24444444444444444 total_avgdelay:21605.965909090908
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:57600 gen_num:384 nr_nodes:80
+【scenario0】 total_succnum:113 normal_succnum:113 selfish_succnum:0 total_delay:1917081 normal_delay:1917081 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.2942708333333333 total_avgdelay:16965.318584070796
+【scenario1】 total_succnum:108 normal_succnum:82 selfish_succnum:26 total_delay:1805400 normal_delay:1425416 selfish_delay:379984
+ normal_node:72 selfish_node:8
+ normal_succratio:0.26537216828478966 normal_avgdelay:17383.121951219513
+ total_succratio:0.28125 total_avgdelay:16716.666666666668
+【scenario2】 total_succnum:106 normal_succnum:41 selfish_succnum:65 total_delay:1934131 normal_delay:880819 selfish_delay:1053312
+ normal_node:56 selfish_node:24
+ normal_succratio:0.2342857142857143 normal_avgdelay:21483.39024390244
+ total_succratio:0.2760416666666667 total_avgdelay:18246.51886792453
+【scenario3】 total_succnum:116 normal_succnum:21 selfish_succnum:95 total_delay:2329142 normal_delay:462046 selfish_delay:1867096
+ normal_node:40 selfish_node:40
+ normal_succratio:0.19444444444444445 normal_avgdelay:22002.190476190477
+ total_succratio:0.3020833333333333 total_avgdelay:20078.810344827587
+【scenario4】 total_succnum:105 normal_succnum:8 selfish_succnum:97 total_delay:2222992 normal_delay:99282 selfish_delay:2123710
+ normal_node:24 selfish_node:56
+ normal_succratio:0.2222222222222222 normal_avgdelay:12410.25
+ total_succratio:0.2734375 total_avgdelay:21171.35238095238
+【scenario5】 total_succnum:95 normal_succnum:1 selfish_succnum:94 total_delay:2081762 normal_delay:4331 selfish_delay:2077431
+ normal_node:8 selfish_node:72
+ normal_succratio:0.14285714285714285 normal_avgdelay:4331.0
+ total_succratio:0.24739583333333334 total_avgdelay:21913.284210526315
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:36000 gen_num:240 nr_nodes:100
+【scenario0】 total_succnum:60 normal_succnum:60 selfish_succnum:0 total_delay:707616 normal_delay:707616 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.25 total_avgdelay:11793.6
+【scenario1】 total_succnum:66 normal_succnum:48 selfish_succnum:18 total_delay:795605 normal_delay:526286 selfish_delay:269319
+ normal_node:90 selfish_node:10
+ normal_succratio:0.25263157894736843 normal_avgdelay:10964.291666666666
+ total_succratio:0.275 total_avgdelay:12054.621212121212
+【scenario2】 total_succnum:64 normal_succnum:32 selfish_succnum:32 total_delay:851710 normal_delay:466520 selfish_delay:385190
+ normal_node:70 selfish_node:30
+ normal_succratio:0.25806451612903225 normal_avgdelay:14578.75
+ total_succratio:0.26666666666666666 total_avgdelay:13307.96875
+【scenario3】 total_succnum:64 normal_succnum:15 selfish_succnum:49 total_delay:883336 normal_delay:208745 selfish_delay:674591
+ normal_node:50 selfish_node:50
+ normal_succratio:0.2542372881355932 normal_avgdelay:13916.333333333334
+ total_succratio:0.26666666666666666 total_avgdelay:13802.125
+【scenario4】 total_succnum:53 normal_succnum:3 selfish_succnum:50 total_delay:774704 normal_delay:30602 selfish_delay:744102
+ normal_node:30 selfish_node:70
+ normal_succratio:0.1 normal_avgdelay:10200.666666666666
+ total_succratio:0.22083333333333333 total_avgdelay:14617.056603773584
+【scenario5】 total_succnum:32 normal_succnum:0 selfish_succnum:32 total_delay:435487 normal_delay:0 selfish_delay:435487
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.13333333333333333 total_avgdelay:13608.96875
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:61200 gen_num:408 nr_nodes:80
+【scenario0】 total_succnum:117 normal_succnum:117 selfish_succnum:0 total_delay:2052254 normal_delay:2052254 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.2867647058823529 total_avgdelay:17540.63247863248
+【scenario1】 total_succnum:114 normal_succnum:86 selfish_succnum:28 total_delay:2012493 normal_delay:1558202 selfish_delay:454291
+ normal_node:72 selfish_node:8
+ normal_succratio:0.26299694189602446 normal_avgdelay:18118.627906976744
+ total_succratio:0.27941176470588236 total_avgdelay:17653.447368421053
+【scenario2】 total_succnum:111 normal_succnum:42 selfish_succnum:69 total_delay:2059613 normal_delay:889758 selfish_delay:1169855
+ normal_node:56 selfish_node:24
+ normal_succratio:0.22702702702702704 normal_avgdelay:21184.714285714286
+ total_succratio:0.27205882352941174 total_avgdelay:18555.07207207207
+【scenario3】 total_succnum:125 normal_succnum:23 selfish_succnum:102 total_delay:2591618 normal_delay:495617 selfish_delay:2096001
+ normal_node:40 selfish_node:40
+ normal_succratio:0.2072072072072072 normal_avgdelay:21548.565217391304
+ total_succratio:0.30637254901960786 total_avgdelay:20732.944
+【scenario4】 total_succnum:111 normal_succnum:8 selfish_succnum:103 total_delay:2408190 normal_delay:99282 selfish_delay:2308908
+ normal_node:24 selfish_node:56
+ normal_succratio:0.2222222222222222 normal_avgdelay:12410.25
+ total_succratio:0.27205882352941174 total_avgdelay:21695.405405405407
+【scenario5】 total_succnum:100 normal_succnum:1 selfish_succnum:99 total_delay:2243509 normal_delay:4331 selfish_delay:2239178
+ normal_node:8 selfish_node:72
+ normal_succratio:0.125 normal_avgdelay:4331.0
+ total_succratio:0.24509803921568626 total_avgdelay:22435.09
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:39600 gen_num:264 nr_nodes:100
+【scenario0】 total_succnum:69 normal_succnum:69 selfish_succnum:0 total_delay:914111 normal_delay:914111 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.26136363636363635 total_avgdelay:13247.985507246376
+【scenario1】 total_succnum:75 normal_succnum:53 selfish_succnum:22 total_delay:998082 normal_delay:641873 selfish_delay:356209
+ normal_node:90 selfish_node:10
+ normal_succratio:0.2560386473429952 normal_avgdelay:12110.811320754718
+ total_succratio:0.2840909090909091 total_avgdelay:13307.76
+【scenario2】 total_succnum:74 normal_succnum:36 selfish_succnum:38 total_delay:1010410 normal_delay:564909 selfish_delay:445501
+ normal_node:70 selfish_node:30
+ normal_succratio:0.27906976744186046 normal_avgdelay:15691.916666666666
+ total_succratio:0.2803030303030303 total_avgdelay:13654.18918918919
+【scenario3】 total_succnum:73 normal_succnum:15 selfish_succnum:58 total_delay:1102284 normal_delay:208745 selfish_delay:893539
+ normal_node:50 selfish_node:50
+ normal_succratio:0.24193548387096775 normal_avgdelay:13916.333333333334
+ total_succratio:0.2765151515151515 total_avgdelay:15099.780821917808
+【scenario4】 total_succnum:65 normal_succnum:3 selfish_succnum:62 total_delay:1010609 normal_delay:30602 selfish_delay:980007
+ normal_node:30 selfish_node:70
+ normal_succratio:0.08823529411764706 normal_avgdelay:10200.666666666666
+ total_succratio:0.24621212121212122 total_avgdelay:15547.83076923077
+【scenario5】 total_succnum:38 normal_succnum:0 selfish_succnum:38 total_delay:579972 normal_delay:0 selfish_delay:579972
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.14393939393939395 total_avgdelay:15262.421052631578
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:64800 gen_num:432 nr_nodes:80
+【scenario0】 total_succnum:124 normal_succnum:124 selfish_succnum:0 total_delay:2271556 normal_delay:2271556 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.28703703703703703 total_avgdelay:18319.0
+【scenario1】 total_succnum:120 normal_succnum:91 selfish_succnum:29 total_delay:2186436 normal_delay:1699440 selfish_delay:486996
+ normal_node:72 selfish_node:8
+ normal_succratio:0.2630057803468208 normal_avgdelay:18675.164835164836
+ total_succratio:0.2777777777777778 total_avgdelay:18220.3
+【scenario2】 total_succnum:118 normal_succnum:43 selfish_succnum:75 total_delay:2279151 normal_delay:948436 selfish_delay:1330715
+ normal_node:56 selfish_node:24
+ normal_succratio:0.21717171717171718 normal_avgdelay:22056.6511627907
+ total_succratio:0.27314814814814814 total_avgdelay:19314.838983050846
+【scenario3】 total_succnum:131 normal_succnum:23 selfish_succnum:108 total_delay:2704068 normal_delay:495617 selfish_delay:2208451
+ normal_node:40 selfish_node:40
+ normal_succratio:0.20353982300884957 normal_avgdelay:21548.565217391304
+ total_succratio:0.30324074074074076 total_avgdelay:20641.74045801527
+【scenario4】 total_succnum:118 normal_succnum:8 selfish_succnum:110 total_delay:2596330 normal_delay:99282 selfish_delay:2497048
+ normal_node:24 selfish_node:56
+ normal_succratio:0.2 normal_avgdelay:12410.25
+ total_succratio:0.27314814814814814 total_avgdelay:22002.79661016949
+【scenario5】 total_succnum:106 normal_succnum:2 selfish_succnum:104 total_delay:2389848 normal_delay:29052 selfish_delay:2360796
+ normal_node:8 selfish_node:72
+ normal_succratio:0.25 normal_avgdelay:14526.0
+ total_succratio:0.24537037037037038 total_avgdelay:22545.735849056604
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:68400 gen_num:456 nr_nodes:80
+【scenario0】 total_succnum:141 normal_succnum:141 selfish_succnum:0 total_delay:2853960 normal_delay:2853960 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.3092105263157895 total_avgdelay:20240.85106382979
+【scenario1】 total_succnum:134 normal_succnum:103 selfish_succnum:31 total_delay:2676962 normal_delay:2093932 selfish_delay:583030
+ normal_node:72 selfish_node:8
+ normal_succratio:0.28065395095367845 normal_avgdelay:20329.436893203885
+ total_succratio:0.29385964912280704 total_avgdelay:19977.328358208953
+【scenario2】 total_succnum:133 normal_succnum:48 selfish_succnum:85 total_delay:2823242 normal_delay:1116558 selfish_delay:1706684
+ normal_node:56 selfish_node:24
+ normal_succratio:0.23300970873786409 normal_avgdelay:23261.625
+ total_succratio:0.2916666666666667 total_avgdelay:21227.38345864662
+【scenario3】 total_succnum:149 normal_succnum:26 selfish_succnum:123 total_delay:3325481 normal_delay:582102 selfish_delay:2743379
+ normal_node:40 selfish_node:40
+ normal_succratio:0.22413793103448276 normal_avgdelay:22388.53846153846
+ total_succratio:0.3267543859649123 total_avgdelay:22318.664429530203
+【scenario4】 total_succnum:135 normal_succnum:8 selfish_succnum:127 total_delay:3167748 normal_delay:99282 selfish_delay:3068466
+ normal_node:24 selfish_node:56
+ normal_succratio:0.1951219512195122 normal_avgdelay:12410.25
+ total_succratio:0.29605263157894735 total_avgdelay:23464.8
+【scenario5】 total_succnum:123 normal_succnum:2 selfish_succnum:121 total_delay:2994710 normal_delay:29052 selfish_delay:2965658
+ normal_node:8 selfish_node:72
+ normal_succratio:0.25 normal_avgdelay:14526.0
+ total_succratio:0.26973684210526316 total_avgdelay:24347.235772357722
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:43200 gen_num:288 nr_nodes:100
+【scenario0】 total_succnum:74 normal_succnum:74 selfish_succnum:0 total_delay:1017218 normal_delay:1017218 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.2569444444444444 total_avgdelay:13746.18918918919
+【scenario1】 total_succnum:79 normal_succnum:56 selfish_succnum:23 total_delay:1072099 normal_delay:711576 selfish_delay:360523
+ normal_node:90 selfish_node:10
+ normal_succratio:0.25112107623318386 normal_avgdelay:12706.714285714286
+ total_succratio:0.2743055555555556 total_avgdelay:13570.87341772152
+【scenario2】 total_succnum:82 normal_succnum:41 selfish_succnum:41 total_delay:1187925 normal_delay:679610 selfish_delay:508315
+ normal_node:70 selfish_node:30
+ normal_succratio:0.2949640287769784 normal_avgdelay:16575.853658536584
+ total_succratio:0.2847222222222222 total_avgdelay:14486.890243902439
+【scenario3】 total_succnum:84 normal_succnum:16 selfish_succnum:68 total_delay:1325757 normal_delay:223494 selfish_delay:1102263
+ normal_node:50 selfish_node:50
+ normal_succratio:0.2318840579710145 normal_avgdelay:13968.375
+ total_succratio:0.2916666666666667 total_avgdelay:15782.82142857143
+【scenario4】 total_succnum:75 normal_succnum:3 selfish_succnum:72 total_delay:1234048 normal_delay:30602 selfish_delay:1203446
+ normal_node:30 selfish_node:70
+ normal_succratio:0.08571428571428572 normal_avgdelay:10200.666666666666
+ total_succratio:0.2604166666666667 total_avgdelay:16453.97333333333
+【scenario5】 total_succnum:47 normal_succnum:0 selfish_succnum:47 total_delay:808103 normal_delay:0 selfish_delay:808103
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.16319444444444445 total_avgdelay:17193.68085106383
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:72000 gen_num:480 nr_nodes:80
+【scenario0】 total_succnum:151 normal_succnum:151 selfish_succnum:0 total_delay:3207269 normal_delay:3207269 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.3145833333333333 total_avgdelay:21240.192052980132
+【scenario1】 total_succnum:145 normal_succnum:109 selfish_succnum:36 total_delay:3123115 normal_delay:2313428 selfish_delay:809687
+ normal_node:72 selfish_node:8
+ normal_succratio:0.28165374677002586 normal_avgdelay:21224.110091743118
+ total_succratio:0.3020833333333333 total_avgdelay:21538.724137931036
+【scenario2】 total_succnum:146 normal_succnum:51 selfish_succnum:95 total_delay:3287572 normal_delay:1220917 selfish_delay:2066655
+ normal_node:56 selfish_node:24
+ normal_succratio:0.23394495412844038 normal_avgdelay:23939.549019607843
+ total_succratio:0.30416666666666664 total_avgdelay:22517.616438356163
+【scenario3】 total_succnum:161 normal_succnum:28 selfish_succnum:133 total_delay:3713219 normal_delay:662688 selfish_delay:3050531
+ normal_node:40 selfish_node:40
+ normal_succratio:0.224 normal_avgdelay:23667.428571428572
+ total_succratio:0.33541666666666664 total_avgdelay:23063.47204968944
+【scenario4】 total_succnum:151 normal_succnum:8 selfish_succnum:143 total_delay:3787373 normal_delay:99282 selfish_delay:3688091
+ normal_node:24 selfish_node:56
+ normal_succratio:0.17777777777777778 normal_avgdelay:12410.25
+ total_succratio:0.3145833333333333 total_avgdelay:25081.940397350994
+【scenario5】 total_succnum:140 normal_succnum:2 selfish_succnum:138 total_delay:3726427 normal_delay:29052 selfish_delay:3697375
+ normal_node:8 selfish_node:72
+ normal_succratio:0.25 normal_avgdelay:14526.0
+ total_succratio:0.2916666666666667 total_avgdelay:26617.335714285713
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:75600 gen_num:504 nr_nodes:80
+【scenario0】 total_succnum:160 normal_succnum:160 selfish_succnum:0 total_delay:3516803 normal_delay:3516803 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.31746031746031744 total_avgdelay:21980.01875
+【scenario1】 total_succnum:154 normal_succnum:116 selfish_succnum:38 total_delay:3443691 normal_delay:2581843 selfish_delay:861848
+ normal_node:72 selfish_node:8
+ normal_succratio:0.28431372549019607 normal_avgdelay:22257.26724137931
+ total_succratio:0.3055555555555556 total_avgdelay:22361.62987012987
+【scenario2】 total_succnum:155 normal_succnum:55 selfish_succnum:100 total_delay:3579940 normal_delay:1335513 selfish_delay:2244427
+ normal_node:56 selfish_node:24
+ normal_succratio:0.23605150214592274 normal_avgdelay:24282.054545454546
+ total_succratio:0.30753968253968256 total_avgdelay:23096.387096774193
+【scenario3】 total_succnum:165 normal_succnum:29 selfish_succnum:136 total_delay:3854956 normal_delay:691950 selfish_delay:3163006
+ normal_node:40 selfish_node:40
+ normal_succratio:0.21804511278195488 normal_avgdelay:23860.344827586207
+ total_succratio:0.3273809523809524 total_avgdelay:23363.369696969698
+【scenario4】 total_succnum:161 normal_succnum:9 selfish_succnum:152 total_delay:4148037 normal_delay:127250 selfish_delay:4020787
+ normal_node:24 selfish_node:56
+ normal_succratio:0.1875 normal_avgdelay:14138.888888888889
+ total_succratio:0.3194444444444444 total_avgdelay:25764.2049689441
+【scenario5】 total_succnum:152 normal_succnum:2 selfish_succnum:150 total_delay:4250985 normal_delay:29052 selfish_delay:4221933
+ normal_node:8 selfish_node:72
+ normal_succratio:0.25 normal_avgdelay:14526.0
+ total_succratio:0.30158730158730157 total_avgdelay:27967.00657894737
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:46800 gen_num:312 nr_nodes:100
+【scenario0】 total_succnum:83 normal_succnum:83 selfish_succnum:0 total_delay:1231660 normal_delay:1231660 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.266025641025641 total_avgdelay:14839.277108433735
+【scenario1】 total_succnum:86 normal_succnum:62 selfish_succnum:24 total_delay:1219424 normal_delay:855677 selfish_delay:363747
+ normal_node:90 selfish_node:10
+ normal_succratio:0.2551440329218107 normal_avgdelay:13801.241935483871
+ total_succratio:0.27564102564102566 total_avgdelay:14179.348837209302
+【scenario2】 total_succnum:94 normal_succnum:46 selfish_succnum:48 total_delay:1473635 normal_delay:807466 selfish_delay:666169
+ normal_node:70 selfish_node:30
+ normal_succratio:0.3108108108108108 normal_avgdelay:17553.608695652172
+ total_succratio:0.30128205128205127 total_avgdelay:15676.968085106382
+【scenario3】 total_succnum:92 normal_succnum:17 selfish_succnum:75 total_delay:1454298 normal_delay:251653 selfish_delay:1202645
+ normal_node:50 selfish_node:50
+ normal_succratio:0.2236842105263158 normal_avgdelay:14803.117647058823
+ total_succratio:0.2948717948717949 total_avgdelay:15807.58695652174
+【scenario4】 total_succnum:89 normal_succnum:7 selfish_succnum:82 total_delay:1557021 normal_delay:120413 selfish_delay:1436608
+ normal_node:30 selfish_node:70
+ normal_succratio:0.1794871794871795 normal_avgdelay:17201.85714285714
+ total_succratio:0.28525641025641024 total_avgdelay:17494.61797752809
+【scenario5】 total_succnum:57 normal_succnum:0 selfish_succnum:57 total_delay:1067406 normal_delay:0 selfish_delay:1067406
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.18269230769230768 total_avgdelay:18726.42105263158
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:79200 gen_num:528 nr_nodes:80
+【scenario0】 total_succnum:168 normal_succnum:168 selfish_succnum:0 total_delay:3831950 normal_delay:3831950 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.3181818181818182 total_avgdelay:22809.22619047619
+【scenario1】 total_succnum:162 normal_succnum:122 selfish_succnum:40 total_delay:3749462 normal_delay:2785344 selfish_delay:964118
+ normal_node:72 selfish_node:8
+ normal_succratio:0.2837209302325581 normal_avgdelay:22830.688524590165
+ total_succratio:0.3068181818181818 total_avgdelay:23144.827160493827
+【scenario2】 total_succnum:162 normal_succnum:60 selfish_succnum:102 total_delay:3863743 normal_delay:1596499 selfish_delay:2267244
+ normal_node:56 selfish_node:24
+ normal_succratio:0.24489795918367346 normal_avgdelay:26608.316666666666
+ total_succratio:0.3068181818181818 total_avgdelay:23850.265432098764
+【scenario3】 total_succnum:170 normal_succnum:29 selfish_succnum:141 total_delay:4024298 normal_delay:691950 selfish_delay:3332348
+ normal_node:40 selfish_node:40
+ normal_succratio:0.20714285714285716 normal_avgdelay:23860.344827586207
+ total_succratio:0.32196969696969696 total_avgdelay:23672.34117647059
+【scenario4】 total_succnum:171 normal_succnum:10 selfish_succnum:161 total_delay:4587921 normal_delay:175652 selfish_delay:4412269
+ normal_node:24 selfish_node:56
+ normal_succratio:0.2 normal_avgdelay:17565.2
+ total_succratio:0.32386363636363635 total_avgdelay:26829.947368421053
+【scenario5】 total_succnum:162 normal_succnum:2 selfish_succnum:160 total_delay:4661445 normal_delay:29052 selfish_delay:4632393
+ normal_node:8 selfish_node:72
+ normal_succratio:0.25 normal_avgdelay:14526.0
+ total_succratio:0.3068181818181818 total_avgdelay:28774.35185185185
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:50400 gen_num:336 nr_nodes:100
+【scenario0】 total_succnum:95 normal_succnum:95 selfish_succnum:0 total_delay:1507415 normal_delay:1507415 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.28273809523809523 total_avgdelay:15867.526315789473
+【scenario1】 total_succnum:98 normal_succnum:73 selfish_succnum:25 total_delay:1463329 normal_delay:1094893 selfish_delay:368436
+ normal_node:90 selfish_node:10
+ normal_succratio:0.2786259541984733 normal_avgdelay:14998.534246575342
+ total_succratio:0.2916666666666667 total_avgdelay:14931.92857142857
+【scenario2】 total_succnum:105 normal_succnum:52 selfish_succnum:53 total_delay:1705291 normal_delay:883686 selfish_delay:821605
+ normal_node:70 selfish_node:30
+ normal_succratio:0.3270440251572327 normal_avgdelay:16993.96153846154
+ total_succratio:0.3125 total_avgdelay:16240.866666666667
+【scenario3】 total_succnum:103 normal_succnum:20 selfish_succnum:83 total_delay:1681705 normal_delay:306129 selfish_delay:1375576
+ normal_node:50 selfish_node:50
+ normal_succratio:0.23809523809523808 normal_avgdelay:15306.45
+ total_succratio:0.30654761904761907 total_avgdelay:16327.233009708738
+【scenario4】 total_succnum:103 normal_succnum:8 selfish_succnum:95 total_delay:1901026 normal_delay:148607 selfish_delay:1752419
+ normal_node:30 selfish_node:70
+ normal_succratio:0.2 normal_avgdelay:18575.875
+ total_succratio:0.30654761904761907 total_avgdelay:18456.563106796115
+【scenario5】 total_succnum:74 normal_succnum:0 selfish_succnum:74 total_delay:1499444 normal_delay:0 selfish_delay:1499444
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.22023809523809523 total_avgdelay:20262.756756756757
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:82800 gen_num:552 nr_nodes:80
+【scenario0】 total_succnum:181 normal_succnum:181 selfish_succnum:0 total_delay:4292926 normal_delay:4292926 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.3278985507246377 total_avgdelay:23717.82320441989
+【scenario1】 total_succnum:175 normal_succnum:127 selfish_succnum:48 total_delay:4263175 normal_delay:2931481 selfish_delay:1331694
+ normal_node:72 selfish_node:8
+ normal_succratio:0.2822222222222222 normal_avgdelay:23082.527559055117
+ total_succratio:0.3170289855072464 total_avgdelay:24361.0
+【scenario2】 total_succnum:177 normal_succnum:66 selfish_succnum:111 total_delay:4406413 normal_delay:1710433 selfish_delay:2695980
+ normal_node:56 selfish_node:24
+ normal_succratio:0.25384615384615383 normal_avgdelay:25915.651515151516
+ total_succratio:0.32065217391304346 total_avgdelay:24894.988700564973
+【scenario3】 total_succnum:185 normal_succnum:30 selfish_succnum:155 total_delay:4646747 normal_delay:745477 selfish_delay:3901270
+ normal_node:40 selfish_node:40
+ normal_succratio:0.20408163265306123 normal_avgdelay:24849.233333333334
+ total_succratio:0.3351449275362319 total_avgdelay:25117.55135135135
+【scenario4】 total_succnum:185 normal_succnum:10 selfish_succnum:175 total_delay:5096443 normal_delay:175652 selfish_delay:4920791
+ normal_node:24 selfish_node:56
+ normal_succratio:0.18518518518518517 normal_avgdelay:17565.2
+ total_succratio:0.3351449275362319 total_avgdelay:27548.34054054054
+【scenario5】 total_succnum:174 normal_succnum:2 selfish_succnum:172 total_delay:5099119 normal_delay:29052 selfish_delay:5070067
+ normal_node:8 selfish_node:72
+ normal_succratio:0.25 normal_avgdelay:14526.0
+ total_succratio:0.31521739130434784 total_avgdelay:29305.2816091954
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:86400 gen_num:576 nr_nodes:80
+【scenario0】 total_succnum:197 normal_succnum:197 selfish_succnum:0 total_delay:5045015 normal_delay:5045015 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.3420138888888889 total_avgdelay:25609.213197969544
+【scenario1】 total_succnum:188 normal_succnum:136 selfish_succnum:52 total_delay:4856986 normal_delay:3359271 selfish_delay:1497715
+ normal_node:72 selfish_node:8
+ normal_succratio:0.28936170212765955 normal_avgdelay:24700.522058823528
+ total_succratio:0.3263888888888889 total_avgdelay:25835.031914893618
+【scenario2】 total_succnum:194 normal_succnum:74 selfish_succnum:120 total_delay:5122305 normal_delay:2017679 selfish_delay:3104626
+ normal_node:56 selfish_node:24
+ normal_succratio:0.27007299270072993 normal_avgdelay:27265.932432432433
+ total_succratio:0.3368055555555556 total_avgdelay:26403.634020618556
+【scenario3】 total_succnum:197 normal_succnum:30 selfish_succnum:167 total_delay:5120427 normal_delay:745477 selfish_delay:4374950
+ normal_node:40 selfish_node:40
+ normal_succratio:0.1986754966887417 normal_avgdelay:24849.233333333334
+ total_succratio:0.3420138888888889 total_avgdelay:25992.015228426397
+【scenario4】 total_succnum:200 normal_succnum:13 selfish_succnum:187 total_delay:5800004 normal_delay:356843 selfish_delay:5443161
+ normal_node:24 selfish_node:56
+ normal_succratio:0.24074074074074073 normal_avgdelay:27449.46153846154
+ total_succratio:0.3472222222222222 total_avgdelay:29000.02
+【scenario5】 total_succnum:187 normal_succnum:2 selfish_succnum:185 total_delay:5660533 normal_delay:29052 selfish_delay:5631481
+ normal_node:8 selfish_node:72
+ normal_succratio:0.25 normal_avgdelay:14526.0
+ total_succratio:0.3246527777777778 total_avgdelay:30270.229946524065
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:54000 gen_num:360 nr_nodes:100
+【scenario0】 total_succnum:103 normal_succnum:103 selfish_succnum:0 total_delay:1736710 normal_delay:1736710 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.2861111111111111 total_avgdelay:16861.26213592233
+【scenario1】 total_succnum:104 normal_succnum:78 selfish_succnum:26 total_delay:1615116 normal_delay:1217188 selfish_delay:397928
+ normal_node:90 selfish_node:10
+ normal_succratio:0.2756183745583039 normal_avgdelay:15604.97435897436
+ total_succratio:0.28888888888888886 total_avgdelay:15529.961538461539
+【scenario2】 total_succnum:115 normal_succnum:55 selfish_succnum:60 total_delay:1997061 normal_delay:996276 selfish_delay:1000785
+ normal_node:70 selfish_node:30
+ normal_succratio:0.3254437869822485 normal_avgdelay:18114.109090909093
+ total_succratio:0.3194444444444444 total_avgdelay:17365.747826086958
+【scenario3】 total_succnum:114 normal_succnum:21 selfish_succnum:93 total_delay:2010571 normal_delay:316357 selfish_delay:1694214
+ normal_node:50 selfish_node:50
+ normal_succratio:0.23595505617977527 normal_avgdelay:15064.619047619048
+ total_succratio:0.31666666666666665 total_avgdelay:17636.587719298244
+【scenario4】 total_succnum:112 normal_succnum:9 selfish_succnum:103 total_delay:2170780 normal_delay:191090 selfish_delay:1979690
+ normal_node:30 selfish_node:70
+ normal_succratio:0.21951219512195122 normal_avgdelay:21232.222222222223
+ total_succratio:0.3111111111111111 total_avgdelay:19381.964285714286
+【scenario5】 total_succnum:83 normal_succnum:0 selfish_succnum:83 total_delay:1780539 normal_delay:0 selfish_delay:1780539
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.23055555555555557 total_avgdelay:21452.277108433736
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:90000 gen_num:600 nr_nodes:80
+【scenario0】 total_succnum:208 normal_succnum:208 selfish_succnum:0 total_delay:5624136 normal_delay:5624136 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.3466666666666667 total_avgdelay:27039.115384615383
+【scenario1】 total_succnum:200 normal_succnum:144 selfish_succnum:56 total_delay:5466992 normal_delay:3743827 selfish_delay:1723165
+ normal_node:72 selfish_node:8
+ normal_succratio:0.2938775510204082 normal_avgdelay:25998.79861111111
+ total_succratio:0.3333333333333333 total_avgdelay:27334.96
+【scenario2】 total_succnum:201 normal_succnum:76 selfish_succnum:125 total_delay:5451064 normal_delay:2109333 selfish_delay:3341731
+ normal_node:56 selfish_node:24
+ normal_succratio:0.2638888888888889 normal_avgdelay:27754.38157894737
+ total_succratio:0.335 total_avgdelay:27119.721393034826
+【scenario3】 total_succnum:201 normal_succnum:31 selfish_succnum:170 total_delay:5299496 normal_delay:800369 selfish_delay:4499127
+ normal_node:40 selfish_node:40
+ normal_succratio:0.19254658385093168 normal_avgdelay:25818.354838709678
+ total_succratio:0.335 total_avgdelay:26365.65174129353
+【scenario4】 total_succnum:208 normal_succnum:13 selfish_succnum:195 total_delay:6208055 normal_delay:356843 selfish_delay:5851212
+ normal_node:24 selfish_node:56
+ normal_succratio:0.23214285714285715 normal_avgdelay:27449.46153846154
+ total_succratio:0.3466666666666667 total_avgdelay:29846.41826923077
+【scenario5】 total_succnum:194 normal_succnum:2 selfish_succnum:192 total_delay:5992979 normal_delay:29052 selfish_delay:5963927
+ normal_node:8 selfish_node:72
+ normal_succratio:0.25 normal_avgdelay:14526.0
+ total_succratio:0.3233333333333333 total_avgdelay:30891.644329896906
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:57600 gen_num:384 nr_nodes:100
+【scenario0】 total_succnum:111 normal_succnum:111 selfish_succnum:0 total_delay:1957924 normal_delay:1957924 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.2890625 total_avgdelay:17638.954954954956
+【scenario1】 total_succnum:116 normal_succnum:89 selfish_succnum:27 total_delay:1970451 normal_delay:1560121 selfish_delay:410330
+ normal_node:90 selfish_node:10
+ normal_succratio:0.29372937293729373 normal_avgdelay:17529.449438202246
+ total_succratio:0.3020833333333333 total_avgdelay:16986.646551724138
+【scenario2】 total_succnum:120 normal_succnum:56 selfish_succnum:64 total_delay:2104165 normal_delay:1035623 selfish_delay:1068542
+ normal_node:70 selfish_node:30
+ normal_succratio:0.3163841807909605 normal_avgdelay:18493.26785714286
+ total_succratio:0.3125 total_avgdelay:17534.708333333332
+【scenario3】 total_succnum:122 normal_succnum:22 selfish_succnum:100 total_delay:2196268 normal_delay:347668 selfish_delay:1848600
+ normal_node:50 selfish_node:50
+ normal_succratio:0.23404255319148937 normal_avgdelay:15803.09090909091
+ total_succratio:0.3177083333333333 total_avgdelay:18002.196721311477
+【scenario4】 total_succnum:123 normal_succnum:12 selfish_succnum:111 total_delay:2434286 normal_delay:282610 selfish_delay:2151676
+ normal_node:30 selfish_node:70
+ normal_succratio:0.2857142857142857 normal_avgdelay:23550.833333333332
+ total_succratio:0.3203125 total_avgdelay:19790.943089430893
+【scenario5】 total_succnum:96 normal_succnum:0 selfish_succnum:96 total_delay:2214557 normal_delay:0 selfish_delay:2214557
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.25 total_avgdelay:23068.302083333332
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:93600 gen_num:624 nr_nodes:80
+【scenario0】 total_succnum:221 normal_succnum:221 selfish_succnum:0 total_delay:6290570 normal_delay:6290570 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.3541666666666667 total_avgdelay:28464.117647058825
+【scenario1】 total_succnum:214 normal_succnum:153 selfish_succnum:61 total_delay:6149017 normal_delay:4151659 selfish_delay:1997358
+ normal_node:72 selfish_node:8
+ normal_succratio:0.30177514792899407 normal_avgdelay:27135.02614379085
+ total_succratio:0.34294871794871795 total_avgdelay:28733.72429906542
+【scenario2】 total_succnum:211 normal_succnum:79 selfish_succnum:132 total_delay:5858684 normal_delay:2197932 selfish_delay:3660752
+ normal_node:56 selfish_node:24
+ normal_succratio:0.2633333333333333 normal_avgdelay:27821.92405063291
+ total_succratio:0.33814102564102566 total_avgdelay:27766.274881516587
+【scenario3】 total_succnum:210 normal_succnum:32 selfish_succnum:178 total_delay:5638827 normal_delay:854101 selfish_delay:4784726
+ normal_node:40 selfish_node:40
+ normal_succratio:0.19393939393939394 normal_avgdelay:26690.65625
+ total_succratio:0.33653846153846156 total_avgdelay:26851.557142857142
+【scenario4】 total_succnum:221 normal_succnum:14 selfish_succnum:207 total_delay:6838050 normal_delay:442666 selfish_delay:6395384
+ normal_node:24 selfish_node:56
+ normal_succratio:0.24561403508771928 normal_avgdelay:31619.0
+ total_succratio:0.3541666666666667 total_avgdelay:30941.402714932126
+【scenario5】 total_succnum:206 normal_succnum:3 selfish_succnum:203 total_delay:6516382 normal_delay:62382 selfish_delay:6454000
+ normal_node:8 selfish_node:72
+ normal_succratio:0.375 normal_avgdelay:20794.0
+ total_succratio:0.3301282051282051 total_avgdelay:31632.922330097088
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:97200 gen_num:648 nr_nodes:80
+【scenario0】 total_succnum:229 normal_succnum:229 selfish_succnum:0 total_delay:6775328 normal_delay:6775328 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.3533950617283951 total_avgdelay:29586.585152838426
+【scenario1】 total_succnum:220 normal_succnum:159 selfish_succnum:61 total_delay:6511051 normal_delay:4513693 selfish_delay:1997358
+ normal_node:72 selfish_node:8
+ normal_succratio:0.30228136882129275 normal_avgdelay:28388.006289308178
+ total_succratio:0.3395061728395062 total_avgdelay:29595.686363636363
+【scenario2】 total_succnum:216 normal_succnum:82 selfish_succnum:134 total_delay:6113036 normal_delay:2313060 selfish_delay:3799976
+ normal_node:56 selfish_node:24
+ normal_succratio:0.2611464968152866 normal_avgdelay:28208.048780487807
+ total_succratio:0.3333333333333333 total_avgdelay:28301.09259259259
+【scenario3】 total_succnum:216 normal_succnum:34 selfish_succnum:182 total_delay:5955866 normal_delay:914694 selfish_delay:5041172
+ normal_node:40 selfish_node:40
+ normal_succratio:0.2 normal_avgdelay:26902.764705882353
+ total_succratio:0.3333333333333333 total_avgdelay:27573.453703703704
+【scenario4】 total_succnum:229 normal_succnum:14 selfish_succnum:215 total_delay:7334096 normal_delay:442666 selfish_delay:6891430
+ normal_node:24 selfish_node:56
+ normal_succratio:0.22950819672131148 normal_avgdelay:31619.0
+ total_succratio:0.3533950617283951 total_avgdelay:32026.620087336243
+【scenario5】 total_succnum:215 normal_succnum:3 selfish_succnum:212 total_delay:7102286 normal_delay:62382 selfish_delay:7039904
+ normal_node:8 selfish_node:72
+ normal_succratio:0.375 normal_avgdelay:20794.0
+ total_succratio:0.3317901234567901 total_avgdelay:33033.888372093024
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:61200 gen_num:408 nr_nodes:100
+【scenario0】 total_succnum:121 normal_succnum:121 selfish_succnum:0 total_delay:2298821 normal_delay:2298821 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.2965686274509804 total_avgdelay:18998.520661157025
+【scenario1】 total_succnum:125 normal_succnum:97 selfish_succnum:28 total_delay:2291944 normal_delay:1829003 selfish_delay:462941
+ normal_node:90 selfish_node:10
+ normal_succratio:0.30030959752321984 normal_avgdelay:18855.701030927834
+ total_succratio:0.30637254901960786 total_avgdelay:18335.552
+【scenario2】 total_succnum:131 normal_succnum:60 selfish_succnum:71 total_delay:2493403 normal_delay:1214504 selfish_delay:1278899
+ normal_node:70 selfish_node:30
+ normal_succratio:0.31746031746031744 normal_avgdelay:20241.733333333334
+ total_succratio:0.32107843137254904 total_avgdelay:19033.6106870229
+【scenario3】 total_succnum:131 normal_succnum:24 selfish_succnum:107 total_delay:2472374 normal_delay:406627 selfish_delay:2065747
+ normal_node:50 selfish_node:50
+ normal_succratio:0.24 normal_avgdelay:16942.791666666668
+ total_succratio:0.32107843137254904 total_avgdelay:18873.08396946565
+【scenario4】 total_succnum:134 normal_succnum:13 selfish_succnum:121 total_delay:2823181 normal_delay:335221 selfish_delay:2487960
+ normal_node:30 selfish_node:70
+ normal_succratio:0.28888888888888886 normal_avgdelay:25786.23076923077
+ total_succratio:0.3284313725490196 total_avgdelay:21068.514925373136
+【scenario5】 total_succnum:105 normal_succnum:0 selfish_succnum:105 total_delay:2463346 normal_delay:0 selfish_delay:2463346
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.25735294117647056 total_avgdelay:23460.438095238096
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:100800 gen_num:672 nr_nodes:80
+【scenario0】 total_succnum:231 normal_succnum:231 selfish_succnum:0 total_delay:6890547 normal_delay:6890547 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.34375 total_avgdelay:29829.20779220779
+【scenario1】 total_succnum:225 normal_succnum:163 selfish_succnum:62 total_delay:6838746 normal_delay:4784358 selfish_delay:2054388
+ normal_node:72 selfish_node:8
+ normal_succratio:0.29853479853479853 normal_avgdelay:29351.889570552146
+ total_succratio:0.33482142857142855 total_avgdelay:30394.426666666666
+【scenario2】 total_succnum:222 normal_succnum:85 selfish_succnum:137 total_delay:6566039 normal_delay:2551113 selfish_delay:4014926
+ normal_node:56 selfish_node:24
+ normal_succratio:0.2607361963190184 normal_avgdelay:30013.09411764706
+ total_succratio:0.33035714285714285 total_avgdelay:29576.752252252252
+【scenario3】 total_succnum:220 normal_succnum:34 selfish_succnum:186 total_delay:6195058 normal_delay:914694 selfish_delay:5280364
+ normal_node:40 selfish_node:40
+ normal_succratio:0.19428571428571428 normal_avgdelay:26902.764705882353
+ total_succratio:0.3273809523809524 total_avgdelay:28159.354545454546
+【scenario4】 total_succnum:236 normal_succnum:14 selfish_succnum:222 total_delay:7779022 normal_delay:442666 selfish_delay:7336356
+ normal_node:24 selfish_node:56
+ normal_succratio:0.2222222222222222 normal_avgdelay:31619.0
+ total_succratio:0.35119047619047616 total_avgdelay:32961.957627118645
+【scenario5】 total_succnum:224 normal_succnum:3 selfish_succnum:221 total_delay:7735496 normal_delay:62382 selfish_delay:7673114
+ normal_node:8 selfish_node:72
+ normal_succratio:0.375 normal_avgdelay:20794.0
+ total_succratio:0.3333333333333333 total_avgdelay:34533.46428571428
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:104400 gen_num:696 nr_nodes:80
+【scenario0】 total_succnum:237 normal_succnum:237 selfish_succnum:0 total_delay:7242275 normal_delay:7242275 selfish_delay:0
+ normal_node:80 selfish_node:0
+ total_succratio:0.34051724137931033 total_avgdelay:30558.1223628692
+【scenario1】 total_succnum:233 normal_succnum:170 selfish_succnum:63 total_delay:7291598 normal_delay:5195618 selfish_delay:2095980
+ normal_node:72 selfish_node:8
+ normal_succratio:0.3003533568904594 normal_avgdelay:30562.45882352941
+ total_succratio:0.33477011494252873 total_avgdelay:31294.412017167382
+【scenario2】 total_succnum:232 normal_succnum:91 selfish_succnum:141 total_delay:7125829 normal_delay:2891364 selfish_delay:4234465
+ normal_node:56 selfish_node:24
+ normal_succratio:0.2708333333333333 normal_avgdelay:31773.23076923077
+ total_succratio:0.3333333333333333 total_avgdelay:30714.780172413793
+【scenario3】 total_succnum:230 normal_succnum:38 selfish_succnum:192 total_delay:6721417 normal_delay:1169683 selfish_delay:5551734
+ normal_node:40 selfish_node:40
+ normal_succratio:0.20430107526881722 normal_avgdelay:30781.13157894737
+ total_succratio:0.33045977011494254 total_avgdelay:29223.55217391304
+【scenario4】 total_succnum:245 normal_succnum:14 selfish_succnum:231 total_delay:8232527 normal_delay:442666 selfish_delay:7789861
+ normal_node:24 selfish_node:56
+ normal_succratio:0.21212121212121213 normal_avgdelay:31619.0
+ total_succratio:0.35201149425287354 total_avgdelay:33602.151020408164
+【scenario5】 total_succnum:233 normal_succnum:3 selfish_succnum:230 total_delay:8266204 normal_delay:62382 selfish_delay:8203822
+ normal_node:8 selfish_node:72
+ normal_succratio:0.375 normal_avgdelay:20794.0
+ total_succratio:0.33477011494252873 total_avgdelay:35477.27038626609
+
+ range_comm:100 genfreq:150 RunningTime_Max:432000 RunningTime:64800 gen_num:432 nr_nodes:100
+【scenario0】 total_succnum:132 normal_succnum:132 selfish_succnum:0 total_delay:2540629 normal_delay:2540629 selfish_delay:0
+ normal_node:100 selfish_node:0
+ total_succratio:0.3055555555555556 total_avgdelay:19247.189393939392
+【scenario1】 total_succnum:136 normal_succnum:106 selfish_succnum:30 total_delay:2508407 normal_delay:1960196 selfish_delay:548211
+ normal_node:90 selfish_node:10
+ normal_succratio:0.3063583815028902 normal_avgdelay:18492.415094339623
+ total_succratio:0.3148148148148148 total_avgdelay:18444.16911764706
+【scenario2】 total_succnum:140 normal_succnum:62 selfish_succnum:78 total_delay:2604509 normal_delay:1243687 selfish_delay:1360822
+ normal_node:70 selfish_node:30
+ normal_succratio:0.30845771144278605 normal_avgdelay:20059.467741935485
+ total_succratio:0.32407407407407407 total_avgdelay:18603.635714285716
+【scenario3】 total_succnum:142 normal_succnum:24 selfish_succnum:118 total_delay:2708609 normal_delay:406627 selfish_delay:2301982
+ normal_node:50 selfish_node:50
+ normal_succratio:0.23076923076923078 normal_avgdelay:16942.791666666668
+ total_succratio:0.3287037037037037 total_avgdelay:19074.711267605635
+【scenario4】 total_succnum:147 normal_succnum:15 selfish_succnum:132 total_delay:3102488 normal_delay:405259 selfish_delay:2697229
+ normal_node:30 selfish_node:70
+ normal_succratio:0.32608695652173914 normal_avgdelay:27017.266666666666
+ total_succratio:0.3402777777777778 total_avgdelay:21105.36054421769
+【scenario5】 total_succnum:118 normal_succnum:0 selfish_succnum:118 total_delay:2768498 normal_delay:0 selfish_delay:2768498
+ normal_node:10 selfish_node:90
+ normal_succratio:0.0
+ total_succratio:0.27314814814814814 total_avgdelay:23461.84745762712

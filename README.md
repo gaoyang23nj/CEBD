@@ -18,8 +18,11 @@ v4.5
 1.简化处理流程；(1.传输tran 连续传输ctran; 2.计算传输序列)
 2.查看 随时间变化 性能指标何时稳定？
 
+2019-12-02
+1.目前仿真过程太慢
+准备：以两个main文件为核心(1)得到EncounterHist
+(2)根据EncounterHist进行仿真
 
 
-
-1.基于社群的Routing  进行CTMC分析是个点？
+于社群的Routing  进行CTMC分析是个点？
 带能源的Routing 进行CTMC分析是个点？
