@@ -1,9 +1,8 @@
 import numpy as np
-import math
 import copy
 
-from DTNPkt import DTNPkt
-from RoutingBase import RoutingBase
+from Main.DTNPkt import DTNPkt
+from Routing.RoutingBase import RoutingBase
 # Maxprop方法 需要和ONE对照一下
 # MaxProp: Routing for Vehicle-Based Disruption-Tolerant Networks
 # 2006 infocom

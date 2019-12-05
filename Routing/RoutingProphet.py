@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from RoutingBase import RoutingBase
+from Routing.RoutingBase import RoutingBase
 # Prophet方法 需要和ONE对照一下
 # Poster: Probabilistic Routing in Intermittently Connected Networks
 # 2003 MobiHoc

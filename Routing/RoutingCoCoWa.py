@@ -6,7 +6,7 @@
 # 没有明确的event事件定义 <不能实现>
 # 相遇间隔的 lambda假设
 
-from RoutingBase import RoutingBase
+from Routing.RoutingBase import RoutingBase
 
 
 class RoutingCoCoWa(RoutingBase):

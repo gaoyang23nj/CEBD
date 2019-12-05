@@ -5,7 +5,7 @@
 # 只做blackhole
 # 这个论文做得很奇怪 我不能确定 实现的是否完全正确！！！！
 
-from RoutingBase import RoutingBase
+from Routing.RoutingBase import RoutingBase
 import numpy as np
 
 # 论文关注的点 attack model太多了 不知道针对blackhole/grayhole的具体办法？

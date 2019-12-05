@@ -1,4 +1,4 @@
-from RoutingBase import RoutingBase
+from Routing.RoutingBase import RoutingBase
 
 
 class RoutingEpidemic(RoutingBase):
