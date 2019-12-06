@@ -1,7 +1,6 @@
 import math
-import traceback
-from DTNPkt import DTNPkt
-from RoutingBase import RoutingBase
+from Main.DTNPkt import DTNPkt
+from Routing.RoutingBase import RoutingBase
 
 # 需要在pkt里加一个token属性
 class DTNSWPkt(DTNPkt):

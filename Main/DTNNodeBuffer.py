@@ -1,16 +1,13 @@
-import copy
-from DTNPkt import DTNPkt
-from RoutingBase import RoutingBase
-from RoutingEpidemic import RoutingEpidemic
-from RoutingSparyandWait import *
-from RoutingProphet import RoutingProphet
-from RoutingMaxProp import *
+from Routing.RoutingEpidemic import RoutingEpidemic
+from Routing.RoutingSparyandWait import *
+from Routing.RoutingProphet import RoutingProphet
+from Routing.RoutingMaxProp import *
 
-from RoutingBlackhole import RoutingBlackhole
+from Routing.RoutingBlackhole import RoutingBlackhole
 
-from RoutingProvest import RoutingProvest
-from RoutingEric import RoutingEric
-from RoutingSDBG import RoutingSDBG
+from Routing.RoutingProvest import RoutingProvest
+from Routing.RoutingEric import RoutingEric
+from Routing.RoutingSDBG import RoutingSDBG
 
 
 class DTNNodeBuffer(object):

@@ -2,7 +2,7 @@ import copy
 import math
 import numpy as np
 
-from RoutingBase import RoutingBase
+from Routing.RoutingBase import RoutingBase
 
 # 2018TONSM
 # A Dynamic Trust Framework for Opportunistic Mobile Social Networks
