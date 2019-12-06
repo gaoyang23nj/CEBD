@@ -15,7 +15,8 @@ from EncoHistGenerator.DTNSimGUIMap import DTNSimGUIMap
 from DTNController import DTNController
 from DTNControllerNoShow import DTNControllerNoShow
 
-np.random.seed(1)
+# np.random.seed(1)
+np.random.seed()
 # tf.set_random_seed(1)
 
 # 保存历史记录的位置
@@ -27,9 +28,9 @@ class RandomWalkGenerator(object):
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
         # 通信范围100m
-        self.RANGE_COMM = 20
+        self.RANGE_COMM = 200
         # 最大运行时间 执行时间 36000*12个间隔, 即12hour
-        self.MAX_RUNNING_TIMES = 36000*12
+        self.MAX_RUNNING_TIMES = 36000*24*2
         # 每个间隔的时间长度 0.1s
         self.sim_TimeStep = 0.1
         # <仿真环境>的空间范围大小 2000m*2000m
