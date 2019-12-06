@@ -1,12 +1,13 @@
 import numpy as np
+import datetime
 from Main.DTNScenario import DTNScenario
 
 # 简化处理流程 传输速率无限
 
-class Simulator():
-    def Simulator(self):
+class Simulator(object):
+    def __init__(self):
         # 相遇记录文件
-        self.ENCO_HIST_FILE = 'EncoHistData\encohist_20191202213935.tmp'
+        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
         # 最大运行时间 执行时间 36000*12个间隔, 即12hour
@@ -34,8 +35,10 @@ class Simulator():
         # 初始化各个场景 spamming节点的比例
         self.init_scenario()
         # 根据相遇记录执行 各场景分别执行路由
+        short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        filename = 'result_'+short_time+'.tmp'
         self.run()
-
+        self.print_res(filename, ctstring='a+')
 
     def read_enco_hist_file(self):
         file_object = open(self.ENCO_HIST_FILE, 'r', encoding="utf-8")
@@ -54,8 +57,9 @@ class Simulator():
             # 按照linkup的时间排序 因为我们假设传输瞬间完成
             insert_index = 0
             for tmp_i in range(len(self.list_enco_hist)):
-                if self.list_enco_hist[tmp_i][0] > self.sim_TimeNow:
-                    insert_index = tmp_i
+                if self.list_enco_hist[tmp_i][0] <= linkup_time:
+                    insert_index = insert_index + 1
+                else:
                     break
             self.list_enco_hist.insert(insert_index, (linkup_time,linkdown_time,i_node,j_node))
         file_object.close()
@@ -70,7 +74,8 @@ class Simulator():
             for index in range(len(self.list_enco_hist)):
                 if (self.list_enco_hist[index][0] == self.sim_TimeNow):
                     tmp_enc.append((self.list_enco_hist[index][2], self.list_enco_hist[index][3]))
-                    self.list_enco_hist.remove(index)
+                    self.list_enco_hist.pop(index)
+                    index = index - 1
                 else:
                     break
             # 执行所有这些相遇事件
@@ -153,23 +158,24 @@ class Simulator():
 
     # 打印出结果
     def print_tmp_res(self):
-        gen_total_num = len(self.list_genpkt)
-        print('\n range_comm:{} genfreq:{} RunningTime_Max:{} RunningTime:{} gen_num:{} nr_nodes:{}'.format(
-            self.range_comm, self.thr_genpkt, self.RunningTime_Max, self.RunningTime, gen_total_num, self.nr_nodes))
-        for key, value in self.scenaDict.items():
-            total_succnum, normal_succnum, selfish_succnum, \
-            total_delay, normal_delay, selfish_delay = value.showres()
-            print('【{}】 total_succnum:{} normal_succnum:{} selfish_succnum:{} '
-                  'total_delay:{} normal_delay:{} selfish_delay:{}'.format(
-                key, total_succnum, normal_succnum, selfish_succnum, total_delay, normal_delay, selfish_delay))
+        # gen_total_num = len(self.list_genpkt)
+        # print('\n range_comm:{} genfreq:{} RunningTime_Max:{} RunningTime:{} gen_num:{} nr_nodes:{}'.format(
+        #     self.range_comm, self.thr_genpkt, self.RunningTime_Max, self.RunningTime, gen_total_num, self.nr_nodes))
+        # for key, value in self.scenaDict.items():
+        #     total_succnum, normal_succnum, selfish_succnum, \
+        #     total_delay, normal_delay, selfish_delay = value.showres()
+        #     print('【{}】 total_succnum:{} normal_succnum:{} selfish_succnum:{} '
+        #           'total_delay:{} normal_delay:{} selfish_delay:{}'.format(
+        #         key, total_succnum, normal_succnum, selfish_succnum, total_delay, normal_delay, selfish_delay))
+        pass
 
     # 打印出结果
     def print_res(self, filename, ctstring):
         file_object = open(filename, ctstring, encoding="utf-8")
         gen_total_num = len(self.list_genpkt)
         file_object.write('\n')
-        file_object.write('\n range_comm:{} genfreq:{} RunningTime_Max:{} RunningTime:{} gen_num:{} nr_nodes:{}'.format(
-            self.range_comm, self.thr_genpkt, self.RunningTime_Max, self.RunningTime, gen_total_num, self.nr_nodes))
+        file_object.write('\n genfreq:{} RunningTime_Max:{} gen_num:{} nr_nodes:{}'.format(
+            self.THR_PKT_GEN_CNT, self.MAX_RUNNING_TIMES, gen_total_num, self.MAX_NODE_NUM))
         for key, value in self.scenaDict.items():
             total_succnum, normal_succnum, selfish_succnum, \
             total_delay, normal_delay, selfish_delay = value.showres()
@@ -179,7 +185,7 @@ class Simulator():
             gen_selfish_num = 0
             listselfishid = value.getselfishlist()
             file_object.write('\n normal_node:{} selfish_node:{}'.format(
-                len(self.list_node) - len(listselfishid), len(listselfishid)))
+                self.MAX_NODE_NUM - len(listselfishid), len(listselfishid)))
             if len(listselfishid) > 0:
                 for pkt in self.list_genpkt:
                     (id, src, dst) = pkt
@@ -195,6 +201,7 @@ class Simulator():
                 if total_succnum > 0:
                     file_object.write(' total_avgdelay:{}'.format(total_delay / total_succnum))
         file_object.close()
+        pass
 
 
 if __name__ == "__main__":
