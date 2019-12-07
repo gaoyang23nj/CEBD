@@ -14,3 +14,6 @@ class RoutingEpidemic(RoutingBase):
     def decideDelafterSend(self, b_id, i_pkt):
         is_del = False
         return is_del
+
+    def get_values_before_tran(self, runningtime):
+        pass
