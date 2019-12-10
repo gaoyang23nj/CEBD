@@ -4,14 +4,16 @@ import sys
 
 
 from Main.DTNScenario_EP import DTNScenario_EP
+from Main.DTNScenario_Prophet import DTNScenario_Prophet
+from Main.DTNScenario_SandW import DTNScenario_SandW
 # 简化处理流程 传输速率无限
 
 # 事件驱动
 class Simulator(object):
     def __init__(self):
         # 相遇记录文件
-        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191203021550.tmp'
-        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
+        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191203021550.tmp'
+        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
         # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191206054920.tmp'
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
@@ -21,8 +23,8 @@ class Simulator(object):
         self.sim_TimeStep = 0.1
         # 仿真环境 现在的时刻
         self.sim_TimeNow = 0
-        # 报文生成的间隔,即每6000个时间间隔(6000*0.1)生成一个报文
-        self.THR_PKT_GEN_CNT = 6000
+        # 报文生成的间隔,即每10*60*20个时间间隔(10*60*20*0.1s 即20分钟)生成一个报文
+        self.THR_PKT_GEN_CNT = 10*60
         # # node所组成的list
         # self.list_nodes = []
         # 生成报文的时间计数器 & 生成报文计算器的触发值
@@ -65,6 +67,7 @@ class Simulator(object):
             if self.MAX_RUNNING_TIMES < linkdown_time:
                 self.MAX_RUNNING_TIMES = linkdown_time
             isExist = False
+            insert_index = -1
             for event_time_pair_index in range(len(self.list_enco_hist)):
                 if self.list_enco_hist[event_time_pair_index][0] == linkup_time:
                     isExist = True
@@ -72,8 +75,14 @@ class Simulator(object):
                     tunple = (linkup_time, linkdown_time, i_node, j_node)
                     self.list_enco_hist[event_time_pair_index].append(tunple)
                     break
+                elif self.list_enco_hist[event_time_pair_index][0] > linkup_time:
+                    insert_index = event_time_pair_index
+                    break
             if isExist == False:
-                self.list_enco_hist.append([linkup_time, (linkup_time, linkdown_time, i_node, j_node)])
+                if insert_index == -1:
+                    self.list_enco_hist.append([linkup_time, (linkup_time, linkdown_time, i_node, j_node)])
+                else:
+                    self.list_enco_hist.insert(insert_index, [linkup_time, (linkup_time, linkdown_time, i_node, j_node)])
         file_object.close()
 
     def build_gen_event(self):
@@ -82,8 +91,7 @@ class Simulator(object):
             gen_time = i*self.THR_PKT_GEN_CNT
             if gen_time >= self.MAX_RUNNING_TIMES:
                 break
-            # (src_index, dst_index) = self.__gen_pair_randint(self.MAX_NODE_NUM)
-            (src_index, dst_index) = self.__gen_pair_randint(10)
+            (src_index, dst_index) = self.__gen_pair_randint(self.MAX_NODE_NUM)
             self.list_gen_eve.append((gen_time, self.pktid_nextgen, src_index, dst_index))
             self.pktid_nextgen = self.pktid_nextgen + 1
             i = i+1
@@ -116,8 +124,9 @@ class Simulator(object):
                 for enc_eve in tmp_enc:
                     for key, value in self.scenaDict.items():
                         value.swappkt(self.sim_TimeNow, enc_eve[2], enc_eve[3])
-                        value.swappkt(self.sim_TimeNow, enc_eve[3], enc_eve[2])
+                        # value.swappkt(self.sim_TimeNow, enc_eve[3], enc_eve[2])
                 self.list_enco_hist.pop(0)
+        assert(len(self.list_gen_eve)==0 and len(self.list_enco_hist)==0)
 
     # # 随机决定 是否生成pkt
     # def pkt_generator_rand(self):
@@ -136,12 +145,20 @@ class Simulator(object):
     def init_scenario(self):
         self.scenaDict = {}
         index = 0
-        # ===============================场景1 全ep routing===================================
+        # ===============================场景1 Epidemic ===================================
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_EP(tmp_senario_name, self.MAX_NODE_NUM)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景5 设置50%的dropping node===================================
-        # index += 1
+        # ===============================场景2 Prophet ===================================
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景3 Spary and Wait ===================================
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
         # # 随机生成序列
         # percent_selfish = 0.5
         # indices = np.random.permutation(self.MAX_NODE_NUM)

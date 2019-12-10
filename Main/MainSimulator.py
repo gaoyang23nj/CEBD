@@ -76,8 +76,9 @@ class Simulator(object):
             # 执行所有这些相遇事件
             for enc_eve in tmp_enc:
                 for key, value in self.scenaDict.items():
+                    # 对称操作 a->b b->a
                     value.swappkt(self.sim_TimeNow, enc_eve[0], enc_eve[1])
-                    value.swappkt(self.sim_TimeNow, enc_eve[1], enc_eve[0])
+                    # value.swappkt(self.sim_TimeNow, enc_eve[1], enc_eve[0])
             # 时间增加 以判断是否终止
             self.sim_TimeNow = self.sim_TimeNow + 1
 

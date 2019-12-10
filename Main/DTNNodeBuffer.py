@@ -31,6 +31,8 @@ class DTNNodeBuffer(object):
         self.__mkroomaddpkt(newpkt, isgen=True)
 
     def receivepkt(self, runningtime, receivedpkt):
+        # isReach 为 True 表示pkt已经投递到dest, 源节点不必再保留
+        isReach = False
         self.listofpktid_hist.append(receivedpkt.pkt_id)
         cppkt = copy.deepcopy(receivedpkt)
         if isinstance(cppkt, DTNTrackPkt):
@@ -46,8 +48,10 @@ class DTNNodeBuffer(object):
             if not isReceivedBefore:
                 cppkt.succ_time = runningtime
                 self.listofsuccpkt.append(cppkt)
+            isReach = True
         else:
             self.__mkroomaddpkt(cppkt, False)
+        return isReach
 
     # 获取内存中的pkt list
     def getlistpkt(self):
@@ -59,6 +63,24 @@ class DTNNodeBuffer(object):
 
     def getlistpkt_succ(self):
         return self.listofsuccpkt.copy()
+
+    # 按照pkt_id删掉pkt
+    def deletepktbyid(self, runningtime, pkt_id):
+        isFound = False
+        for pkt in self.listofpkt:
+            if pkt_id == pkt.pkt_id:
+                self.occupied_size = self.occupied_size - pkt.pkt_size
+                self.listofpkt.remove(pkt)
+                isFound = True
+        return isFound
+
+    # ==============================================================================================================
+    # 对指定的pkt_id 减少 changed_token个token
+    def decrease_token(self, runningtime, pkt_id, changed_token):
+        for tmp_pkt in self.listofpkt:
+            if tmp_pkt.pkt_id == pkt_id:
+                tmp_pkt.token = tmp_pkt.token - changed_token
+                break
 
     # ==============================================================================================================
     # 保证内存空间足够 并把pkt放在内存里; isgen 是否是生成新pkt

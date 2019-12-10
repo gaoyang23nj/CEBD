@@ -10,4 +10,8 @@ class DTNPkt(object):
         self.hops = 0
         self.succ_time = -1
 
+class DTNPktSandW(DTNPkt):
+    def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size, token):
+        super(DTNPktSandW, self).__init__(pkt_id, src_id, dst_id, gentime, pkt_size)
+        self.token = token
 

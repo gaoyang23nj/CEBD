@@ -2,15 +2,17 @@
 # DTNBuffer下挂载  Routing规则
 # DTNBuffer (视为 内存方向的node)的 receive 通过DTNScenario挂载
 from Main.DTNNodeBuffer import DTNNodeBuffer
-from Main.DTNPkt import DTNPkt
+from Main.DTNPkt import DTNPktSandW
 
 import copy
+import math
 
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_EP(object):
+class DTNScenario_SandW(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, num_of_nodes):
         self.scenarioname = scenarioname
+        self.inittoken = 8
         # 为各个node建立虚拟空间 <内存+router>
         self.listNodeBuffer = []
         for node_id in range(num_of_nodes):
@@ -20,7 +22,7 @@ class DTNScenario_EP(object):
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
-        newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
+        newpkt = DTNPktSandW(pkt_id, src_id, dst_id, gentime, pkt_size, self.inittoken)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
 
@@ -56,12 +58,19 @@ class DTNScenario_EP(object):
                     totran_pktlist.insert(0, cppkt)
                 totran_pktlist.append(cppkt)
                 break
-        # Epidemic的路由方法 都转发
         for tmp_pkt in totran_pktlist:
             # 若抵达的是目的节点(即b_id == tmp_pkt.dst_id) 则a_id删掉该pkt的副本
-            isReach = self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
-            if isReach:
+            # 否则token改为 原来的-changed
+            changed_token = math.floor(tmp_pkt.token/2)
+            tmp_pkt.token = changed_token
+            if tmp_pkt.dst_id == b_id:
+                isReach = self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                assert(isReach)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+            else:
+                if changed_token > 0:
+                    self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                    self.listNodeBuffer[a_id].decrease_token(runningtime, tmp_pkt.pkt_id, changed_token)
 
     def print_res(self, listgenpkt):
         print('{}'.format(self.scenarioname))
