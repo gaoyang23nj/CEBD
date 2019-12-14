@@ -3,7 +3,7 @@ import time
 import datetime
 import operator
 
-EncoHistDir = '../EncoHistDir/'
+EncoHistDir = '../EncoHistData_Seu/'
 InputDir = './MAC_trail_timeDiff_new/'
 # MovementDir = './MovementRecord'
 
@@ -64,13 +64,15 @@ class EncoHistGenerator_Seu(object):
         return list_record
 
     def detect_encounter(self):
+        filename = os.path.join(EncoHistDir, 'Seu_Encounter_preview.tmp')
+        file_object = open(filename, 'a+', encoding="utf-8")
         # 过滤 第i个人和 第j个人 的相遇记录
         for i in range(len(self.list_movement)):
+            print('{}'.format(i))
             for j in range(i+1, len(self.list_movement)):
                 person_i = self.list_movement[i]
                 person_j = self.list_movement[j]
                 # 遍历 person_i 的 移动记录 和 person_j的移动记录，检测相遇
-                print('{}-{}'.format(i, j))
                 for m in range(len(person_i)):
                     for n in range(len(person_j)):
                         i_move = person_i[m]
@@ -86,18 +88,21 @@ class EncoHistGenerator_Seu(object):
                                 tmp_end = j_move[3]
                             if tmp_begin < tmp_end:
                                 encounter = (i_move[0], i_move[1], j_move[0], j_move[1], tmp_begin, tmp_end)
-                                # print(encounter)
                                 self.list_encounter.append(encounter)
+                                str = '{},{},{},{},{},{}\n'.format(i_move[0], i_move[1], j_move[0], j_move[1], tmp_begin,
+                                                                 tmp_end)
+                                file_object.write(str)
+        file_object.close()
         print('detect encounter completed!')
         return
 
     def print_ecounter(self):
         filename = os.path.join(EncoHistDir, 'Seu_Encounter.tmp')
-        file_object = open(filename, 'w', encoding="utf-8")
+        file_object = open(filename, 'a+', encoding="utf-8")
         tmp_all_lines = file_object.readlines()
         for enc in self.list_encounter:
             (person_iid, person_imac, person_jid, person_jmac, time_begin,time_end) = enc
-            str = '{},{},{},{},{},{}'.format(person_iid,person_imac,person_jid,person_jmac,time_begin,time_end)
+            str = '{},{},{},{},{},{}\n'.format(person_iid,person_imac,person_jid,person_jmac,time_begin,time_end)
             file_object.write(str)
         file_object.close()
 
