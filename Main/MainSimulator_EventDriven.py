@@ -12,8 +12,8 @@ from Main.DTNScenario_SandW import DTNScenario_SandW
 class Simulator(object):
     def __init__(self):
         # 相遇记录文件
-        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191203021550.tmp'
-        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
+        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191203021550.tmp'
+        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
         # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191206054920.tmp'
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
