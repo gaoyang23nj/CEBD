@@ -2,9 +2,12 @@ import os
 import time
 import datetime
 import operator
+import matplotlib.pyplot as pyplot
+import numpy as np
 
 EncoHistDir = '../EncoHistData_Seu/'
 InputDir = './MAC_trail_timeDiff_new/'
+ComplementDir = './ComplementMovementRecord/'
 # MovementDir = './MovementRecord'
 
 # 把AC接入记录变成相遇记录
@@ -23,15 +26,34 @@ class EncoHistGenerator_Seu(object):
             # 处理一个person的移动记录
             tmp_list_move_record = self.convert_movement(self.list_personfile[index])
             self.list_movement.append(tmp_list_move_record)
+        self.list_movement.sort(key=self.__get_itemlen, reverse=True)
+        self.to_detect = self.list_movement[0:200]
+        self.__plot_activeuser()
         # 检查相遇 并生成相遇记录
-        self.list_encounter = []
-        self.detect_encounter()
+        # self.list_encounter = []
+        # self.detect_encounter(self.to_detect)
         # 以相遇起始时间升序排列
-        self.list_encounter.sort(key=operator.itemgetter(4))
-        self.print_ecounter()
+        # self.list_encounter.sort(key=operator.itemgetter(4))
+        # self.print_ecounter()
+
+    def __plot_activeuser(self):
+        x = np.linspace(0, len(self.list_movement)-1, len(self.list_movement))
+        y = np.zeros(len(self.list_movement), dtype='int')
+        for i in range(len(self.list_movement)):
+            y[i] = len(self.list_movement[i])
+        # pyplot.plot(x, y)
+        pyplot.scatter(x,y)
+        # pyplot.hist(y, len(self.list_movement))
+        pyplot.grid = True
+        pyplot.show()
+
+    def __get_itemlen(self, elem):
+        return len(elem)
 
     # 补充移动记录
     def convert_movement(self, person_file_tunple):
+        filename = os.path.join(ComplementDir, person_file_tunple[1],)
+        file_object_write = open(filename, 'w+', encoding="utf-8")
         personfile = person_file_tunple[0]
         print('[{}]\t{}'.format(person_file_tunple[2], personfile))
         file_object = open(personfile, 'r', encoding="utf-8")
@@ -55,11 +77,16 @@ class EncoHistGenerator_Seu(object):
                     if to_time != new_from_time:
                         list_record[-1][3] = new_from_time
                     list_record.append([person_id, person_mac, new_from_time, new_to_time, new_loc])
+                    str = '{},{},{},{},{}\n'.format(person_id,person_mac,new_from_time,new_to_time,new_loc)
+                    # file_object_write.write(str)
             else:
                 list_record.append([person_id, person_mac, new_from_time, new_to_time, new_loc])
+                str = '{},{},{},{},{}\n'.format(person_id, person_mac, new_from_time, new_to_time, new_loc)
+                # file_object_write.write(str)
             from_time = new_from_time
             to_time = new_to_time
             loc = new_loc
+        file_object_write.close()
         file_object.close()
         return list_record
 
