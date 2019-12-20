@@ -12,8 +12,8 @@ from Main.DTNScenario_SandW import DTNScenario_SandW
 class Simulator(object):
     def __init__(self):
         # 相遇记录文件
-        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191203021550.tmp'
-        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
+        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191203021550.tmp'
+        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
         # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191206054920.tmp'
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
@@ -24,7 +24,7 @@ class Simulator(object):
         # 仿真环境 现在的时刻
         self.sim_TimeNow = 0
         # 报文生成的间隔,即每10*60*20个时间间隔(10*60*20*0.1s 即20分钟)生成一个报文
-        self.THR_PKT_GEN_CNT = 10*60
+        self.THR_PKT_GEN_CNT = 10*10
         # # node所组成的list
         # self.list_nodes = []
         # 生成报文的时间计数器 & 生成报文计算器的触发值
@@ -114,7 +114,7 @@ class Simulator(object):
                 self.list_genpkt.append((self.list_gen_eve[0][1], self.list_gen_eve[0][2], self.list_gen_eve[0][3]))
                 # 各scenario生成pkt, pkt大小为100k
                 for key, value in self.scenaDict.items():
-                    value.gennewpkt(self.list_gen_eve[0][1], self.list_gen_eve[0][2], self.list_gen_eve[0][3], self.sim_TimeNow, 100)
+                    value.gennewpkt(self.list_gen_eve[0][1], self.list_gen_eve[0][2], self.list_gen_eve[0][3], self.sim_TimeNow, 500)
                 # 删除这个生成事件 以便继续进行
                 self.list_gen_eve.pop(0)
             if gen_time >= enco_time:
@@ -147,17 +147,17 @@ class Simulator(object):
         index = 0
         # ===============================场景1 Epidemic ===================================
         tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_EP(tmp_senario_name, self.MAX_NODE_NUM)
+        tmpscenario = DTNScenario_EP(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景2 Prophet ===================================
         index += 1
         tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM)
+        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景3 Spary and Wait ===================================
         index += 1
         tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM)
+        tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # # 随机生成序列
         # percent_selfish = 0.5

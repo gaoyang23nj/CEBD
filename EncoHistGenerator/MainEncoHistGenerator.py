@@ -25,11 +25,11 @@ class RandomWalkGenerator(object):
         # 通信范围100m
         self.RANGE_COMM = 100
         # 最大运行时间 执行时间 36000*12个间隔, 即12hour
-        self.MAX_RUNNING_TIMES = 36000*24*2
+        self.MAX_RUNNING_TIMES = 36000*24
         # 每个间隔的时间长度 0.1s
         self.sim_TimeStep = 0.1
         # <仿真环境>的空间范围大小 2000m*2000m
-        self.sim_RealSize = 2000
+        self.sim_RealSize = 1000
         # 仿真环境 现在的时刻
         self.sim_TimeNow = 0
         # node所组成的list
@@ -62,15 +62,16 @@ class RandomWalkGenerator(object):
         short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         filename = EncoHistDir+'encohist_'+short_time+'.tmp'
         file_object = open(filename, 'a+', encoding="utf-8")
-        file_object.write('Settings, MAX_NODE_NUM:{},RANGE_COMM:{},MAX_RUNNING_TIMES:{},sim_TimeStep:{},'
-                          'sim_RealSize:{}'.format(self.MAX_NODE_NUM, self.RANGE_COMM, self.MAX_RUNNING_TIMES,
-                                                   self.sim_TimeStep, self.sim_RealSize))
+        # 总仿真事件 (hour)用小时表示
+        total_running_time = (self.MAX_RUNNING_TIMES)/(3600*1/(self.sim_TimeStep))
+        file_object.write('Settings, MAX_NODE_NUM:{},RANGE_COMM:{},MAX_RUNNING_TIMES:{},{}(h), sim_TimeStep:{}, sim_RealSize:{}, '
+                          'vel:[{},{}]'.format(self.MAX_NODE_NUM, self.RANGE_COMM, self.MAX_RUNNING_TIMES,total_running_time,
+                                               self.sim_TimeStep, self.sim_RealSize, self.list_nodes[0].MovementModel.minspeed,
+                                               self.list_nodes[0].MovementModel.maxspeed))
         for tunple in self.encounter_hist_list:
             (time_linkup, time_linkdown, x_id, y_id, x_loc, y_loc, a_loc, b_loc) = tunple
             file_object.write('\n{},{},{},{}'.format(time_linkup, time_linkdown, x_id, y_id))
         file_object.close()
-
-
 
     def detect_encounter(self):
         for a_id in range(self.MAX_NODE_NUM):
@@ -113,7 +114,6 @@ class RandomWalkGenerator(object):
                         assert (True)
         return
 
-
     def close_each_link(self):
         for tunple in self.link_event_list:
             (x_id, y_id, x_loc, y_loc, time_linkup) = tunple
@@ -127,7 +127,6 @@ class RandomWalkGenerator(object):
         # 确保没有漏项
         assert (np.sum(self.mt_linkstate) == 0)
         self.link_event_list.clear()
-
 
 if __name__ == "__main__":
     the_generator = RandomWalkGenerator()

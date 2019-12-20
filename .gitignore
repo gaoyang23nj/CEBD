@@ -1,6 +1,10 @@
 
 *.xml
 .idea
-EncoHistGenerator_Seu/MAC_trail_timeDiff_new
 .idea/workspace.xml
+EncoHistGenerator_Seu/MAC_trail_timeDiff_new
 EncoHistGenerator_Seu/ComplementMovementRecord
+EncoHistData
+EncoHistData_Seu
+EncoHistData_Helsink
+Main/*.tmp

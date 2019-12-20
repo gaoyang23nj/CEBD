@@ -27,14 +27,14 @@ class EncoHistGenerator_Seu(object):
             tmp_list_move_record = self.convert_movement(self.list_personfile[index])
             self.list_movement.append(tmp_list_move_record)
         self.list_movement.sort(key=self.__get_itemlen, reverse=True)
-        self.to_detect = self.list_movement[0:200]
+        to_detect = self.list_movement[0:200]
         self.__plot_activeuser()
         # 检查相遇 并生成相遇记录
-        # self.list_encounter = []
-        # self.detect_encounter(self.to_detect)
+        self.list_encounter = []
+        self.detect_encounter(to_detect)
         # 以相遇起始时间升序排列
-        # self.list_encounter.sort(key=operator.itemgetter(4))
-        # self.print_ecounter()
+        self.list_encounter.sort(key=operator.itemgetter(4))
+        self.print_ecounter()
 
     def __plot_activeuser(self):
         x = np.linspace(0, len(self.list_movement)-1, len(self.list_movement))
@@ -52,8 +52,8 @@ class EncoHistGenerator_Seu(object):
 
     # 补充移动记录
     def convert_movement(self, person_file_tunple):
-        filename = os.path.join(ComplementDir, person_file_tunple[1],)
-        file_object_write = open(filename, 'w+', encoding="utf-8")
+        filename = os.path.join(ComplementDir, person_file_tunple[1])
+        file_object_write = open(filename, 'a+', encoding="utf-8")
         personfile = person_file_tunple[0]
         print('[{}]\t{}'.format(person_file_tunple[2], personfile))
         file_object = open(personfile, 'r', encoding="utf-8")
@@ -78,27 +78,27 @@ class EncoHistGenerator_Seu(object):
                         list_record[-1][3] = new_from_time
                     list_record.append([person_id, person_mac, new_from_time, new_to_time, new_loc])
                     str = '{},{},{},{},{}\n'.format(person_id,person_mac,new_from_time,new_to_time,new_loc)
-                    # file_object_write.write(str)
+                    file_object_write.write(str)
             else:
                 list_record.append([person_id, person_mac, new_from_time, new_to_time, new_loc])
                 str = '{},{},{},{},{}\n'.format(person_id, person_mac, new_from_time, new_to_time, new_loc)
-                # file_object_write.write(str)
+                file_object_write.write(str)
             from_time = new_from_time
             to_time = new_to_time
             loc = new_loc
-        file_object_write.close()
         file_object.close()
+        file_object_write.close()
         return list_record
 
-    def detect_encounter(self):
+    def detect_encounter(self, to_detect):
         filename = os.path.join(EncoHistDir, 'Seu_Encounter_preview.tmp')
         file_object = open(filename, 'a+', encoding="utf-8")
         # 过滤 第i个人和 第j个人 的相遇记录
-        for i in range(len(self.list_movement)):
+        for i in range(len(to_detect)):
             print('{}'.format(i))
-            for j in range(i+1, len(self.list_movement)):
-                person_i = self.list_movement[i]
-                person_j = self.list_movement[j]
+            for j in range(i+1, len(to_detect)):
+                person_i = to_detect[i]
+                person_j = to_detect[j]
                 # 遍历 person_i 的 移动记录 和 person_j的移动记录，检测相遇
                 for m in range(len(person_i)):
                     for n in range(len(person_j)):

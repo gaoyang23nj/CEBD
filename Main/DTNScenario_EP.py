@@ -9,12 +9,12 @@ import copy
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
 class DTNScenario_EP(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, num_of_nodes):
+    def __init__(self, scenarioname, num_of_nodes, buffer_size):
         self.scenarioname = scenarioname
         # 为各个node建立虚拟空间 <内存+router>
         self.listNodeBuffer = []
         for node_id in range(num_of_nodes):
-            tmpBuffer = DTNNodeBuffer(self, node_id, 200000)
+            tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
         return
 
@@ -33,8 +33,10 @@ class DTNScenario_EP(object):
     def sendpkt(self, runningtime, a_id, b_id):
         # 准备从a到b传输的pkt 组成的list<这里保存的是deepcopy>
         totran_pktlist = []
-        b_listpkt_hist = self.listNodeBuffer[b_id].getlistpkt_hist()
-        a_listpkt_hist = self.listNodeBuffer[a_id].getlistpkt_hist()
+        # b_listpkt_hist = self.listNodeBuffer[b_id].getlistpkt_hist()
+        # a_listpkt_hist = self.listNodeBuffer[a_id].getlistpkt_hist()
+        b_listpkt_hist = []
+        a_listpkt_hist = []
         # 1) b_id 告诉 a_id: b_id有哪些pkt
         b_listpkt = self.listNodeBuffer[b_id].getlistpkt()
         a_listpkt = self.listNodeBuffer[a_id].getlistpkt()

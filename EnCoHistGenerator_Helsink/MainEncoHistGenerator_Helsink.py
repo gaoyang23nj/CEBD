@@ -66,6 +66,12 @@ class RandomWalkGenerator(object):
         file_object = open(filename, 'a+', encoding="utf-8")
         file_object.write('Settings, MAX_NODE_NUM:{},RANGE_COMM:{},MAX_RUNNING_TIMES:{},sim_TimeStep:{}, Helsink'
                           .format(self.MAX_NODE_NUM, self.RANGE_COMM, self.MAX_RUNNING_TIMES, self.sim_TimeStep))
+        # 总仿真事件 (hour)用小时表示
+        total_running_time = (self.MAX_RUNNING_TIMES) / (3600 * 1 / (self.sim_TimeStep))
+        file_object.write(
+            'Settings, MAX_NODE_NUM:{},RANGE_COMM:{},MAX_RUNNING_TIMES:{},{}(h), sim_TimeStep:{}, vel:[{},{}]'.
+                format(self.MAX_NODE_NUM, self.RANGE_COMM, self.MAX_RUNNING_TIMES, total_running_time, self.sim_TimeStep,
+                       self.list_nodes[0].MovementModel.minspeed, self.list_nodes[0].MovementModel.maxspeed))
         for tunple in self.encounter_hist_list:
             (time_linkup, time_linkdown, x_id, y_id, x_loc, y_loc, a_loc, b_loc) = tunple
             file_object.write('\n{},{},{},{}'.format(time_linkup, time_linkdown, x_id, y_id))
