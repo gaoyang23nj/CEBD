@@ -1,14 +1,4 @@
-from Routing.RoutingEpidemic import RoutingEpidemic
-from Routing.RoutingSparyandWait import *
-from Routing.RoutingProphet import RoutingProphet
-from Routing.RoutingMaxProp import *
-
-from Routing.RoutingBlackhole import RoutingBlackhole
-
-from Routing.RoutingProvest import RoutingProvest
-from Routing.RoutingEric import RoutingEric
-from Routing.RoutingSDBG import RoutingSDBG
-
+from Routing_Backup.RoutingMaxProp import *
 
 class DTNNodeBuffer(object):
     # buffersize = 10*1000 k, 即10M; 每个报文100k

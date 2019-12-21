@@ -6,15 +6,18 @@ import numpy as np
 import math
 
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet(object):
+class DTNScenario_Prophet_Blackhole(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, num_of_nodes, buffer_size):
+    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size):
         self.scenarioname = scenarioname
         # 为各个node建立虚拟空间 <内存+router>
         self.listNodeBuffer = []
         self.listRouter = []
         for node_id in range(num_of_nodes):
-            tmpRouter = RoutingProphet(node_id, num_of_nodes)
+            if node_id in list_selfish:
+                tmpRouter = RoutingBlackhole(node_id, num_of_nodes)
+            else:
+                tmpRouter = RoutingProphet(node_id, num_of_nodes)
             self.listRouter.append(tmpRouter)
             tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
@@ -36,9 +39,64 @@ class DTNScenario_Prophet(object):
         # 根据 b_node Router 保存的值, a_node更新向各其他node传递值 (带有a-b响应本次相遇的更新)
         self.listRouter[a_id].notifylinkup(runningtime, b_id, P_b_any)
         self.listRouter[b_id].notifylinkup(runningtime, a_id, P_a_any)
-        # ================== 报文 交换==========================
-        self.sendpkt(runningtime, a_id, b_id)
-        self.sendpkt(runningtime, b_id, a_id)
+        if isinstance(self.listRouter[a_id], RoutingBlackhole) and isinstance(self.listRouter[b_id], RoutingBlackhole):
+            # ================== 报文 交换; a_id是blackhole b_id是blackhole==========================
+            self.sendpkt_toblackhole(runningtime, a_id, b_id)
+            self.sendpkt_toblackhole(runningtime, b_id, a_id)
+        elif isinstance(self.listRouter[a_id], RoutingBlackhole):
+            # ================== 报文 交换; a_id是blackhole b_id是正常prophet==========================
+            self.sendpkt(runningtime, a_id, b_id)
+            self.sendpkt_toblackhole(runningtime, b_id, a_id)
+        elif isinstance(self.listRouter[b_id], RoutingBlackhole):
+            # ================== 报文 交换; a_id是正常prophet b_id是blackhole==========================
+            self.sendpkt_toblackhole(runningtime, a_id, b_id)
+            self.sendpkt(runningtime, b_id, a_id)
+        elif (not isinstance(self.listRouter[a_id], RoutingBlackhole)) and (not isinstance(self.listRouter[b_id], RoutingBlackhole)):
+            # ================== 报文 交换==========================
+            self.sendpkt(runningtime, a_id, b_id)
+            self.sendpkt(runningtime, b_id, a_id)
+
+    # 报文发送 a_id -> b_id
+    def sendpkt_toblackhole(self, runningtime, a_id, b_id):
+        P_b_any = self.listRouter[b_id].get_values_before_up(runningtime)
+        P_a_any = self.listRouter[a_id].get_values_before_up(runningtime)
+        # 准备从a到b传输的pkt 组成的list<这里保存的是deepcopy>
+        totran_pktlist = []
+        # b_listpkt_hist = self.listNodeBuffer[b_id].getlistpkt_hist()
+        # a_listpkt_hist = self.listNodeBuffer[a_id].getlistpkt_hist()
+        b_listpkt_hist = []
+        a_listpkt_hist = []
+        # 1) b_id 告诉 a_id: b_id有哪些pkt
+        b_listpkt = self.listNodeBuffer[b_id].getlistpkt()
+        a_listpkt = self.listNodeBuffer[a_id].getlistpkt()
+        # hist列表 和 当前内存里都没有 来自a的pkt   a才有必要传输
+        for a_pkt in a_listpkt:
+            isDuplicateExist = False
+            for bpktid_hist in b_listpkt_hist:
+                if a_pkt.pkt_id == bpktid_hist:
+                    isDuplicateExist = True
+                    break
+            if not isDuplicateExist:
+                for bpkt in b_listpkt:
+                    if a_pkt.pkt_id == bpkt.pkt_id:
+                        isDuplicateExist = True
+                        break
+            if not isDuplicateExist:
+                cppkt = copy.deepcopy(a_pkt)
+                if a_pkt.dst_id == b_id:
+                    totran_pktlist.insert(0, cppkt)
+                totran_pktlist.append(cppkt)
+                break
+        for tmp_pkt in totran_pktlist:
+            # <是目的节点 OR P值更大> 才进行传输; 单播 只要传输就要删除原来的副本
+            if tmp_pkt.dst_id == b_id:
+                self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+            elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
+                self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                # blackhole b_id立刻发动
+                self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
 
     # 报文发送 a_id -> b_id
     def sendpkt(self, runningtime, a_id, b_id):
@@ -78,27 +136,69 @@ class DTNScenario_Prophet(object):
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
 
     def print_res(self, listgenpkt):
-        output_str = '{}\n'.format(self.scenarioname)
+        output_str_whole = self.print_res_whole(listgenpkt)
+        output_str_pure = self.print_res_pure(listgenpkt)
+        return output_str_whole + output_str_pure
+
+    def print_res_whole(self, listgenpkt):
+        num_genpkt = len(listgenpkt)
+        output_str = '{}_whole\n'.format(self.scenarioname)
         total_delay = 0
         total_succnum = 0
         total_pkt_hold = 0
         for i_id in range(len(self.listNodeBuffer)):
             list_succ = self.listNodeBuffer[i_id].getlistpkt_succ()
+            tmp_succnum = 0
             for i_pkt in list_succ:
                 tmp_delay = i_pkt.succ_time - i_pkt.gentime
                 total_delay = total_delay + tmp_delay
-            tmp_succnum = len(list_succ)
+                tmp_succnum = tmp_succnum + 1
+            assert (tmp_succnum == len(list_succ))
             total_succnum = total_succnum + tmp_succnum
 
             list_pkt = self.listNodeBuffer[i_id].getlistpkt()
             total_pkt_hold = total_pkt_hold + len(list_pkt)
-        succ_ratio = total_succnum/len(listgenpkt)
+        succ_ratio = total_succnum/num_genpkt
         if total_succnum != 0:
             avg_delay = total_delay/total_succnum
             output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
         else:
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
-        output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, len(listgenpkt), total_succnum)
+        output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_genpkt, total_succnum)
+        print(output_str)
+        return output_str
+
+    def print_res_pure(self, listgenpkt):
+        num_purepkt = 0
+        for tunple in listgenpkt:
+            (pkt_id, src_id, dst_id) = tunple
+            if (not isinstance(self.listRouter[src_id], RoutingBlackhole)) and (not isinstance(self.listRouter[dst_id], RoutingBlackhole)):
+                num_purepkt = num_purepkt + 1
+        output_str = '{}_pure\n'.format(self.scenarioname)
+        total_delay = 0
+        total_succnum = 0
+        total_pkt_hold = 0
+        for i_id in range(len(self.listNodeBuffer)):
+            if not isinstance(self.listRouter[i_id], RoutingBlackhole):
+                list_succ = self.listNodeBuffer[i_id].getlistpkt_succ()
+                tmp_succnum = 0
+                for i_pkt in list_succ:
+                    # 这样 src_id 和 dst_id 都是 正常prophet node
+                    if not isinstance(self.listRouter[i_pkt.src_id], RoutingBlackhole):
+                        tmp_delay = i_pkt.succ_time - i_pkt.gentime
+                        total_delay = total_delay + tmp_delay
+                        tmp_succnum = tmp_succnum + 1
+                total_succnum = total_succnum + tmp_succnum
+
+                list_pkt = self.listNodeBuffer[i_id].getlistpkt()
+                total_pkt_hold = total_pkt_hold + len(list_pkt)
+        succ_ratio = total_succnum/num_purepkt
+        if total_succnum != 0:
+            avg_delay = total_delay/total_succnum
+            output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
+        else:
+            output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
+        output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
         print(output_str)
         return output_str
 
@@ -169,3 +269,8 @@ class RoutingProphet(object):
         self.__update(runningtime, a_id, b_id)
         # 借助b进行中转
         self.__transitive(runningtime, a_id, b_id, P_b_any)
+
+
+class RoutingBlackhole(RoutingProphet):
+    def __init__(self, node_id, num_of_nodes):
+        super(RoutingBlackhole, self).__init__(node_id, num_of_nodes)

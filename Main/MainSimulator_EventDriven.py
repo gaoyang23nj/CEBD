@@ -6,6 +6,7 @@ import sys
 from Main.DTNScenario_EP import DTNScenario_EP
 from Main.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.DTNScenario_SandW import DTNScenario_SandW
+from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
 # 简化处理流程 传输速率无限
 
 # 事件驱动
@@ -13,8 +14,8 @@ class Simulator(object):
     def __init__(self):
         # 相遇记录文件
         # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191203021550.tmp'
-        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
-        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191206054920.tmp'
+        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
+        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191220182008.tmp'
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
         # 最大运行时间 执行时间 36000*12个间隔, 即12hour; 应该根据 enco_hist 进行更新
@@ -159,24 +160,26 @@ class Simulator(object):
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景4 Prophet + Blackhole ===================================
         # # 随机生成序列
-        # percent_selfish = 0.5
-        # indices = np.random.permutation(self.MAX_NODE_NUM)
-        # malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-        # normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-        # list_idrouting = []
-        # id = 0
-        # for node_id in range(self.MAX_NODE_NUM):
-        #     if id in normal_indices:
-        #         list_idrouting.append((node_id, 'RoutingEpidemic'))
-        #     elif id in malicious_indices:
-        #         list_idrouting.append((node_id, 'RoutingBlackhole'))
-        #     else:
-        #         print('ERROR! Scenario Init! id: ', id)
-        #     id = id + 1
-        # tmp_senario_name = 'scenario' + str(index)
-        # tmpscenario = DTNScenario(tmp_senario_name, list_idrouting)
-        # self.scenaDict.update({tmp_senario_name: tmpscenario})
+        percent_selfish = 0.3
+        indices = np.random.permutation(self.MAX_NODE_NUM)
+        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景5 Prophet + Blackhole ===================================
+        # # 随机生成序列
+        percent_selfish = 0.8
+        indices = np.random.permutation(self.MAX_NODE_NUM)
+        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())
         return list_scena
@@ -185,12 +188,12 @@ class Simulator(object):
     def print_res(self, filename, ctstring):
         file_object = open(filename, ctstring, encoding="utf-8")
         gen_total_num = len(self.list_genpkt)
-        file_object.write('\n')
-        file_object.write('\n genfreq:{} RunningTime_Max:{} gen_num:{} nr_nodes:{}'.format(
+
+        file_object.write('genfreq:{} RunningTime_Max:{} gen_num:{} nr_nodes:{}\n '.format(
             self.THR_PKT_GEN_CNT, self.MAX_RUNNING_TIMES, gen_total_num, self.MAX_NODE_NUM))
         for key, value in self.scenaDict.items():
             str = value.print_res(self.list_genpkt)
-            file_object.write(str)
+            file_object.write(str+'\n')
         file_object.close()
 
 

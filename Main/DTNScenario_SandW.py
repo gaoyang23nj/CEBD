@@ -75,7 +75,7 @@ class DTNScenario_SandW(object):
                     self.listNodeBuffer[a_id].decrease_token(runningtime, tmp_pkt.pkt_id, changed_token)
 
     def print_res(self, listgenpkt):
-        print('{}'.format(self.scenarioname))
+        output_str = '{}\n'.format(self.scenarioname)
         total_delay = 0
         total_succnum = 0
         total_pkt_hold = 0
@@ -89,12 +89,12 @@ class DTNScenario_SandW(object):
 
             list_pkt = self.listNodeBuffer[i_id].getlistpkt()
             total_pkt_hold = total_pkt_hold + len(list_pkt)
-        succ_ratio = total_succnum/len(listgenpkt)
+        succ_ratio = total_succnum / len(listgenpkt)
         if total_succnum != 0:
-            avg_delay = total_delay/total_succnum
-            str = 'succ_ratio:{} avg_delay:{}'.format(succ_ratio, avg_delay)
+            avg_delay = total_delay / total_succnum
+            output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
         else:
-            str = 'succ_ratio:{} avg_delay:null'.format(succ_ratio)
-        print(str)
-        print('total_hold:{} total_gen:{}, total_succ:{}'.format(total_pkt_hold, len(listgenpkt), total_succnum))
-        return str
+            output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
+        output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, len(listgenpkt), total_succnum)
+        print(output_str)
+        return output_str
