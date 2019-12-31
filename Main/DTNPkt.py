@@ -1,4 +1,4 @@
-import copy
+
 class DTNPkt(object):
     def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         self.pkt_id = pkt_id
@@ -15,3 +15,7 @@ class DTNPktSandW(DTNPkt):
         super(DTNPktSandW, self).__init__(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.token = token
 
+class DTNTrackPkt(DTNPkt):
+    def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size):
+        super(DTNTrackPkt, self).__init__(pkt_id, src_id, dst_id, gentime, pkt_size)
+        self.track = [src_id]

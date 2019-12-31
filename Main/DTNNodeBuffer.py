@@ -1,4 +1,6 @@
-from Routing_Backup.RoutingMaxProp import *
+import copy
+
+from Main.DTNPkt import *
 
 class DTNNodeBuffer(object):
     # buffersize = 10*1000 k, 即10M; 每个报文100k
