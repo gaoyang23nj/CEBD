@@ -19,15 +19,13 @@ class DTNNodeBuffer(object):
 
     # =========================== 核心接口 提供传输pkt的名录; 生成报文; 接收报文
     def gennewpkt(self, newpkt):
-        self.listofpktid_hist.append(newpkt.pkt_id)
         self.__mkroomaddpkt(newpkt, isgen=True)
 
     def receivepkt(self, runningtime, receivedpkt):
         # isReach 为 True 表示pkt已经投递到dest, 源节点不必再保留
         isReach = False
-        self.listofpktid_hist.append(receivedpkt.pkt_id)
         cppkt = copy.deepcopy(receivedpkt)
-        if isinstance(cppkt, DTNTrackPkt):
+        if isinstance(cppkt, DTNPktTrack):
             cppkt.track.append(self.node_id)
         # 抵达目的节点
         if cppkt.dst_id == self.node_id:
@@ -38,6 +36,7 @@ class DTNNodeBuffer(object):
                     isReceivedBefore = True
                     break
             if not isReceivedBefore:
+                self.listofpktid_hist.append(receivedpkt.pkt_id)
                 cppkt.succ_time = runningtime
                 self.listofsuccpkt.append(cppkt)
             isReach = True
@@ -77,15 +76,11 @@ class DTNNodeBuffer(object):
     # ==============================================================================================================
     # 保证内存空间足够 并把pkt放在内存里; isgen 是否是生成新pkt
     def __mkroomaddpkt(self, newpkt, isgen):
-        # 如果需要删除pkt以提供内存空间 按照drop old原则
-        if self.occupied_size + newpkt.pkt_size > self.maxsize:
-            print('delete pkt! in node_{}'.format(self.node_id))
-            self.__deletepktbysize(newpkt.pkt_size)
+        self.listofpktid_hist.append(newpkt.pkt_id)
         self.__addpkt(newpkt)
-
-    # 老化机制 从头删除报文 提供至少pkt_size的空间
-    def __deletepktbysize(self, pkt_size):
-        while self.occupied_size + pkt_size > self.maxsize:
+        # 如果需要删除pkt以提供内存空间 按照drop old原则
+        while self.occupied_size > self.maxsize:
+            print('delete pkt! in node_{}'.format(self.node_id))
             self.occupied_size = self.occupied_size - self.listofpkt[0].pkt_size
             self.listofpkt.pop(0)
         return
@@ -95,7 +90,38 @@ class DTNNodeBuffer(object):
         cppkt = copy.deepcopy(newpkt)
         self.occupied_size = self.occupied_size + cppkt.pkt_size
         # 如果需要记录 track
-        if isinstance(cppkt, DTNTrackPkt):
+        if isinstance(cppkt, DTNPktTrack):
             cppkt.track.append(self.node_id)
         self.listofpkt.append(cppkt)
         return
+
+# 带有优先级的buffer
+class DTNNodeBufferPri(DTNNodeBuffer):
+    def gennewpkt(self, newpkt):
+        assert(isinstance(newpkt, DTNPktPri))
+        super(DTNNodeBufferPri, self).gennewpkt(newpkt)
+
+    # 内存中增加pkt newpkt
+    def __addpkt(self, newpkt):
+        cppkt = copy.deepcopy(newpkt)
+        self.occupied_size = self.occupied_size + cppkt.pkt_size
+        # 如果需要记录 track
+        if isinstance(cppkt, DTNPktTrack):
+            cppkt.track.append(self.node_id)
+        # 找位置; 如果 缓存中pkt优先级 < 目标pkt优先级, 继续向后找位置; 如果=, 找到最后一个(同样优先级; 最后删除); 如果> 应该放到前面去
+        target_idx = 0
+        while target_idx < len(self.listofpkt):
+            if self.listofpkt[target_idx].pri > newpkt.pri:
+                break
+            target_idx = target_idx + 1
+        if target_idx > 0:
+            self.listofpkt.insert(target_idx - 1, cppkt)
+        else:
+            # target_idx == 0
+            self.listofpkt.insert(0, cppkt)
+        return
+
+    def receivepkt(self, runningtime, receivedpkt):
+        assert(isinstance(receivedpkt, DTNPktPri))
+        isReach = super(DTNNodeBufferPri, self).receivepkt(runningtime, receivedpkt)
+        return isReach

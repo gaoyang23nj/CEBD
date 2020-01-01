@@ -1,5 +1,6 @@
 from Main.DTNNodeBuffer import DTNNodeBuffer
-from Main.DTNPkt import DTNPkt
+from Main.DTNPkt import DTNPktPri
+from Main.DTNNodeBuffer import DTNNodeBufferPri
 
 import copy
 import numpy as np
@@ -7,12 +8,12 @@ import math
 
 # spam有两种实现方案：--本模块采用 方案(2)
 # (1) spam的强度; pkt从 src_id(spam) 重复发送的次数 self.spam_strength = spam_strength
-# (2) pkt一直保存在 src_id(spam) buffer里面，遇到合适情况(逢人就转发(类似epidemic))就转发出去; 放在低优先级 随便删除
+# (2) pkt一直保存在 src_id(spam) buffer里面，遇到合适情况(逢人就转发(类似epidemic))就转发出去; 放在高优先级 避免被删除
 
 # 考虑修改spam pkt在buffer里的优先级
 
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Spam(object):
+class DTNScenario_Prophet_SpamE(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size):
         self.scenarioname = scenarioname
@@ -25,13 +26,14 @@ class DTNScenario_Prophet_Spam(object):
             else:
                 tmpRouter = RoutingProphet(node_id, num_of_nodes)
             self.listRouter.append(tmpRouter)
-            tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
+            tmpBuffer = DTNNodeBufferPri(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
         return
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
+        pri = 1
         print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
-        newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
+        newpkt = DTNPktPri(pkt_id, src_id, dst_id, gentime, pkt_size, pri)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
 
