@@ -5,6 +5,7 @@ import sys
 
 from Main.DTNScenario_EP import DTNScenario_EP
 from Main.DTNScenario_Prophet import DTNScenario_Prophet
+from Main.DTNScenario_Prophet_Blackhole_toDetect import DTNScenario_Prophet_Blackhole_toDetect
 from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
 from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
 from Main.DTNScenario_SandW import DTNScenario_SandW
@@ -221,6 +222,26 @@ class Simulator(object):
         index += 1
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_Prophet_SpamE(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景10 Prophet + Blackhole ===================================
+        # # 随机生成序列
+        percent_selfish = 0.3
+        indices = np.random.permutation(self.MAX_NODE_NUM)
+        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景11 Prophet + Blackhole ===================================
+        # # 随机生成序列
+        percent_selfish = 0.8
+        indices = np.random.permutation(self.MAX_NODE_NUM)
+        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())

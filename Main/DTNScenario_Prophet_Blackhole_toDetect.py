@@ -5,6 +5,7 @@ from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
 import copy
 import numpy as np
 import math
+import os
 
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
 class DTNScenario_Prophet_Blackhole_toDetect(object):
@@ -39,12 +40,14 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
     # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id
     def swappkt(self, runningtime, a_id, b_id):
         # 交换直接评价信息，更新间接评价
-        a_sendvalues = self.listNodeBufferDetect[a_id].getsendvalues()
-        a_receivevalues = self.listNodeBufferDetect[a_id].getreceivevalues()
-        b_sendvalues = self.listNodeBufferDetect[b_id].getsendvalues()
-        b_receivevalues = self.listNodeBufferDetect[b_id].getreceivevalues()
-        self.listNodeBufferDetect[b_id].renewindeve(runningtime, a_id, a_sendvalues, a_receivevalues)
-        self.listNodeBufferDetect[a_id].renewindeve(runningtime, b_id, b_sendvalues, b_receivevalues)
+        a_sendvalues = self.listNodeBufferDetect[a_id].get_send_values()
+        a_receivevalues = self.listNodeBufferDetect[a_id].get_receive_values()
+        a_receivesrcvalues = self.listNodeBufferDetect[a_id].get_receive_src_values()
+        b_sendvalues = self.listNodeBufferDetect[b_id].get_send_values()
+        b_receivevalues = self.listNodeBufferDetect[b_id].get_receive_values()
+        b_receivesrcvalues = self.listNodeBufferDetect[a_id].get_receive_src_values()
+        self.listNodeBufferDetect[b_id].renewindeve(runningtime, a_id, a_sendvalues, a_receivevalues, a_receivesrcvalues)
+        self.listNodeBufferDetect[a_id].renewindeve(runningtime, b_id, b_sendvalues, b_receivevalues, b_receivesrcvalues)
         # ================== 控制信息 交换==========================
         # 对称操作!!!
         # 获取 b_node Router 向各节点的值(带有老化计算)
@@ -161,10 +164,13 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
     def print_res(self, listgenpkt):
         output_str_whole = self.print_res_whole(listgenpkt)
         output_str_pure = self.print_res_pure(listgenpkt)
-
+        self.print_eve_res()
         return output_str_whole + output_str_pure
 
+    # 保存标签值和属性值
     def print_eve_res(self):
+        basedir = ".//collect_data//"+self.scenarioname
+        os.makedirs(basedir)
         # 计算y值 标签值
         y = np.zeros(self.num_of_nodes, dtype='int')
         for node_id in range(self.num_of_nodes):
@@ -172,10 +178,19 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
                 y[node_id] = 1
         # 收集属性 属性值
         for tmpBufferDetect in self.listNodeBufferDetect:
-            tmpBufferDetect.getsendvalues()
-            tmpBufferDetect.getreceivevalues()
-            in_send, in_receive = tmpBufferDetect.getindevevalues()
-
+            # 标识自己
+            label = y
+            label[tmpBufferDetect.node_id] = -1
+            x_deve = np.zeros((self.num_of_nodes, 3), dtype='int')
+            x_deve[:, 0] = tmpBufferDetect.get_send_values()
+            x_deve[:, 1] = tmpBufferDetect.get_receive_values()
+            x_deve[:, 2] = tmpBufferDetect.get_receive_src_values()
+            x_indeve = np.zeros((self.num_of_nodes, 3 * self.num_of_nodes), dtype='int')
+            x_indeve[:, 0: self.num_of_nodes] = tmpBufferDetect.get_ind_send_values().transpose()
+            x_indeve[:, self.num_of_nodes : 2 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_values().transpose()
+            x_indeve[:, 2*self.num_of_nodes: 3 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_src_values().transpose()
+            filename = basedir+'//{}.npz'.format(tmpBufferDetect.node_id)
+            np.savez(filename, y=label, x_d=x_deve, x_ind=x_indeve)
 
     def print_res_whole(self, listgenpkt):
         num_genpkt = len(listgenpkt)
