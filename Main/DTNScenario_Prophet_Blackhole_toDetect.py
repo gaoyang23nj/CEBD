@@ -176,15 +176,18 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         for node_id in range(self.num_of_nodes):
             if node_id in self.list_selfish:
                 y[node_id] = 1
-        # 收集属性 属性值
+        # 收集属性 属性值 在node_tmpBufferDetect 里面
         for tmpBufferDetect in self.listNodeBufferDetect:
+            # label.shape(100,),表示各点的类别 0表示正常节点, 1表示异常节点, -1表示自己节点
             # 标识自己
-            label = y
+            label = y.copy()
             label[tmpBufferDetect.node_id] = -1
             x_deve = np.zeros((self.num_of_nodes, 3), dtype='int')
+            # x_deve.shape (100,3) 三个属性 分别表示send/receive/receive_src的个数
             x_deve[:, 0] = tmpBufferDetect.get_send_values()
             x_deve[:, 1] = tmpBufferDetect.get_receive_values()
             x_deve[:, 2] = tmpBufferDetect.get_receive_src_values()
+            # x_indeve.shape (100,300) 300个 属性
             x_indeve = np.zeros((self.num_of_nodes, 3 * self.num_of_nodes), dtype='int')
             x_indeve[:, 0: self.num_of_nodes] = tmpBufferDetect.get_ind_send_values().transpose()
             x_indeve[:, self.num_of_nodes : 2 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_values().transpose()
