@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import os
+import re
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -31,7 +32,10 @@ def train_from_DirectEvidence():
     x2_final = np.zeros(shape=(99 * 100, 300))
     for file in files:
         file_path = os.path.join(dir, file)
-        data_srcnode = int(file.split('.')[0])
+        m = re.match(r'(\d*).npz', 'file')
+        if m is None:
+            continue
+        data_srcnode = int(m.group(1))
         # 收集所有data 训练模型
         y, x1, x2 = process_data_npz(file_path, data_srcnode)
         y_final[data_srcnode * 99 : (data_srcnode+1) * 99] = y
@@ -52,6 +56,8 @@ def train_from_DirectEvidence():
                   metrics=['accuracy'])
     model.fit(X_train, y_train, epochs=5)
     model.evaluate(X_test, y_test, verbose=2)
+    savemodel_file_path = os.path.join(dir, 'ML/deve_model.h5')
+    model.save(savemodel_file_path)
     print('num_train: {}, {}; num_test, {}, {};'.format(y_train.shape, np.sum(y_train), y_test.shape, np.sum(y_test)))
 
 # 从间接证据里 训练分类器
@@ -69,6 +75,9 @@ def train_from_inDirectEvidence():
     x2_final = np.zeros(shape=(99 * 100, 300))
     for file in files:
         file_path = os.path.join(dir, file)
+        m = re.match(r'(\d*).npz', 'file')
+        if m is None:
+            continue
         data_srcnode = int(file.split('.')[0])
         # 收集所有data 训练模型
         y, x1, x2 = process_data_npz(file_path, data_srcnode)
@@ -90,8 +99,10 @@ def train_from_inDirectEvidence():
                   metrics=['accuracy'])
     model.fit(X_train, y_train, epochs=5)
     model.evaluate(X_test, y_test, verbose=2)
+    savemodel_file_path = os.path.join(dir, 'ML/indeve_model.h5')
+    model.save(savemodel_file_path)
     print('num_train: {}, {}; num_test, {}, {};'.format(y_train.shape, np.sum(y_train), y_test.shape, np.sum(y_test)))
 
 if __name__ == "__main__":
     train_from_DirectEvidence()
-    # train_from_inDirectEvidence()
+    train_from_inDirectEvidence()
