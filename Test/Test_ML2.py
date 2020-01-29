@@ -1,7 +1,12 @@
+import shutil
+import multiprocessing
+import time
+
 import numpy as np
 import tensorflow as tf
 import os
 import re
+
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -32,7 +37,7 @@ def train_from_DirectEvidence():
     x2_final = np.zeros(shape=(99 * 100, 300))
     for file in files:
         file_path = os.path.join(dir, file)
-        m = re.match(r'(\d*).npz', 'file')
+        m = re.match(r'(\d*).npz', file)
         if m is None:
             continue
         data_srcnode = int(m.group(1))
@@ -58,6 +63,8 @@ def train_from_DirectEvidence():
     model.evaluate(X_test, y_test, verbose=2)
     savemodel_file_path = os.path.join(dir, 'ML/deve_model.h5')
     model.save(savemodel_file_path)
+    # m = tf.keras.models.load_model(savemodel_file_path)
+    # m.evaluate(X_test, y_test, verbose=2)
     print('num_train: {}, {}; num_test, {}, {};'.format(y_train.shape, np.sum(y_train), y_test.shape, np.sum(y_test)))
 
 # 从间接证据里 训练分类器
@@ -75,7 +82,7 @@ def train_from_inDirectEvidence():
     x2_final = np.zeros(shape=(99 * 100, 300))
     for file in files:
         file_path = os.path.join(dir, file)
-        m = re.match(r'(\d*).npz', 'file')
+        m = re.match(r'(\d*).npz', file)
         if m is None:
             continue
         data_srcnode = int(file.split('.')[0])
@@ -101,8 +108,86 @@ def train_from_inDirectEvidence():
     model.evaluate(X_test, y_test, verbose=2)
     savemodel_file_path = os.path.join(dir, 'ML/indeve_model.h5')
     model.save(savemodel_file_path)
+    # m = tf.keras.models.load_model(savemodel_file_path)
+    # m.evaluate(X_test, y_test, verbose=2)
     print('num_train: {}, {}; num_test, {}, {};'.format(y_train.shape, np.sum(y_train), y_test.shape, np.sum(y_test)))
 
+def tryonce_process_gpu(i, save_d_model_file_path, save_ind_model_file_path, return_dict):
+    print('On GPU:')
+    x = tf.random.uniform([1000, 1000])
+    tmp = x.device.endswith('GPU:0')
+    print('On GPU:{}'.format(tmp))
+    assert x.device.endswith('GPU:0')
+    d_model = tf.keras.models.load_model(save_d_model_file_path)
+    ind_model = tf.keras.models.load_model(save_ind_model_file_path)
+    d_attrs = np.zeros((1, 3), dtype='int')
+    ind_attrs = np.zeros((1, 300), dtype='int')
+    d_predict = d_model.predict(d_attrs)
+    ind_predict = ind_model.predict(ind_attrs)
+    print(i)
+    print(d_predict)
+    print(ind_predict)
+    return_dict["res"] = d_predict[0][1]
+
+def tryonce_process_cpu(i, save_d_model_file_path, save_ind_model_file_path, return_dict):
+    with tf.device('CPU:0'):
+        x = tf.random.uniform([1000,1000])
+        tmp =  x.device.endswith('CPU:0')
+        print('On CPU:{}'.format(tmp))
+        assert x.device.endswith('CPU:0')
+        d_model = tf.keras.models.load_model(save_d_model_file_path)
+        ind_model = tf.keras.models.load_model(save_ind_model_file_path)
+        d_attrs = np.zeros((1, 3), dtype='int')
+        ind_attrs = np.zeros((1, 300), dtype='int')
+        d_predict = d_model.predict(d_attrs)
+        ind_predict = ind_model.predict(ind_attrs)
+        print(i)
+        print(d_predict)
+        print(ind_predict)
+        return_dict["res"] = d_predict[0][1]
+
 if __name__ == "__main__":
-    train_from_DirectEvidence()
-    train_from_inDirectEvidence()
+    dir = "../Main/collect_data/scenario9/ML"
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+    # os.makedirs(dir)
+    os.mkdir(dir)
+    p = multiprocessing.Process(target=train_from_DirectEvidence, args=())
+    p.start()
+    p.join()
+    print('Direct Eve Training... Completed!')
+
+    p = multiprocessing.Process(target=train_from_inDirectEvidence, args=())
+    p.start()
+    p.join()
+    print('InDirect Eve Training... Completed!')
+
+    dir = "../Main/collect_data/scenario9/"
+    save_d_model_file_path = os.path.join(dir, 'ML/deve_model.h5')
+    save_ind_model_file_path = os.path.join(dir, 'ML/indeve_model.h5')
+
+    # 预测执行的次数
+    predict_times = 200
+    tGPU_start = time.time()
+    for i in range(predict_times):
+        manager = multiprocessing.Manager()
+        return_dict = manager.dict()
+        j = multiprocessing.Process(target=tryonce_process_gpu, args=(i, save_d_model_file_path, save_ind_model_file_path, return_dict))
+        j.start()
+        j.join()
+        print(return_dict["res"])
+    tGPU_end = time.time()
+
+    tCPU_start = time.time()
+    for i in range(predict_times):
+        manager = multiprocessing.Manager()
+        return_dict = manager.dict()
+        j = multiprocessing.Process(target=tryonce_process_cpu, args=(i, save_d_model_file_path, save_ind_model_file_path, return_dict))
+        j.start()
+        j.join()
+        print(return_dict["res"])
+    tCPU_end = time.time()
+
+    tGPU = tGPU_end - tGPU_start
+    tCPU = tCPU_end - tCPU_start
+    print('GPU:{}  CPU:{}'.format(tGPU, tCPU))
