@@ -10,6 +10,7 @@ from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
 from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
 from Main.DTNScenario_SandW import DTNScenario_SandW
 from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
+from Main.DTNScenario_Prophet_Blackhole_DetectandBan import DTNScenario_Prophet_Blackhole_DectectandBan
 # 简化处理流程 传输速率无限
 
 # 事件驱动
@@ -100,7 +101,6 @@ class Simulator(object):
             self.pktid_nextgen = self.pktid_nextgen + 1
             i = i+1
 
-
     def run(self):
         while self.sim_TimeNow < self.MAX_RUNNING_TIMES:
             if len(self.list_gen_eve)==0 and len(self.list_enco_hist)==0:
@@ -117,6 +117,7 @@ class Simulator(object):
                 # controller记录这个pkt
                 self.list_genpkt.append((self.list_gen_eve[0][1], self.list_gen_eve[0][2], self.list_gen_eve[0][3]))
                 # 各scenario生成pkt, pkt大小为100k
+                print('time:{} pkt_id:{} src:{} dst:{}'.format(self.sim_TimeNow, self.list_gen_eve[0][1], self.list_gen_eve[0][2], self.list_gen_eve[0][3]))
                 for key, value in self.scenaDict.items():
                     value.gennewpkt(self.list_gen_eve[0][1], self.list_gen_eve[0][2], self.list_gen_eve[0][3], self.sim_TimeNow, 500)
                 # 删除这个生成事件 以便继续进行
@@ -149,21 +150,21 @@ class Simulator(object):
     def init_scenario(self):
         self.scenaDict = {}
         index = 0
-        # ===============================场景1 Epidemic ===================================
+        # ===============================场景0 Epidemic ===================================
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_EP(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景2 Prophet ===================================
+        # ===============================场景1 Prophet ===================================
         index += 1
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景3 Spary and Wait ===================================
+        # ===============================场景2 Spary and Wait ===================================
         index += 1
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景4 Prophet + Blackhole ===================================
+        # ===============================场景3 Prophet + Blackhole ===================================
         # # 随机生成序列
         percent_selfish = 0.3
         indices = np.random.permutation(self.MAX_NODE_NUM)
@@ -173,7 +174,7 @@ class Simulator(object):
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景5 Prophet + Blackhole ===================================
+        # ===============================场景4 Prophet + Blackhole ===================================
         # # 随机生成序列
         percent_selfish = 0.8
         indices = np.random.permutation(self.MAX_NODE_NUM)
@@ -182,19 +183,19 @@ class Simulator(object):
         index += 1
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景5 Prophet + Spam ===================================
+        # # 随机生成序列
+        percent_selfish = 0.3
+        indices = np.random.permutation(self.MAX_NODE_NUM)
+        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet_Spam(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景6 Prophet + Spam ===================================
         # # 随机生成序列
-        percent_selfish = 0.3
-        indices = np.random.permutation(self.MAX_NODE_NUM)
-        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_Prophet_Spam(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景7 Prophet + Spam ===================================
-        # # 随机生成序列
         percent_selfish = 0.8
         indices = np.random.permutation(self.MAX_NODE_NUM)
         malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
@@ -202,19 +203,19 @@ class Simulator(object):
         index += 1
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_Prophet_Spam(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景7 Prophet + Spam E ===================================
+        # # 随机生成序列
+        percent_selfish = 0.3
+        indices = np.random.permutation(self.MAX_NODE_NUM)
+        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet_SpamE(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景8 Prophet + Spam E ===================================
         # # 随机生成序列
-        percent_selfish = 0.3
-        indices = np.random.permutation(self.MAX_NODE_NUM)
-        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_Prophet_SpamE(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景9 Prophet + Spam E ===================================
-        # # 随机生成序列
         percent_selfish = 0.8
         indices = np.random.permutation(self.MAX_NODE_NUM)
         malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
@@ -222,19 +223,19 @@ class Simulator(object):
         index += 1
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_Prophet_SpamE(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景9 Prophet + Blackhole ===================================
+        # # 随机生成序列
+        percent_selfish = 0.3
+        indices = np.random.permutation(self.MAX_NODE_NUM)
+        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景10 Prophet + Blackhole ===================================
         # # 随机生成序列
-        percent_selfish = 0.3
-        indices = np.random.permutation(self.MAX_NODE_NUM)
-        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景11 Prophet + Blackhole ===================================
-        # # 随机生成序列
         percent_selfish = 0.8
         indices = np.random.permutation(self.MAX_NODE_NUM)
         malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
@@ -242,6 +243,16 @@ class Simulator(object):
         index += 1
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景11 Prophet + Blackhole + Detect===================================
+        # # 随机生成序列
+        percent_selfish = 0.3
+        indices = np.random.permutation(self.MAX_NODE_NUM)
+        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)
+        tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())

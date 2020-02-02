@@ -32,7 +32,7 @@ class DTNScenario_Prophet_SpamE(object):
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         pri = 1
-        print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
+        # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPktPri(pkt_id, src_id, dst_id, gentime, pkt_size, pri)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return

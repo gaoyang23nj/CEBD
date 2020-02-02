@@ -112,7 +112,7 @@ def train_from_inDirectEvidence():
     # m.evaluate(X_test, y_test, verbose=2)
     print('num_train: {}, {}; num_test, {}, {};'.format(y_train.shape, np.sum(y_train), y_test.shape, np.sum(y_test)))
 
-def tryonce_process_gpu(i, save_d_model_file_path, save_ind_model_file_path, return_dict):
+def tryonce_process_gpu(save_d_model_file_path, save_ind_model_file_path, return_dict):
     x = tf.random.uniform([1000, 1000])
     tmp = x.device.endswith('GPU:0')
     print('On GPU:{}'.format(tmp))
@@ -123,13 +123,12 @@ def tryonce_process_gpu(i, save_d_model_file_path, save_ind_model_file_path, ret
     ind_attrs = np.zeros((1, 300), dtype='int')
     d_predict = d_model.predict(d_attrs)
     ind_predict = ind_model.predict(ind_attrs)
-    print(i)
     print(d_predict)
     print(ind_predict)
     return_dict["res_d"] = d_predict[0][1]
     return_dict["res_ind"] = ind_predict[0][1]
 
-def tryonce_process_cpu(i, save_d_model_file_path, save_ind_model_file_path, return_dict):
+def tryonce_process_cpu(save_d_model_file_path, save_ind_model_file_path, return_dict):
     with tf.device('CPU:0'):
         x = tf.random.uniform([1000,1000])
         tmp =  x.device.endswith('CPU:0')
@@ -141,11 +140,41 @@ def tryonce_process_cpu(i, save_d_model_file_path, save_ind_model_file_path, ret
         ind_attrs = np.zeros((1, 300), dtype='int')
         d_predict = d_model.predict(d_attrs)
         ind_predict = ind_model.predict(ind_attrs)
-        print(i)
         print(d_predict)
         print(ind_predict)
         return_dict["res_d"] = d_predict[0][1]
         return_dict["res_ind"] = ind_predict[0][1]
+
+class T1(object):
+    def run(self):
+        # 预测执行的次数
+        predict_times = 2
+        # tGPU_start = time.time()
+        # for i in range(predict_times):
+        #     manager = multiprocessing.Manager()
+        #     return_dict = manager.dict()
+        #     j = multiprocessing.Process(target=tryonce_process_gpu, args=(i, save_d_model_file_path, save_ind_model_file_path, return_dict))
+        #     j.start()
+        #     j.join()
+        #     res_d = return_dict["res_d"]
+        #     res_ind = return_dict["res_ind"]
+        #     print('return_dict: d:{} ind:{}'.format(res_d, res_ind))
+        # print(return_dict["res_d"])
+        # tGPU_end = time.time()
+        # tGPU = tGPU_end - tGPU_start
+        tCPU_start = time.time()
+        for i in range(predict_times):
+            manager = multiprocessing.Manager()
+            return_dict = manager.dict()
+            j = multiprocessing.Process(target=tryonce_process_cpu, args=(save_d_model_file_path, save_ind_model_file_path, return_dict))
+            j.start()
+            j.join()
+            res_d = return_dict["res_d"]
+            res_ind = return_dict["res_ind"]
+            print('return_dict: d:{} ind:{}'.format(res_d, res_ind))
+        tCPU_end = time.time()
+        tCPU = tCPU_end - tCPU_start
+        # print('GPU:{}  CPU:{}'.format(tGPU, tCPU))
 
 if __name__ == "__main__":
     dir = "../Main/collect_data/scenario9/ML"
@@ -167,34 +196,5 @@ if __name__ == "__main__":
     save_d_model_file_path = os.path.join(dir, 'ML/deve_model.h5')
     save_ind_model_file_path = os.path.join(dir, 'ML/indeve_model.h5')
 
-    # 预测执行的次数
-    predict_times = 2
-
-    # tGPU_start = time.time()
-    # for i in range(predict_times):
-    #     manager = multiprocessing.Manager()
-    #     return_dict = manager.dict()
-    #     j = multiprocessing.Process(target=tryonce_process_gpu, args=(i, save_d_model_file_path, save_ind_model_file_path, return_dict))
-    #     j.start()
-    #     j.join()
-    #     res_d = return_dict["res_d"]
-    #     res_ind = return_dict["res_ind"]
-    #     print('return_dict: d:{} ind:{}'.format(res_d, res_ind))
-    # print(return_dict["res_d"])
-    # tGPU_end = time.time()
-    # tGPU = tGPU_end - tGPU_start
-
-    tCPU_start = time.time()
-    for i in range(predict_times):
-        manager = multiprocessing.Manager()
-        return_dict = manager.dict()
-        j = multiprocessing.Process(target=tryonce_process_cpu, args=(i, save_d_model_file_path, save_ind_model_file_path, return_dict))
-        j.start()
-        j.join()
-        res_d = return_dict["res_d"]
-        res_ind = return_dict["res_ind"]
-        print('return_dict: d:{} ind:{}'.format(res_d, res_ind))
-    tCPU_end = time.time()
-    tCPU = tCPU_end - tCPU_start
-
-    # print('GPU:{}  CPU:{}'.format(tGPU, tCPU))
+    t1 = T1()
+    t1.run()

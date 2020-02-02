@@ -21,7 +21,7 @@ class DTNScenario_SandW(object):
         return
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
+        # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPktSandW(pkt_id, src_id, dst_id, gentime, pkt_size, self.inittoken)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return

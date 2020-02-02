@@ -6,11 +6,54 @@ import copy
 import numpy as np
 import math
 import os
+import tensorflow as tf
+import multiprocessing
+import re
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 
+
+def tryonce_process_cpu(save_d_model_file_path, save_ind_model_file_path, d_attrs, ind_attrs, return_dict):
+    with tf.device('CPU:0'):
+        x = tf.random.uniform([1000, 1000])
+        tmp = x.device.endswith('CPU:0')
+        print('On CPU:{}'.format(tmp))
+        assert x.device.endswith('CPU:0')
+        d_model = tf.keras.models.load_model(save_d_model_file_path)
+        ind_model = tf.keras.models.load_model(save_ind_model_file_path)
+        # d_attrs = np.zeros((1, 3), dtype='int')
+        # ind_attrs = np.zeros((1, 300), dtype='int')
+        d_predict = d_model.predict(d_attrs)
+        ind_predict = ind_model.predict(ind_attrs)
+        print(d_predict)
+        print(ind_predict)
+        return_dict["res_d"] = d_predict[0][1]
+        return_dict["res_ind"] = ind_predict[0][1]
+
+def tryonce_process_gpu(save_d_model_file_path, save_ind_model_file_path, d_attrs, ind_attrs, return_dict):
+    x = tf.random.uniform([1000, 1000])
+    tmp = x.device.endswith('GPU:0')
+    print('On GPU:{}'.format(tmp))
+    assert x.device.endswith('GPU:0')
+    d_model = tf.keras.models.load_model(save_d_model_file_path)
+    ind_model = tf.keras.models.load_model(save_ind_model_file_path)
+    # d_attrs = np.zeros((1, 3), dtype='int')
+    # ind_attrs = np.zeros((1, 300), dtype='int')
+    d_predict = d_model.predict(d_attrs)
+    ind_predict = ind_model.predict(ind_attrs)
+    print(d_predict)
+    print(ind_predict)
+    return_dict["res_d"] = d_predict[0][1]
+    return_dict["res_ind"] = ind_predict[0][1]
+
+# 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_toDetect(object):
+class DTNScenario_Prophet_Blackhole_DectectandBan(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size):
+        # tf的调用次数
+        self._tmpCallCnt = 0
         self.scenarioname = scenarioname
         self.list_selfish = list_selfish
         self.num_of_nodes = num_of_nodes
@@ -29,10 +72,14 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             self.listNodeBuffer.append(tmpBuffer)
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
+        # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
+        dir = "../Main/collect_data/scenario9/"
+        self.save_d_model_file_path = os.path.join(dir, 'ML/deve_model.h5')
+        self.save_ind_model_file_path = os.path.join(dir, 'ML/indeve_model.h5')
         return
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
+        # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
@@ -111,8 +158,11 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
+                # 利用model进行判定 b_id是否是blackhole
+                bool_BH = self.detect_blackhole(a_id, b_id)
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
-                self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                if not bool_BH:
+                    self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
                 # blackhole b_id立刻发动
                 self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
@@ -150,9 +200,48 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
                 break
         for tmp_pkt in totran_pktlist:
             # <是目的节点 OR P值更大> 才进行传输; 单播 只要传输就要删除原来的副本
-            if tmp_pkt.dst_id == b_id or P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
+            if tmp_pkt.dst_id == b_id:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+            elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
+                # 利用model进行判定 b_id是否是blackhole
+                bool_BH = self.detect_blackhole(a_id, b_id)
+                self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                if not bool_BH:
+                    self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+
+    def detect_blackhole(self, a_id, b_id):
+        theBufferDetect = self.listNodeBufferDetect[a_id]
+        d_attrs = np.zeros((1,3), dtype='int')
+        d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
+        d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
+        d_attrs[0][2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
+        # 还需归一化转化
+        ind_attrs = np.zeros((1,300), dtype='int')
+        ind_attrs[0][0: self.num_of_nodes] = ((theBufferDetect.get_ind_send_values().transpose())[b_id,:]).copy()
+        ind_attrs[0][self.num_of_nodes: 2 * self.num_of_nodes] = \
+            ((theBufferDetect.get_ind_receive_values().transpose())[b_id,:]).copy()
+        ind_attrs[0][2 * self.num_of_nodes: 3 * self.num_of_nodes] = \
+            ((theBufferDetect.get_ind_receive_src_values().transpose())[b_id,:]).copy()
+        # tf的调用次数 加1
+        self._tmpCallCnt = self._tmpCallCnt + 1
+
+        # 加载模型；进行预测
+        manager = multiprocessing.Manager()
+        return_dict = manager.dict()
+        j = multiprocessing.Process(target=tryonce_process_gpu, args=(self.save_d_model_file_path, self.save_ind_model_file_path, d_attrs, ind_attrs, return_dict))
+        j.start()
+        j.join()
+        res_d = return_dict["res_d"]
+        res_ind = return_dict["res_ind"]
+        print('return_dict: d:{} ind:{}'.format(res_d, res_ind))
+        # 判定
+        boolBlackhole = ((res_d > 0.65) or (res_ind > 0.65))
+        # 如果确认了结果；否则。。。
+        print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}'.format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole))
+        return boolBlackhole
 
     # 改变检测buffer的值
     def updatedectbuf_sendpkt(self, a_id, b_id, src_id, dst_id):
@@ -164,36 +253,9 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
     def print_res(self, listgenpkt):
         output_str_whole = self.print_res_whole(listgenpkt)
         output_str_pure = self.print_res_pure(listgenpkt)
-        self.print_eve_res()
+        # 不必进行标签值 和 属性值 的保存
+        # self.print_eve_res()
         return output_str_whole + output_str_pure
-
-    # 保存标签值和属性值
-    def print_eve_res(self):
-        basedir = ".//collect_data//"+self.scenarioname
-        os.makedirs(basedir)
-        # 计算y值 标签值
-        y = np.zeros(self.num_of_nodes, dtype='int')
-        for node_id in range(self.num_of_nodes):
-            if node_id in self.list_selfish:
-                y[node_id] = 1
-        # 收集属性 属性值 在node_tmpBufferDetect 里面
-        for tmpBufferDetect in self.listNodeBufferDetect:
-            # label.shape(100,),表示各点的类别 0表示正常节点, 1表示异常节点, -1表示自己节点
-            # 标识自己
-            label = y.copy()
-            label[tmpBufferDetect.node_id] = -1
-            x_deve = np.zeros((self.num_of_nodes, 3), dtype='int')
-            # x_deve.shape (100,3) 三个属性 分别表示send/receive/receive_src的个数
-            x_deve[:, 0] = tmpBufferDetect.get_send_values()
-            x_deve[:, 1] = tmpBufferDetect.get_receive_values()
-            x_deve[:, 2] = tmpBufferDetect.get_receive_src_values()
-            # x_indeve.shape (100,300) 300个 属性
-            x_indeve = np.zeros((self.num_of_nodes, 3 * self.num_of_nodes), dtype='int')
-            x_indeve[:, 0: self.num_of_nodes] = tmpBufferDetect.get_ind_send_values().transpose()
-            x_indeve[:, self.num_of_nodes : 2 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_values().transpose()
-            x_indeve[:, 2*self.num_of_nodes: 3 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_src_values().transpose()
-            filename = basedir+'//{}.npz'.format(tmpBufferDetect.node_id)
-            np.savez(filename, y=label, x_d=x_deve, x_ind=x_indeve)
 
     def print_res_whole(self, listgenpkt):
         num_genpkt = len(listgenpkt)

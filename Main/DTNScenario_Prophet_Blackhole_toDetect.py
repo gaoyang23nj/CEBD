@@ -1,3 +1,5 @@
+import shutil
+
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
@@ -32,7 +34,7 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         return
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
+        # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
@@ -153,6 +155,7 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             if tmp_pkt.dst_id == b_id or P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
 
     # 改变检测buffer的值
     def updatedectbuf_sendpkt(self, a_id, b_id, src_id, dst_id):
@@ -164,12 +167,16 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
     def print_res(self, listgenpkt):
         output_str_whole = self.print_res_whole(listgenpkt)
         output_str_pure = self.print_res_pure(listgenpkt)
-        self.print_eve_res()
+        # 进行标签值 和 属性值 的保存; 以便于offline训练model
+        # self.print_eve_res()
         return output_str_whole + output_str_pure
 
     # 保存标签值和属性值
     def print_eve_res(self):
         basedir = ".//collect_data//"+self.scenarioname
+        # 如果已经产生了 则清空;
+        if os.path.exists(basedir):
+            shutil.rmtree(basedir)
         os.makedirs(basedir)
         # 计算y值 标签值
         y = np.zeros(self.num_of_nodes, dtype='int')

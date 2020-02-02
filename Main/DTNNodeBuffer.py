@@ -80,7 +80,7 @@ class DTNNodeBuffer(object):
         self.__addpkt(newpkt)
         # 如果需要删除pkt以提供内存空间 按照drop old原则
         while self.occupied_size > self.maxsize:
-            print('delete pkt! in node_{}'.format(self.node_id))
+            # print('delete pkt! in node_{}'.format(self.node_id))
             self.occupied_size = self.occupied_size - self.listofpkt[0].pkt_size
             self.listofpkt.pop(0)
         return
