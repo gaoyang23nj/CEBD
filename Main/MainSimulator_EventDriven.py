@@ -48,7 +48,7 @@ class Simulator(object):
         self.read_enco_hist_file()
         print('read enco file end!')
         print(datetime.datetime.now())
-        winsound.Beep(250, 1000)
+        winsound.Beep(500, 2000)
         self.build_gen_event()
         # 初始化各个场景 spamming节点的比例
         self.init_scenario()
@@ -280,5 +280,5 @@ if __name__ == "__main__":
     theSimulator = Simulator()
     t_end = time.time()
     print(datetime.datetime.now())
-    winsound.Beep(250, 1000)
+    winsound.Beep(500, 2000)
     print('running time:{}'.format(t_end-t_start))

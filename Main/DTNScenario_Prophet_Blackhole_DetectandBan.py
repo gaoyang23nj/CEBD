@@ -273,7 +273,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         # # 判定
         # boolBlackhole = ((res_d > 0.65) or (res_ind > 0.65))
         # 如果确认了结果；否则。。。
-        print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}'.format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole))
+        isSelfish = (b_id in self.list_selfish)
+        print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}, Truth:{}'.
+              format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
         return boolBlackhole
 
     # 改变检测buffer的值
