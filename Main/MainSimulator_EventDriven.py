@@ -1,7 +1,8 @@
 import numpy as np
 import datetime
+import time
 import sys
-
+import winsound
 
 from Main.DTNScenario_EP import DTNScenario_EP
 from Main.DTNScenario_Prophet import DTNScenario_Prophet
@@ -46,6 +47,8 @@ class Simulator(object):
         # 读取相遇记录
         self.read_enco_hist_file()
         print('read enco file end!')
+        print(datetime.datetime.now())
+        winsound.Beep(250, 1000)
         self.build_gen_event()
         # 初始化各个场景 spamming节点的比例
         self.init_scenario()
@@ -272,4 +275,10 @@ class Simulator(object):
 
 
 if __name__ == "__main__":
+    print(datetime.datetime.now())
+    t_start = time.time()
     theSimulator = Simulator()
+    t_end = time.time()
+    print(datetime.datetime.now())
+    winsound.Beep(250, 1000)
+    print('running time:{}'.format(t_end-t_start))

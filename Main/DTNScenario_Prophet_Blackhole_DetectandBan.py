@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split
 
 def tryonce_process_cpu(save_d_model_file_path, save_ind_model_file_path, d_attrs, ind_attrs, return_dict):
     with tf.device('CPU:0'):
-        x = tf.random.uniform([1000, 1000])
+        x = tf.random.uniform([1, 1])
         tmp = x.device.endswith('CPU:0')
         print('On CPU:{}'.format(tmp))
         assert x.device.endswith('CPU:0')
@@ -32,7 +32,7 @@ def tryonce_process_cpu(save_d_model_file_path, save_ind_model_file_path, d_attr
         return_dict["res_ind"] = ind_predict[0][1]
 
 def tryonce_process_gpu(save_d_model_file_path, save_ind_model_file_path, d_attrs, ind_attrs, return_dict):
-    x = tf.random.uniform([1000, 1000])
+    x = tf.random.uniform([1, 1])
     tmp = x.device.endswith('GPU:0')
     print('On GPU:{}'.format(tmp))
     assert x.device.endswith('GPU:0')
@@ -214,6 +214,13 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
 
     def detect_blackhole(self, a_id, b_id):
         theBufferDetect = self.listNodeBufferDetect[a_id]
+        viewofb = theBufferDetect.getviewofb(b_id)
+        # 如果给出了 比较确定的结果
+        if (viewofb == 1) or (viewofb == -1) or (viewofb == -2):
+            # 如果确定是正常节点(-1)返回False 或者 异常节点(1)返回True； 则直接返回结果（是否为异常？）以便于进行路由
+            return viewofb == 1
+        # 否则 viewofb == 0
+        assert viewofb == 0
         d_attrs = np.zeros((1,3), dtype='int')
         d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
         d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
@@ -231,14 +238,40 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         # 加载模型；进行预测
         manager = multiprocessing.Manager()
         return_dict = manager.dict()
-        j = multiprocessing.Process(target=tryonce_process_gpu, args=(self.save_d_model_file_path, self.save_ind_model_file_path, d_attrs, ind_attrs, return_dict))
+        j = multiprocessing.Process(target=tryonce_process_cpu, args=(self.save_d_model_file_path, self.save_ind_model_file_path, d_attrs, ind_attrs, return_dict))
         j.start()
         j.join()
         res_d = return_dict["res_d"]
         res_ind = return_dict["res_ind"]
         print('return_dict: d:{} ind:{}'.format(res_d, res_ind))
-        # 判定
-        boolBlackhole = ((res_d > 0.65) or (res_ind > 0.65))
+
+        # 执行判定流程 & 结果更新过程
+        # 如果 判定结果不具有足够的倾向性 (只要任何一个判定不具有倾向性 即可做出判断)
+        abs_att = 0.15
+        if ((math.fabs(res_d - 0.5) < abs_att) or (math.fabs(res_d - 0.5) < abs_att)):
+            # pass
+            boolBlackhole = False
+        # 如果 判定结果具有足够的倾向性 （两个判定都足够倾向 d_eve ind_eve）
+        else:
+            # 如果 直接证据 和 间接证据 相悖, 本次路由放过去, 需要后续研究；
+            # 可能存在虚假证据正在干扰；或者直接证据不足
+            if (res_d-0.5)*(res_ind-0.5) < 0:
+                boolBlackhole = False
+                # 进行虚假证据鉴定
+            else:
+                if res_ind > 0.5 + abs_att:
+                    assert res_d > 0.5 + abs_att
+                    boolBlackhole = True
+                    # 1表示恶意节点
+                    theBufferDetect.setviewofb(b_id, 1)
+                else:
+                    assert res_ind < 0.5 - abs_att
+                    assert res_d < 0.5 - abs_att
+                    boolBlackhole = False
+                    # -1表示正常节点
+                    theBufferDetect.setviewofb(b_id, -1)
+        # # 判定
+        # boolBlackhole = ((res_d > 0.65) or (res_ind > 0.65))
         # 如果确认了结果；否则。。。
         print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}'.format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole))
         return boolBlackhole
