@@ -1,0 +1,86 @@
+scenario0
+succ_ratio:0.19074074074074074 avg_delay:137280.4302184466
+total_hold:4000 total_gen:8640, total_succ:1648
+
+scenario1
+succ_ratio:0.23298611111111112 avg_delay:134770.98807749627
+total_hold:1901 total_gen:8640, total_succ:2013
+
+scenario2
+succ_ratio:0.2491898148148148 avg_delay:154239.46353924758
+total_hold:3994 total_gen:8640, total_succ:2153
+
+scenario3_whole
+succ_ratio:0.05648148148148148 avg_delay:5125.11475409836
+total_hold:41 total_gen:8640, total_succ:488
+
+scenario3_pure
+succ_ratio:0.056689887100648574 avg_delay:5143.71186440678
+total_hold:38 total_gen:4163, total_succ:236
+
+scenario4_whole
+succ_ratio:0.021643518518518517 avg_delay:1261.9304812834225
+total_hold:12 total_gen:8640, total_succ:187
+
+scenario4_pure
+succ_ratio:0.020527859237536656 avg_delay:2169.5714285714284
+total_hold:6 total_gen:341, total_succ:7
+
+scenario5_whole
+succ_ratio:0.16620370370370371 avg_delay:141377.41991643453
+total_hold:3673 total_gen:8640, total_succ:1436
+
+scenario5_pure
+succ_ratio:0.13541416566626652 avg_delay:144952.1524822695
+total_hold:2473 total_gen:4165, total_succ:564
+
+scenario6_whole
+succ_ratio:0.1824074074074074 avg_delay:140187.01586294416
+total_hold:3988 total_gen:8640, total_succ:1576
+
+scenario6_pure
+succ_ratio:0.13636363636363635 avg_delay:103036.88095238095
+total_hold:789 total_gen:308, total_succ:42
+
+scenario7_whole
+succ_ratio:0.16215277777777778 avg_delay:146279.30478229836
+total_hold:3709 total_gen:8640, total_succ:1401
+
+scenario7_pure
+succ_ratio:0.13101476893758932 avg_delay:152904.53818181818
+total_hold:2510 total_gen:4198, total_succ:550
+
+scenario8_whole
+succ_ratio:0.18368055555555557 avg_delay:136404.21991178324
+total_hold:3983 total_gen:8640, total_succ:1587
+
+scenario8_pure
+succ_ratio:0.1069182389937107 avg_delay:128214.08823529411
+total_hold:785 total_gen:318, total_succ:34
+
+scenario9_whole
+succ_ratio:0.057060185185185186 avg_delay:5246.914807302232
+total_hold:58 total_gen:8640, total_succ:493
+
+scenario9_pure
+succ_ratio:0.05513666352497644 avg_delay:5414.457264957265
+total_hold:58 total_gen:4244, total_succ:234
+
+scenario10_whole
+succ_ratio:0.02326388888888889 avg_delay:1293.3781094527362
+total_hold:7 total_gen:8640, total_succ:201
+
+scenario10_pure
+succ_ratio:0.04120879120879121 avg_delay:2516.866666666667
+total_hold:2 total_gen:364, total_succ:15
+
+scenario11_whole
+succ_ratio:0.16354166666666667 avg_delay:126894.48195329087
+total_hold:2138 total_gen:8640, total_succ:1413
+
+scenario11_pure
+succ_ratio:0.16359822885108366 avg_delay:132155.34615384616
+total_hold:2137 total_gen:4291, total_succ:702
+
+2020-02-03 18:26:03.441970
+running time:83614.6227157116

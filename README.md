@@ -23,6 +23,9 @@ v4.5
 准备：以两个main文件为核心(1)得到EncounterHist
 (2)根据EncounterHist进行仿真
 
+2020-02-03
+balckhole_detect_and_ban 似乎很有效果
+结果在2020-02-03.txt
 
 于社群的Routing  进行CTMC分析是个点？
 带能源的Routing 进行CTMC分析是个点？
