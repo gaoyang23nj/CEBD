@@ -13,39 +13,37 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
-
-def tryonce_process_cpu(save_d_model_file_path, save_ind_model_file_path, d_attrs, ind_attrs, return_dict):
-    with tf.device('CPU:0'):
-        x = tf.random.uniform([1, 1])
-        tmp = x.device.endswith('CPU:0')
-        print('On CPU:{}'.format(tmp))
-        assert x.device.endswith('CPU:0')
-        d_model = tf.keras.models.load_model(save_d_model_file_path)
-        ind_model = tf.keras.models.load_model(save_ind_model_file_path)
-        # d_attrs = np.zeros((1, 3), dtype='int')
-        # ind_attrs = np.zeros((1, 300), dtype='int')
-        d_predict = d_model.predict(d_attrs)
-        ind_predict = ind_model.predict(ind_attrs)
-        print(d_predict)
-        print(ind_predict)
-        return_dict["res_d"] = d_predict[0][1]
-        return_dict["res_ind"] = ind_predict[0][1]
-
-def tryonce_process_gpu(save_d_model_file_path, save_ind_model_file_path, d_attrs, ind_attrs, return_dict):
+def process_predict(save_d_model_file_path, save_ind_model_file_path, max_ability, q_input, q_output):
+    # with tf.device('CPU:0'):
+    #     x = tf.random.uniform([1, 1])
+    #     tmp = x.device.endswith('CPU:0')
+    #     print('On CPU:{}'.format(tmp))
+    #     assert x.device.endswith('CPU:0')
     x = tf.random.uniform([1, 1])
     tmp = x.device.endswith('GPU:0')
     print('On GPU:{}'.format(tmp))
-    assert x.device.endswith('GPU:0')
+    print('On CPU:{}'.format(tmp))
+    # assert x.device.endswith('GPU:0')
+
+    num_to_process = 0
+    print('.........Process Running...pid[{}]'.format(os.getpid()))
     d_model = tf.keras.models.load_model(save_d_model_file_path)
     ind_model = tf.keras.models.load_model(save_ind_model_file_path)
-    # d_attrs = np.zeros((1, 3), dtype='int')
-    # ind_attrs = np.zeros((1, 300), dtype='int')
-    d_predict = d_model.predict(d_attrs)
-    ind_predict = ind_model.predict(ind_attrs)
-    print(d_predict)
-    print(ind_predict)
-    return_dict["res_d"] = d_predict[0][1]
-    return_dict["res_ind"] = ind_predict[0][1]
+    while True:
+        em = q_input.get(True)
+        if em is None:
+            break
+        d_predict = d_model.predict(em[1])
+        ind_predict = ind_model.predict(em[2])
+        num_to_process = num_to_process + 1
+        print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
+        if num_to_process >= max_ability[0]:
+            res = (em[0], d_predict[0][1], ind_predict[0][1], max_ability[1])
+            q_output.put(res)
+            break
+        else:
+            res = (em[0], d_predict[0][1], ind_predict[0][1])
+            q_output.put(res)
 
 # 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
@@ -76,6 +74,14 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         dir = "../Main/collect_data/scenario9/"
         self.save_d_model_file_path = os.path.join(dir, 'ML/deve_model.h5')
         self.save_ind_model_file_path = os.path.join(dir, 'ML/indeve_model.h5')
+        self.q_input = multiprocessing.Queue()
+        self.q_output = multiprocessing.Queue()
+        self.key = 0
+        self.MAX_Ability = (100, 'Max Process Ability')
+        j = multiprocessing.Process(target = process_predict, args=(
+            self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, self.q_input, self.q_output))
+        j.daemon = True
+        j.start()
         return
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -236,19 +242,23 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         self._tmpCallCnt = self._tmpCallCnt + 1
 
         # 加载模型；进行预测
-        manager = multiprocessing.Manager()
-        return_dict = manager.dict()
-        j = multiprocessing.Process(target=tryonce_process_cpu, args=(self.save_d_model_file_path, self.save_ind_model_file_path, d_attrs, ind_attrs, return_dict))
-        j.start()
-        j.join()
-        res_d = return_dict["res_d"]
-        res_ind = return_dict["res_ind"]
-        print('return_dict: d:{} ind:{}'.format(res_d, res_ind))
+        request_element = (self.key, d_attrs.copy(), ind_attrs.copy())
+        self.key = self.key + 1
+        self.q_input.put(request_element)
+
+        result_element = self.q_output.get(True)
+        if len(result_element) == 4 and result_element[3] == self.MAX_Ability[1]:
+            j = multiprocessing.Process(target = process_predict, args=(
+                self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, self.q_input, self.q_output))
+            j.daemon = True
+            j.start()
+        res_d = result_element[1]
+        res_ind = result_element[2]
 
         # 执行判定流程 & 结果更新过程
         # 如果 判定结果不具有足够的倾向性 (只要任何一个判定不具有倾向性 即可做出判断)
         abs_att = 0.15
-        if ((math.fabs(res_d - 0.5) < abs_att) or (math.fabs(res_d - 0.5) < abs_att)):
+        if ((math.fabs(res_d - 0.5) < abs_att) or (math.fabs(res_ind - 0.5) < abs_att)):
             # pass
             boolBlackhole = False
         # 如果 判定结果具有足够的倾向性 （两个判定都足够倾向 d_eve ind_eve）
@@ -290,6 +300,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         output_str_pure = self.print_res_pure(listgenpkt)
         # 不必进行标签值 和 属性值 的保存
         # self.print_eve_res()
+        # 使得预测进程终止
+        self.q_input.put(None)
         return output_str_whole + output_str_pure
 
     def print_res_whole(self, listgenpkt):
