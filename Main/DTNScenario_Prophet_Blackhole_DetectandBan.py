@@ -45,6 +45,13 @@ def process_predict(save_d_model_file_path, save_ind_model_file_path, max_abilit
             res = (em[0], d_predict[0][1], ind_predict[0][1])
             q_output.put(res)
 
+
+ProcessCtl_dict = dict()
+ProcessCtl_dict["running_label"] = False
+ProcessCtl_dict["key"] = 0
+q_input = multiprocessing.Queue()
+q_output = multiprocessing.Queue()
+
 # 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
 class DTNScenario_Prophet_Blackhole_DectectandBan(object):
@@ -74,14 +81,16 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         dir = "../Main/collect_data/scenario9/"
         self.save_d_model_file_path = os.path.join(dir, 'ML/deve_model.h5')
         self.save_ind_model_file_path = os.path.join(dir, 'ML/indeve_model.h5')
-        self.q_input = multiprocessing.Queue()
-        self.q_output = multiprocessing.Queue()
-        self.key = 0
         self.MAX_Ability = (100, 'Max Process Ability')
-        j = multiprocessing.Process(target = process_predict, args=(
-            self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, self.q_input, self.q_output))
-        j.daemon = True
-        j.start()
+        global ProcessCtl_dict
+        global q_input
+        global q_output
+        if ProcessCtl_dict["running_label"] == False:
+            ProcessCtl_dict["running_label"] = True
+            j = multiprocessing.Process(target = process_predict, args=(
+                self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, q_input, q_output))
+            j.daemon = True
+            j.start()
         return
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -242,14 +251,17 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         self._tmpCallCnt = self._tmpCallCnt + 1
 
         # 加载模型；进行预测
-        request_element = (self.key, d_attrs.copy(), ind_attrs.copy())
-        self.key = self.key + 1
-        self.q_input.put(request_element)
+        global ProcessCtl_dict
+        global q_input
+        global q_output
+        request_element = (ProcessCtl_dict["key"], d_attrs.copy(), ind_attrs.copy())
+        ProcessCtl_dict["key"] = ProcessCtl_dict["key"] + 1
+        q_input.put(request_element)
 
-        result_element = self.q_output.get(True)
+        result_element = q_output.get(True)
         if len(result_element) == 4 and result_element[3] == self.MAX_Ability[1]:
             j = multiprocessing.Process(target = process_predict, args=(
-                self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, self.q_input, self.q_output))
+                self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, q_input, q_output))
             j.daemon = True
             j.start()
         res_d = result_element[1]
