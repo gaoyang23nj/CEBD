@@ -78,9 +78,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
-        dir = "../Main/collect_data/scenario9/"
-        self.save_d_model_file_path = os.path.join(dir, 'ML/deve_model.h5')
-        self.save_ind_model_file_path = os.path.join(dir, 'ML/indeve_model.h5')
+        dir = "..\\Main\\collect_data"
+        self.save_d_model_file_path = os.path.join(dir, 'ML\\deve_model.h5')
+        self.save_ind_model_file_path = os.path.join(dir, 'ML\\deve_model.h5')
         self.MAX_Ability = (10000, 'Max Process Ability')
         global ProcessCtl_dict
         global q_input
