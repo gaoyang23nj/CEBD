@@ -313,7 +313,12 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         # 不必进行标签值 和 属性值 的保存
         # self.print_eve_res()
         # 使得预测进程终止
-        self.q_input.put(None)
+        global ProcessCtl_dict
+        global q_input
+        global q_output
+        if ProcessCtl_dict["running_label"] == True:
+            q_input.put(None)
+            ProcessCtl_dict["running_label"] = False
         return output_str_whole + output_str_pure
 
     def print_res_whole(self, listgenpkt):

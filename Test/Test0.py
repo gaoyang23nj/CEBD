@@ -114,39 +114,6 @@ def train_from_inDirectEvidence():
     print('num_train: {}, {}; num_test, {}, {};'.format(y_train.shape, np.sum(y_train), y_test.shape, np.sum(y_test)))
 
 
-def tryonce_process_cpu(save_d_model_file_path, save_ind_model_file_path, d_attrs, ind_attrs, return_dict):
-    with tf.device('CPU:0'):
-        x = tf.random.uniform([1000,1000])
-        tmp =  x.device.endswith('CPU:0')
-        print('On CPU:{}'.format(tmp))
-        assert x.device.endswith('CPU:0')
-        d_model = tf.keras.models.load_model(save_d_model_file_path)
-        ind_model = tf.keras.models.load_model(save_ind_model_file_path)
-        d_predict = d_model.predict(d_attrs)
-        ind_predict = ind_model.predict(ind_attrs)
-        print(d_predict)
-        print(ind_predict)
-        return_dict["res_d"] = d_predict[0][1]
-        return_dict["res_ind"] = ind_predict[0][1]
-
-
-def tryonce_process_gpu(save_d_model_file_path, save_ind_model_file_path, d_attrs, ind_attrs, q_input, q_output):
-    print('[p-0]:{}'.format(datetime.datetime.now()))
-    x = tf.random.uniform([1, 1])
-    tmp = x.device.endswith('GPU:0')
-    print('On GPU:{}'.format(tmp))
-    assert x.device.endswith('GPU:0')
-    print('[p-1]:{}'.format(datetime.datetime.now()))
-    d_model = tf.keras.models.load_model(save_d_model_file_path)
-    ind_model = tf.keras.models.load_model(save_ind_model_file_path)
-    print('[p-2]:{}'.format(datetime.datetime.now()))
-    d_predict = d_model.predict(d_attrs)
-    ind_predict = ind_model.predict(ind_attrs)
-    print('[p-3]:{}'.format(datetime.datetime.now()))
-    print(d_predict)
-    print(ind_predict)
-    return_dict["res_d"] = d_predict[0][1]
-    return_dict["res_ind"] = ind_predict[0][1]
 
 MAX = 10
 MAX_String = 'Max Process Ability'

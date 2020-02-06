@@ -9,4 +9,4 @@ EncoHistData_Seu
 EncoHistData_Helsink
 Main/*.tmp
 *.pyc
-
+Main/collect_data/*

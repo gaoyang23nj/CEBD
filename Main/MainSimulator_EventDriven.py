@@ -30,7 +30,7 @@ class Simulator(object):
         # 仿真环境 现在的时刻
         self.sim_TimeNow = 0
         # 报文生成的间隔,即每10*60*20个时间间隔(10*60*20*0.1s 即20分钟)生成一个报文
-        self.THR_PKT_GEN_CNT = 10*10
+        self.THR_PKT_GEN_CNT = 10*60
         # # node所组成的list
         # self.list_nodes = []
         # 生成报文的时间计数器 & 生成报文计算器的触发值
@@ -264,7 +264,7 @@ class Simulator(object):
         tmp_senario_name = 'scenario' + str(index)
         tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景7 Prophet + Blackhole + Detect===================================
+        # ===============================场景8 Prophet + Blackhole + Detect===================================
         # # 随机生成序列
         percent_selfish = 0.8
         indices = np.random.permutation(self.MAX_NODE_NUM)
@@ -298,10 +298,14 @@ class Simulator(object):
 
 
 if __name__ == "__main__":
+    t1 = datetime.datetime.now()
     print(datetime.datetime.now())
     t_start = time.time()
     theSimulator = Simulator()
     t_end = time.time()
+    t2 = datetime.datetime.now()
     print(datetime.datetime.now())
     winsound.Beep(500, 2000)
-    print('running time:{}'.format(t_end-t_start))
+    print(t1)
+    print(t2)
+    print('running time:{}'.format(t_end - t_start))
