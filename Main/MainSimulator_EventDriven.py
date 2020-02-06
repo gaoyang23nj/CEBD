@@ -243,7 +243,7 @@ class Simulator(object):
         malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
         normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
         index += 1
-        tmp_senario_name = 'scenario' + str(index)
+        tmp_senario_name = 'scenario' + str(index)+ '_blackhole_todetect_0_3'
         tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
                                                              20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
@@ -254,7 +254,7 @@ class Simulator(object):
         malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
         normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
         index += 1
-        tmp_senario_name = 'scenario' + str(index)
+        tmp_senario_name = 'scenario' + str(index)+ '_blackhole_todetect_0_8'
         tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
                                                              20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
@@ -392,6 +392,7 @@ class Simulator(object):
 
     def init_scenario(self):
         self.scenaDict = {}
+        # list_scena = self.init_scenario_blackhole_todetect()
         list_scena = self.init_scenario_blackhole()
         return list_scena
 
