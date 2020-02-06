@@ -81,7 +81,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         dir = "../Main/collect_data/scenario9/"
         self.save_d_model_file_path = os.path.join(dir, 'ML/deve_model.h5')
         self.save_ind_model_file_path = os.path.join(dir, 'ML/indeve_model.h5')
-        self.MAX_Ability = (100, 'Max Process Ability')
+        self.MAX_Ability = (10000, 'Max Process Ability')
         global ProcessCtl_dict
         global q_input
         global q_output
