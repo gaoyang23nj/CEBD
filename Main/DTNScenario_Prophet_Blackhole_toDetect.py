@@ -12,10 +12,14 @@ import os
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
 class DTNScenario_Prophet_Blackhole_toDetect(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size):
+    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime, isPrintDetectAtt):
+        self.isPrint = isPrintDetectAtt
         self.scenarioname = scenarioname
         self.list_selfish = list_selfish
         self.num_of_nodes = num_of_nodes
+        # 为了打印临时证据 以便训练更好的分类器; 从1到9(从0.1到0.9) 最后一个time block
+        self.index_time_block = 1
+        self.MAX_RUNNING_TIMES = total_runningtime
         # 为各个node建立虚拟空间 <buffer+router>
         self.listNodeBuffer = []
         self.listRouter = []
@@ -33,13 +37,34 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         return
 
+    # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
+    def __print_tmp_eve_res(self, gentime):
+        assert (self.index_time_block <= 10)
+        if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
+            add_str = '_0_' + str(self.index_time_block)
+            self.__print_eve_res(basedir=".//collect_data//" + self.scenarioname + add_str)
+            self.index_time_block = self.index_time_block + 1
+
+    # 打印结果
+    def print_res(self, listgenpkt):
+        output_str_whole = self.__print_res_whole(listgenpkt)
+        output_str_pure = self.__print_res_pure(listgenpkt)
+        print(output_str_whole + output_str_pure)
+        # 进行标签值 和 属性值 的保存; 以便于offline训练model
+        if self.isPrint:
+            self.__print_eve_res(basedir=".//collect_data//"+self.scenarioname)
+        return output_str_whole + output_str_pure
+
+    # 生成新报文
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
+        self.__print_tmp_eve_res(gentime)
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
 
-    # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id
+    # 相遇事件发生 交换报文
+    # routing接到指令aid和bid相遇，开始进行消息交换a_id <-> b_id
     def swappkt(self, runningtime, a_id, b_id):
         # 交换直接评价信息，更新间接评价
         a_sendvalues = self.listNodeBufferDetect[a_id].get_send_values()
@@ -60,23 +85,23 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         self.listRouter[b_id].notifylinkup(runningtime, a_id, P_a_any)
         if isinstance(self.listRouter[a_id], RoutingBlackhole) and isinstance(self.listRouter[b_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是blackhole b_id是blackhole==========================
-            self.sendpkt_toblackhole(runningtime, a_id, b_id)
-            self.sendpkt_toblackhole(runningtime, b_id, a_id)
+            self.__sendpkt_toblackhole(runningtime, a_id, b_id)
+            self.__sendpkt_toblackhole(runningtime, b_id, a_id)
         elif isinstance(self.listRouter[a_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是blackhole b_id是正常prophet==========================
-            self.sendpkt(runningtime, a_id, b_id)
-            self.sendpkt_toblackhole(runningtime, b_id, a_id)
+            self.__sendpkt(runningtime, a_id, b_id)
+            self.__sendpkt_toblackhole(runningtime, b_id, a_id)
         elif isinstance(self.listRouter[b_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是正常prophet b_id是blackhole==========================
-            self.sendpkt_toblackhole(runningtime, a_id, b_id)
-            self.sendpkt(runningtime, b_id, a_id)
+            self.__sendpkt_toblackhole(runningtime, a_id, b_id)
+            self.__sendpkt(runningtime, b_id, a_id)
         elif (not isinstance(self.listRouter[a_id], RoutingBlackhole)) and (not isinstance(self.listRouter[b_id], RoutingBlackhole)):
             # ================== 报文 交换==========================
-            self.sendpkt(runningtime, a_id, b_id)
-            self.sendpkt(runningtime, b_id, a_id)
+            self.__sendpkt(runningtime, a_id, b_id)
+            self.__sendpkt(runningtime, b_id, a_id)
 
     # 报文发送 a_id -> b_id
-    def sendpkt_toblackhole(self, runningtime, a_id, b_id):
+    def __sendpkt_toblackhole(self, runningtime, a_id, b_id):
         P_b_any = self.listRouter[b_id].get_values_before_up(runningtime)
         P_a_any = self.listRouter[a_id].get_values_before_up(runningtime)
         # 准备从a到b传输的pkt 组成的list<这里保存的是deepcopy>
@@ -111,16 +136,16 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             if tmp_pkt.dst_id == b_id:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
                 # blackhole b_id立刻发动
                 self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
 
     # 报文发送 a_id -> b_id
-    def sendpkt(self, runningtime, a_id, b_id):
+    def __sendpkt(self, runningtime, a_id, b_id):
         P_b_any = self.listRouter[b_id].get_values_before_up(runningtime)
         P_a_any = self.listRouter[a_id].get_values_before_up(runningtime)
         # 准备从a到b传输的pkt 组成的list<这里保存的是deepcopy>
@@ -155,25 +180,17 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             if tmp_pkt.dst_id == b_id or P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
 
     # 改变检测buffer的值
-    def updatedectbuf_sendpkt(self, a_id, b_id, src_id, dst_id):
+    def __updatedectbuf_sendpkt(self, a_id, b_id, src_id, dst_id):
         self.listNodeBufferDetect[a_id].sendtoj(b_id)
         self.listNodeBufferDetect[b_id].receivefromi(a_id)
         if src_id == a_id:
             self.listNodeBufferDetect[b_id].receivefromsrc(a_id)
 
-    def print_res(self, listgenpkt):
-        output_str_whole = self.print_res_whole(listgenpkt)
-        output_str_pure = self.print_res_pure(listgenpkt)
-        # 进行标签值 和 属性值 的保存; 以便于offline训练model
-        # self.print_eve_res()
-        return output_str_whole + output_str_pure
-
-    # 保存标签值和属性值
-    def print_eve_res(self):
-        basedir = ".//collect_data//"+self.scenarioname
+    # 保存标签值和属性值 以便于训练预测模型
+    def __print_eve_res(self, basedir):
         # 如果已经产生了 则清空;
         if os.path.exists(basedir):
             shutil.rmtree(basedir)
@@ -202,7 +219,7 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             filename = basedir+'//{}.npz'.format(tmpBufferDetect.node_id)
             np.savez(filename, y=label, x_d=x_deve, x_ind=x_indeve)
 
-    def print_res_whole(self, listgenpkt):
+    def __print_res_whole(self, listgenpkt):
         num_genpkt = len(listgenpkt)
         output_str = '{}_whole\n'.format(self.scenarioname)
         total_delay = 0
@@ -227,10 +244,9 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         else:
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_genpkt, total_succnum)
-        print(output_str)
         return output_str
 
-    def print_res_pure(self, listgenpkt):
+    def __print_res_pure(self, listgenpkt):
         num_purepkt = 0
         for tunple in listgenpkt:
             (pkt_id, src_id, dst_id) = tunple
@@ -261,7 +277,6 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         else:
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        print(output_str)
         return output_str
 
 class RoutingProphet(object):

@@ -138,6 +138,7 @@ class DTNScenario_Prophet_Blackhole(object):
     def print_res(self, listgenpkt):
         output_str_whole = self.print_res_whole(listgenpkt)
         output_str_pure = self.print_res_pure(listgenpkt)
+        print(output_str_whole + output_str_pure)
         return output_str_whole + output_str_pure
 
     def print_res_whole(self, listgenpkt):
@@ -165,7 +166,6 @@ class DTNScenario_Prophet_Blackhole(object):
         else:
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_genpkt, total_succnum)
-        print(output_str)
         return output_str
 
     def print_res_pure(self, listgenpkt):
@@ -199,7 +199,6 @@ class DTNScenario_Prophet_Blackhole(object):
         else:
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        print(output_str)
         return output_str
 
 class RoutingProphet(object):

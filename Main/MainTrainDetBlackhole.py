@@ -40,9 +40,22 @@ def train_from_DirectEvidence(y_final, x1_final, x2_final):
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
-    model.fit(X_train, y_train, batch_size=100, epochs=10)
+    model.fit(X_train, y_train, epochs=10, verbose=2)
     model.evaluate(X_train, y_train, verbose=2)
     model.evaluate(X_test, y_test, verbose=2)
+    y_pred_raw = model.predict(X_test)
+    y_predict = (y_pred_raw[:,1] > 0.5).astype(int)
+    print(tf.math.confusion_matrix(y_test, y_predict, num_classes=2))
+    False_Positive = 0
+    False_Negative = 0
+    for i in range(len(y_test)):
+        if y_test[i] != y_predict[i]:
+            if y_test[i] == 0:
+                False_Positive = False_Positive + 1
+            else:
+                False_Negative = False_Negative + 1
+    True_PosNeg = len(y_test) - False_Negative - False_Positive
+    print('False_Positive:{} False_Negative:{} acc:{}'.format(False_Positive, False_Negative, True_PosNeg / len(y_test)))
     savemodel_file_path = os.path.join(dir, 'ML\\deve_model.h5')
     model.save(savemodel_file_path)
     # m = tf.keras.models.load_model(savemodel_file_path)
@@ -52,7 +65,7 @@ def train_from_DirectEvidence(y_final, x1_final, x2_final):
 # 从间接证据里 训练分类器
 def train_from_inDirectEvidence(y_final, x1_final, x2_final):
     # 只利用x2属性
-    X_train, X_test, y_train, y_test = train_test_split(x2_final, y_final, test_size = 0.3)
+    X_train, X_test, y_train, y_test = train_test_split(x2_final, y_final, test_size = 0.25)
     min_max_scaler = MinMaxScaler()
     X_train = min_max_scaler.fit_transform(X_train)
     X_test = min_max_scaler.transform(X_test)
@@ -64,9 +77,22 @@ def train_from_inDirectEvidence(y_final, x1_final, x2_final):
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
-    model.fit(X_train, y_train, batch_size=100, epochs=10)
+    model.fit(X_train, y_train, epochs=10, verbose=2)
     model.evaluate(X_train, y_train, verbose=2)
     model.evaluate(X_test, y_test, verbose=2)
+    y_pred_raw = model.predict(X_test)
+    y_predict = (y_pred_raw[:, 1] > 0.5).astype(int)
+    print(tf.math.confusion_matrix(y_test, y_predict, num_classes=2))
+    False_Positive = 0
+    False_Negative = 0
+    for i in range(len(y_test)):
+        if y_test[i] != y_predict[i]:
+            if y_test[i] == 0:
+                False_Positive = False_Positive + 1
+            else:
+                False_Negative = False_Negative + 1
+    True_PosNeg = len(y_test) - False_Negative - False_Positive
+    print('False_Positive:{} False_Negative:{} acc:{}'.format(False_Positive, False_Negative, True_PosNeg/len(y_test)))
     savemodel_file_path = os.path.join(dir, 'ML\\indeve_model.h5')
     model.save(savemodel_file_path)
     # m = tf.keras.models.load_model(savemodel_file_path)
@@ -113,6 +139,10 @@ if __name__ == "__main__":
         print('delete dir ' + ml_dir)
     os.makedirs(ml_dir)
     print('add dir ' + ml_dir)
+
+    x = tf.random.uniform([1, 1])
+    tmp = x.device.endswith('GPU:0')
+    print('On GPU:{}'.format(tmp))
 
     # 把文件名 和 对应的数据源 洗出来
     y_final, x1_final, x2_final = collect_data_totrain(dir)

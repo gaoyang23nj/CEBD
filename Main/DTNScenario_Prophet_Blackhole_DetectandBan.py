@@ -56,7 +56,7 @@ q_output = multiprocessing.Queue()
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
 class DTNScenario_Prophet_Blackhole_DectectandBan(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size):
+    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime):
         # tf的调用次数
         self._tmpCallCnt = 0
         self.scenarioname = scenarioname
@@ -65,6 +65,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         # 为各个node建立虚拟空间 <buffer+router>
         self.listNodeBuffer = []
         self.listRouter = []
+        # 为了打印 获得临时的分类结果 以便观察分类结果; 从1到9(从0.1到0.9) 最后一个time block
+        self.index_time_block = 1
+        self.MAX_RUNNING_TIMES = total_runningtime
         # 为各个node建立检测用的 证据存储空间 BufferDetect
         self.listNodeBufferDetect = []
         for node_id in range(num_of_nodes):
@@ -80,8 +83,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
         dir = "..\\Main\\collect_data"
         self.save_d_model_file_path = os.path.join(dir, 'ML\\deve_model.h5')
-        self.save_ind_model_file_path = os.path.join(dir, 'ML\\deve_model.h5')
-        self.MAX_Ability = (10000, 'Max Process Ability')
+        self.save_ind_model_file_path = os.path.join(dir, 'ML\\indeve_model.h5')
+        self.MAX_Ability = (1000, 'Max Process Ability')
         global ProcessCtl_dict
         global q_input
         global q_output
@@ -91,9 +94,67 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
                 self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, q_input, q_output))
             j.daemon = True
             j.start()
+        # 保存真正使用的结果: self.DetectResult[0,1] False_Positive ; self.DetectResult[1,0] False_Negative
+        self.DetectResult = np.zeros((2,2),dtype='int')
+        # 保存直接证据的预测结果
+        self.DetectdEve = np.zeros((2, 2), dtype='int')
+        # 保存间接证据的预测结果
+        self.DetectindEve = np.zeros((2, 2), dtype='int')
+
+        # tmp 临时结果
+        self.tmp0_DetectResult = np.zeros((2, 2), dtype='int')
+        self.tmp0_DetectdEve = np.zeros((2, 2), dtype='int')
+        self.tmp0_DetectindEve = np.zeros((2, 2), dtype='int')
+        self.tmp_DetectResult = np.zeros((2, 20), dtype='int')
+        self.tmp_DetectdEve = np.zeros((2, 20), dtype='int')
+        self.tmp_DetectindEve = np.zeros((2, 20), dtype='int')
         return
 
+    # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
+    def __update_tmp_conf_matrix(self, gentime):
+        assert(self.index_time_block <= 10)
+        if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
+            index = self.index_time_block - 1
+            tmp_ = self.DetectResult - self.tmp0_DetectResult
+            self.tmp_DetectResult[:, index * 2 : index*2+2] = tmp_
+            self.tmp0_DetectResult = self.DetectResult.copy()
+
+            tmp_ = self.DetectdEve - self.tmp0_DetectdEve
+            self.tmp_DetectdEve[:, index * 2 : index*2+2] = tmp_
+            self.tmp0_DetectdEve = self.DetectdEve.copy()
+
+            tmp_ = self.DetectindEve - self.tmp0_DetectindEve
+            self.tmp_DetectindEve[:, index * 2 : index*2+2] = tmp_
+            self.tmp0_DetectindEve = self.DetectindEve.copy()
+
+            self.index_time_block = self.index_time_block + 1
+
+    def __print_tmp_conf_matrix(self):
+        output_str = '{}_tmp_state\n'.format(self.scenarioname)
+        # self.DetectResult self.DetectdEve self.DetectindEve
+        output_str += 'self.tmp_DetectResult:\n{}\nself.tmp_DetectdEve:\n{}\nself.tmp_DetectindEve:\n{}\n'.format(
+            self.tmp_DetectResult, self.tmp_DetectdEve, self.tmp_DetectindEve)
+        return output_str
+
+    def print_res(self, listgenpkt):
+        # 打印混淆矩阵
+        output_str_tmp_state = self.__print_tmp_conf_matrix()
+        output_str_state = self.__print_conf_matrix()
+        output_str_whole = self.__print_res_whole(listgenpkt)
+        output_str_pure = self.__print_res_pure(listgenpkt)
+        print(output_str_whole + output_str_pure + output_str_state + output_str_tmp_state)
+        # 不必进行标签值 和 属性值 的保存
+        # self.print_eve_res()
+        # 使得预测进程终止
+        global ProcessCtl_dict
+        global q_input
+        if ProcessCtl_dict["running_label"] == True:
+            q_input.put(None)
+            ProcessCtl_dict["running_label"] = False
+        return output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
+
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
+        self.__update_tmp_conf_matrix(gentime)
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
@@ -120,23 +181,23 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         self.listRouter[b_id].notifylinkup(runningtime, a_id, P_a_any)
         if isinstance(self.listRouter[a_id], RoutingBlackhole) and isinstance(self.listRouter[b_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是blackhole b_id是blackhole==========================
-            self.sendpkt_toblackhole(runningtime, a_id, b_id)
-            self.sendpkt_toblackhole(runningtime, b_id, a_id)
+            self.__sendpkt_toblackhole(runningtime, a_id, b_id)
+            self.__sendpkt_toblackhole(runningtime, b_id, a_id)
         elif isinstance(self.listRouter[a_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是blackhole b_id是正常prophet==========================
-            self.sendpkt(runningtime, a_id, b_id)
-            self.sendpkt_toblackhole(runningtime, b_id, a_id)
+            self.__sendpkt(runningtime, a_id, b_id)
+            self.__sendpkt_toblackhole(runningtime, b_id, a_id)
         elif isinstance(self.listRouter[b_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是正常prophet b_id是blackhole==========================
-            self.sendpkt_toblackhole(runningtime, a_id, b_id)
-            self.sendpkt(runningtime, b_id, a_id)
+            self.__sendpkt_toblackhole(runningtime, a_id, b_id)
+            self.__sendpkt(runningtime, b_id, a_id)
         elif (not isinstance(self.listRouter[a_id], RoutingBlackhole)) and (not isinstance(self.listRouter[b_id], RoutingBlackhole)):
             # ================== 报文 交换==========================
-            self.sendpkt(runningtime, a_id, b_id)
-            self.sendpkt(runningtime, b_id, a_id)
+            self.__sendpkt(runningtime, a_id, b_id)
+            self.__sendpkt(runningtime, b_id, a_id)
 
     # 报文发送 a_id -> b_id
-    def sendpkt_toblackhole(self, runningtime, a_id, b_id):
+    def __sendpkt_toblackhole(self, runningtime, a_id, b_id):
         P_b_any = self.listRouter[b_id].get_values_before_up(runningtime)
         P_a_any = self.listRouter[a_id].get_values_before_up(runningtime)
         # 准备从a到b传输的pkt 组成的list<这里保存的是deepcopy>
@@ -171,19 +232,19 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             if tmp_pkt.dst_id == b_id:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 利用model进行判定 b_id是否是blackhole
-                bool_BH = self.detect_blackhole(a_id, b_id)
+                bool_BH = self.__detect_blackhole(a_id, b_id)
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 if not bool_BH:
                     self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
                 # blackhole b_id立刻发动
                 self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
 
     # 报文发送 a_id -> b_id
-    def sendpkt(self, runningtime, a_id, b_id):
+    def __sendpkt(self, runningtime, a_id, b_id):
         P_b_any = self.listRouter[b_id].get_values_before_up(runningtime)
         P_a_any = self.listRouter[a_id].get_values_before_up(runningtime)
         # 准备从a到b传输的pkt 组成的list<这里保存的是deepcopy>
@@ -218,24 +279,24 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             if tmp_pkt.dst_id == b_id:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 利用model进行判定 b_id是否是blackhole
-                bool_BH = self.detect_blackhole(a_id, b_id)
+                bool_BH = self.__detect_blackhole(a_id, b_id)
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 if not bool_BH:
                     self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                self.updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
 
-    def detect_blackhole(self, a_id, b_id):
+    def __detect_blackhole(self, a_id, b_id):
         theBufferDetect = self.listNodeBufferDetect[a_id]
         viewofb = theBufferDetect.getviewofb(b_id)
         # 如果给出了 比较确定的结果
-        if (viewofb == 1) or (viewofb == -1) or (viewofb == -2):
-            # 如果确定是正常节点(-1)返回False 或者 异常节点(1)返回True； 则直接返回结果（是否为异常？）以便于进行路由
-            return viewofb == 1
-        # 否则 viewofb == 0
-        assert viewofb == 0
+        # if (viewofb == 1) or (viewofb == -1) or (viewofb == -2):
+        #     # 如果确定是正常节点(-1)返回False 或者 异常节点(1)返回True； 则直接返回结果（是否为异常？）以便于进行路由
+        #     return viewofb == 1
+        # # 否则 viewofb == 0
+        # assert viewofb == 0
         d_attrs = np.zeros((1,3), dtype='int')
         d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
         d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
@@ -259,13 +320,13 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         q_input.put(request_element)
 
         result_element = q_output.get(True)
+        res_d = result_element[1]
+        res_ind = result_element[2]
         if len(result_element) == 4 and result_element[3] == self.MAX_Ability[1]:
             j = multiprocessing.Process(target = process_predict, args=(
                 self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, q_input, q_output))
             j.daemon = True
             j.start()
-        res_d = result_element[1]
-        res_ind = result_element[2]
 
         # 执行判定流程 & 结果更新过程
         # 如果 判定结果不具有足够的倾向性 (只要任何一个判定不具有倾向性 即可做出判断)
@@ -292,36 +353,86 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
                     boolBlackhole = False
                     # -1表示正常节点
                     theBufferDetect.setviewofb(b_id, -1)
-        # # 判定
-        # boolBlackhole = ((res_d > 0.65) or (res_ind > 0.65))
-        # 如果确认了结果；否则。。。
+        is_res_d = res_d > 0.5
+        is_res_ind = res_ind > 0.5
         isSelfish = (b_id in self.list_selfish)
-        print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}, Truth:{}'.
-              format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
+
+        # d_res
+        if isSelfish == False:
+            if is_res_d == False:
+                # True Negative
+                self.DetectdEve[0, 0] = self.DetectdEve[0, 0] + 1
+            else:
+                # False Positive
+                self.DetectdEve[0, 1] = self.DetectdEve[0, 1] + 1
+        else:
+            if is_res_d == False:
+                # False Negative
+                self.DetectdEve[1, 0] = self.DetectdEve[1, 0] + 1
+            else:
+                # True Positive
+                self.DetectdEve[1, 1] = self.DetectdEve[1, 1] + 1
+
+        # ind_res
+        if isSelfish == False:
+            if is_res_ind == False:
+                # True Negative
+                self.DetectindEve[0, 0] = self.DetectindEve[0, 0] + 1
+            else:
+                # False Positive
+                self.DetectindEve[0, 1] = self.DetectindEve[0, 1] + 1
+        else:
+            if is_res_ind == False:
+                # False Negative
+                self.DetectindEve[1, 0] = self.DetectindEve[1, 0] + 1
+            else:
+                # True Positive
+                self.DetectindEve[1, 1] = self.DetectindEve[1, 1] + 1
+
+        # 对于选择的结果
+        if isSelfish == False:
+            if boolBlackhole == False:
+                # True Negative
+                self.DetectResult[0, 0] = self.DetectResult[0, 0] + 1
+            else:
+                # False Positive
+                self.DetectResult[0, 1] = self.DetectResult[0, 1] + 1
+        else:
+            if boolBlackhole == False:
+                # False Negative
+                self.DetectResult[1, 0] = self.DetectResult[1, 0] + 1
+            else:
+                # True Positive
+                self.DetectResult[1, 1] = self.DetectResult[1, 1] + 1
+        # 使用节点证据进行评价
+        boolBlackhole = is_res_ind
+        # 打印出来
+        if boolBlackhole == True and isSelfish == False:
+            print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), \033[1;37;41m{}, Truth:{}\033[0m'.
+                  format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
+        elif boolBlackhole == False and isSelfish == True:
+            print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), \033[1;32m{}, Truth:{}\033[0m'.
+                  format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
+        else:
+            print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}, Truth:{}'.
+                  format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
         return boolBlackhole
 
     # 改变检测buffer的值
-    def updatedectbuf_sendpkt(self, a_id, b_id, src_id, dst_id):
+    def __updatedectbuf_sendpkt(self, a_id, b_id, src_id, dst_id):
         self.listNodeBufferDetect[a_id].sendtoj(b_id)
         self.listNodeBufferDetect[b_id].receivefromi(a_id)
         if src_id == a_id:
             self.listNodeBufferDetect[b_id].receivefromsrc(a_id)
 
-    def print_res(self, listgenpkt):
-        output_str_whole = self.print_res_whole(listgenpkt)
-        output_str_pure = self.print_res_pure(listgenpkt)
-        # 不必进行标签值 和 属性值 的保存
-        # self.print_eve_res()
-        # 使得预测进程终止
-        global ProcessCtl_dict
-        global q_input
-        global q_output
-        if ProcessCtl_dict["running_label"] == True:
-            q_input.put(None)
-            ProcessCtl_dict["running_label"] = False
-        return output_str_whole + output_str_pure
+    def __print_conf_matrix(self):
+        output_str = '{}_state\n'.format(self.scenarioname)
+        output_str += 'self.list_selfish:\{}\n'.format(self.list_selfish)
+        # self.DetectResult self.DetectdEve self.DetectindEve
+        output_str += 'self.DetectResult:\n{}\nself.DetectdEve:\n{}\nself.DetectindEve:\n{}\n'.format(self.DetectResult, self.DetectdEve, self.DetectindEve)
+        return output_str
 
-    def print_res_whole(self, listgenpkt):
+    def __print_res_whole(self, listgenpkt):
         num_genpkt = len(listgenpkt)
         output_str = '{}_whole\n'.format(self.scenarioname)
         total_delay = 0
@@ -346,10 +457,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         else:
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_genpkt, total_succnum)
-        print(output_str)
         return output_str
 
-    def print_res_pure(self, listgenpkt):
+    def __print_res_pure(self, listgenpkt):
         num_purepkt = 0
         for tunple in listgenpkt:
             (pkt_id, src_id, dst_id) = tunple
@@ -380,7 +490,6 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         else:
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        print(output_str)
         return output_str
 
 class RoutingProphet(object):

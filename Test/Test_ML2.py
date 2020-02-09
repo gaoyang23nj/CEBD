@@ -24,6 +24,7 @@ def process_data_npz(file_path, data_srcnode):
 
 # 从直接证据里 训练分类器
 def train_from_DirectEvidence(dir):
+
     files = os.listdir(dir)
     file_path = ""
     data_srcnode = 0
