@@ -37,14 +37,6 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         return
 
-    # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
-    def __print_tmp_eve_res(self, gentime):
-        assert (self.index_time_block <= 10)
-        if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
-            add_str = '_0_' + str(self.index_time_block)
-            self.__print_eve_res(basedir=".//collect_data//" + self.scenarioname + add_str)
-            self.index_time_block = self.index_time_block + 1
-
     # 打印结果
     def print_res(self, listgenpkt):
         output_str_whole = self.__print_res_whole(listgenpkt)
@@ -52,12 +44,17 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         print(output_str_whole + output_str_pure)
         # 进行标签值 和 属性值 的保存; 以便于offline训练model
         if self.isPrint:
-            self.__print_eve_res(basedir=".//collect_data//"+self.scenarioname)
+            self.__print_eve_res(basedir=".//collect_data//"+self.scenarioname, isEndoftime=True)
         return output_str_whole + output_str_pure
 
     # 生成新报文
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        self.__print_tmp_eve_res(gentime)
+        # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
+        assert (self.index_time_block <= 10)
+        if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
+            add_str = '_0_' + str(self.index_time_block)
+            self.__print_eve_res(basedir=".//collect_data//" + self.scenarioname + add_str, isEndoftime=False)
+            self.index_time_block = self.index_time_block + 1
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
@@ -190,7 +187,7 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             self.listNodeBufferDetect[b_id].receivefromsrc(a_id)
 
     # 保存标签值和属性值 以便于训练预测模型
-    def __print_eve_res(self, basedir):
+    def __print_eve_res(self, basedir, isEndoftime):
         # 如果已经产生了 则清空;
         if os.path.exists(basedir):
             shutil.rmtree(basedir)
@@ -216,8 +213,13 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             x_indeve[:, 0: self.num_of_nodes] = tmpBufferDetect.get_ind_send_values().transpose()
             x_indeve[:, self.num_of_nodes : 2 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_values().transpose()
             x_indeve[:, 2*self.num_of_nodes: 3 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_src_values().transpose()
+            if isEndoftime:
+                time_index = 1.0
+            else:
+                time_index = float('%.2f' % ((self.index_time_block) * 0.1))
+            se = len(self.list_selfish) / self.num_of_nodes
             filename = basedir+'//{}.npz'.format(tmpBufferDetect.node_id)
-            np.savez(filename, y=label, x_d=x_deve, x_ind=x_indeve)
+            np.savez(filename, y=label, x_d=x_deve, x_ind=x_indeve, datasrc = tmpBufferDetect.node_id, ti=time_index, sel = se)
 
     def __print_res_whole(self, listgenpkt):
         num_genpkt = len(listgenpkt)

@@ -36,7 +36,7 @@ def process_predict(save_d_model_file_path, save_ind_model_file_path, max_abilit
         d_predict = d_model.predict(em[1])
         ind_predict = ind_model.predict(em[2])
         num_to_process = num_to_process + 1
-        print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
+        # print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
         if num_to_process >= max_ability[0]:
             res = (em[0], d_predict[0][1], ind_predict[0][1], max_ability[1])
             q_output.put(res)
@@ -82,8 +82,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
         dir = "..\\Main\\collect_data"
-        self.save_d_model_file_path = os.path.join(dir, 'ML\\deve_model.h5')
-        self.save_ind_model_file_path = os.path.join(dir, 'ML\\indeve_model.h5')
+        self.save_d_model_file_path = os.path.join(dir, 'ML_time\\deve_model.h5')
+        self.save_ind_model_file_path = os.path.join(dir, 'ML_time\\indeve_model.h5')
         self.MAX_Ability = (1000, 'Max Process Ability')
         global ProcessCtl_dict
         global q_input
@@ -111,9 +111,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         return
 
     # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
-    def __update_tmp_conf_matrix(self, gentime):
+    def __update_tmp_conf_matrix(self, gentime, isEndoftime):
         assert(self.index_time_block <= 10)
-        if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
+        if (isEndoftime == True) or (gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES):
             index = self.index_time_block - 1
             tmp_ = self.DetectResult - self.tmp0_DetectResult
             self.tmp_DetectResult[:, index * 2 : index*2+2] = tmp_
@@ -130,6 +130,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             self.index_time_block = self.index_time_block + 1
 
     def __print_tmp_conf_matrix(self):
+        # end of time; 最后一次刷新
+        self.__update_tmp_conf_matrix(-1, True)
         output_str = '{}_tmp_state\n'.format(self.scenarioname)
         # self.DetectResult self.DetectdEve self.DetectindEve
         output_str += 'self.tmp_DetectResult:\n{}\nself.tmp_DetectdEve:\n{}\nself.tmp_DetectindEve:\n{}\n'.format(
@@ -154,7 +156,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         return output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        self.__update_tmp_conf_matrix(gentime)
+        self.__update_tmp_conf_matrix(gentime, False)
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
@@ -297,17 +299,29 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         #     return viewofb == 1
         # # 否则 viewofb == 0
         # assert viewofb == 0
-        d_attrs = np.zeros((1,3), dtype='int')
+        # d_attrs = np.zeros((1, 3), dtype='int')
+        d_attrs = np.zeros((1, 4), dtype='int')
+
         d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
         d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
         d_attrs[0][2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
         # 还需归一化转化
-        ind_attrs = np.zeros((1,300), dtype='int')
+        # ind_attrs = np.zeros((1, 300), dtype='int')
+        ind_attrs = np.zeros((1, 301), dtype='int')
+
         ind_attrs[0][0: self.num_of_nodes] = ((theBufferDetect.get_ind_send_values().transpose())[b_id,:]).copy()
         ind_attrs[0][self.num_of_nodes: 2 * self.num_of_nodes] = \
             ((theBufferDetect.get_ind_receive_values().transpose())[b_id,:]).copy()
         ind_attrs[0][2 * self.num_of_nodes: 3 * self.num_of_nodes] = \
             ((theBufferDetect.get_ind_receive_src_values().transpose())[b_id,:]).copy()
+
+        # 间接信息来源不足 间接证据对应的列 更换
+        ind_attrs[0, theBufferDetect.node_id] = ((theBufferDetect.get_send_values())[b_id]).copy()
+        ind_attrs[0, theBufferDetect.node_id + self.num_of_nodes] = ((theBufferDetect.get_receive_values())[b_id]).copy()
+        ind_attrs[0, theBufferDetect.node_id + self.num_of_nodes * 2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
+
+        d_attrs[0][3] = float('%.2f' % ((self.index_time_block) * 0.1))
+        ind_attrs[0][-1] = float('%.2f' % ((self.index_time_block) * 0.1))
         # tf的调用次数 加1
         self._tmpCallCnt = self._tmpCallCnt + 1
 
@@ -414,8 +428,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), \033[1;32m{}, Truth:{}\033[0m'.
                   format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
         else:
-            print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}, Truth:{}'.
-                  format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
+            # print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}, Truth:{}'.
+            #       format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
+            pass
         return boolBlackhole
 
     # 改变检测buffer的值
