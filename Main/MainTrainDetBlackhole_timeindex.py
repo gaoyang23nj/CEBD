@@ -48,6 +48,7 @@ def train_from_DirectEvidence(y_final, x1_final, x2_final, ml_dir):
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
+    model.summary()
     model.fit(X_train, y_train, epochs=5, verbose=2)
     model.evaluate(X_train, y_train, verbose=2)
     model.evaluate(X_test, y_test, verbose=2)
@@ -85,6 +86,7 @@ def train_from_inDirectEvidence(y_final, x1_final, x2_final, ml_dir):
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
+    model.summary()
     model.fit(X_train, y_train, epochs=5, verbose=2)
     model.evaluate(X_train, y_train, verbose=2)
     model.evaluate(X_test, y_test, verbose=2)
