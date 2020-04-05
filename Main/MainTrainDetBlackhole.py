@@ -11,6 +11,38 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
+def direct_and_indirect(y_final, x1_final, x2_final):
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    x_final = np.hstack((x1_final, x2_final))
+    X_train, X_test, Y_train, Y_test = train_test_split(x_final, y_final, test_size=0.25)
+    x_valid, x_train = X_train[:5000], X_train[5000:]
+    y_valid, y_train = Y_train[:5000], Y_train[5000:]
+
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(300, activation='relu', input_shape=[303, ]),
+        tf.keras.layers.Dense(300, activation='relu'),
+        tf.keras.layers.Dense(2, activation='softmax')
+    ])
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    model.summary()
+
+    history = model.fit(x_train, y_train, epochs=10, validation_data=(x_valid, y_valid))
+
+    model.evaluate(X_train, Y_train, verbose=2)
+    model.evaluate(X_test, Y_test, verbose=2)
+    y_pred_raw = model.predict(X_test)
+    y_predict = (y_pred_raw[:, 1] > 0.5).astype(int)
+    print(tf.math.confusion_matrix(Y_test, y_predict, num_classes=2))
+
+    pd.DataFrame(history.history).plot(figsize = (8, 5))
+    plt.grid(True)
+    plt.gca().set_ylim(0, 1)
+    plt.show()
+
+
 # 得到的 y(99行1列) x_d_new(99行3列) x_ind_new(99行100*3列);
 # 99是条目个数 因为本节点不会评判自己; 1,3,300(可以改成297个 99*3)
 def process_data_npz(file_path, data_srcnode):
@@ -37,12 +69,18 @@ def train_from_DirectEvidence(y_final, x1_final, x2_final):
         tf.keras.layers.Dense(3, activation='relu'),
         tf.keras.layers.Dense(2, activation='softmax')
     ])
+    # reason for sparse: y->index. y->one_hot->[]
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
+    # 打印模型概况
+    model.layers
+    model.summary()
+
     model.fit(X_train, y_train, epochs=10, verbose=2)
     model.evaluate(X_train, y_train, verbose=2)
     model.evaluate(X_test, y_test, verbose=2)
+
     y_pred_raw = model.predict(X_test)
     y_predict = (y_pred_raw[:,1] > 0.5).astype(int)
     print(tf.math.confusion_matrix(y_test, y_predict, num_classes=2))
@@ -77,6 +115,10 @@ def train_from_inDirectEvidence(y_final, x1_final, x2_final):
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
+    # 打印模型概况
+    model.layers
+    model.summary()
+
     model.fit(X_train, y_train, epochs=10, verbose=2)
     model.evaluate(X_train, y_train, verbose=2)
     model.evaluate(X_test, y_test, verbose=2)
@@ -147,9 +189,10 @@ if __name__ == "__main__":
     # 把文件名 和 对应的数据源 洗出来
     y_final, x1_final, x2_final = collect_data_totrain(dir)
 
-    train_from_DirectEvidence(y_final, x1_final, x2_final)
-    print('Direct Eve Training... Completed!')
-    train_from_inDirectEvidence(y_final, x1_final, x2_final)
-    print('InDirect Eve Training... Completed!')
+    direct_and_indirect(y_final, x1_final, x2_final)
+    # train_from_DirectEvidence(y_final, x1_final, x2_final)
+    # print('Direct Eve Training... Completed!')
+    # train_from_inDirectEvidence(y_final, x1_final, x2_final)
+    # print('InDirect Eve Training... Completed!')
 
 
