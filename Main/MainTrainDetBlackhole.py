@@ -152,12 +152,13 @@ def collect_data_totrain(dir):
             files = os.listdir(npz_dir_path)
             for file in files:
                 npz_file_path = os.path.join(npz_dir_path, file)
+                # 只处理npz文件
                 m = re.match(r'(\d*).npz', file)
                 if m is None:
                     continue
                 data_srcnode = int(m.group(1))
                 npz_tunple_list.append((npz_file_path, data_srcnode))
-    # 总的数据条目数未知; 通过逐个文件读取 获得训练数据集合
+    # 总的数据条目数未知; 但我们知道每个文件里有99条记录; 通过逐个文件读取 获得训练数据集合
     num_npzfile = len(npz_tunple_list)
     # y.shape 99*1;     # x1.shape 99*3;     # x2.shape 99*300
     y_final = np.zeros(shape=(99 * num_npzfile,))
@@ -175,7 +176,7 @@ def collect_data_totrain(dir):
 if __name__ == "__main__":
     # dir = "D:\\13-ML\\Simulation_ONE\\Main\\collect_data"
     dir = "..\\Main\\collect_data"
-    ml_dir = dir + "\\ML"
+    ml_dir = "..\\Main\\ML"
     if os.path.exists(ml_dir):
         shutil.rmtree(ml_dir)
         print('delete dir ' + ml_dir)

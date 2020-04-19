@@ -1,0 +1,222 @@
+genfreq:300 RunningTime_Max:864000 gen_num:2880 nr_nodes:100
+ scenario0_Epidemic
+succ_ratio:0.3315972222222222 avg_delay:146771.17591623036
+total_hold:4000 total_gen:2880, total_succ:955
+
+scenario1_SparyWait
+succ_ratio:0.4482638888888889 avg_delay:235312.1874515879
+total_hold:3958 total_gen:2880, total_succ:1291
+
+scenario2_Prophet
+succ_ratio:0.5520833333333334 avg_delay:156371.44528301887
+total_hold:1025 total_gen:2880, total_succ:1590
+
+scenario3_blackhole_0_1_whole
+succ_ratio:0.15659722222222222 avg_delay:13789.461197339246
+total_hold:48 total_gen:2880, total_succ:451
+scenario3_blackhole_0_1_pure
+succ_ratio:0.15167095115681234 avg_delay:13584.158192090395
+total_hold:47 total_gen:2334, total_succ:354
+
+scenario4_blackhole_detectban__0_1_whole
+succ_ratio:0.49236111111111114 avg_delay:170933.83497884343
+total_hold:1032 total_gen:2880, total_succ:1418
+scenario4_blackhole_detectban__0_1_pure
+succ_ratio:0.4940017137960583 avg_delay:171878.80832610582
+total_hold:1031 total_gen:2334, total_succ:1153
+scenario4_blackhole_detectban__0_1_state
+self.list_selfish:\[94 54 98 13 25 99  6 26 36 88]
+self.DetectResult:
+[[83777   425]
+ [   54  9712]]
+self.DetectdEve:
+[[83732   470]
+ [   49  9717]]
+self.DetectindEve:
+[[83732   470]
+ [   49  9717]]
+scenario4_blackhole_detectban__0_1_tmp_state
+self.tmp_DetectResult:
+[[5675  402 7875   21 8381    2 8231    0 8418    0 8917    0 8777    0
+  8840    0 9227    0 9436    0]
+ [  54  622    0  971    0  866    0 1013    0 1010    0  951    0 1041
+     0 1053    0 1071    0 1114]]
+self.tmp_DetectdEve:
+[[5630  447 7875   21 8381    2 8231    0 8418    0 8917    0 8777    0
+  8840    0 9227    0 9436    0]
+ [  49  627    0  971    0  866    0 1013    0 1010    0  951    0 1041
+     0 1053    0 1071    0 1114]]
+self.tmp_DetectindEve:
+[[5630  447 7875   21 8381    2 8231    0 8418    0 8917    0 8777    0
+  8840    0 9227    0 9436    0]
+ [  49  627    0  971    0  866    0 1013    0 1010    0  951    0 1041
+     0 1053    0 1071    0 1114]]
+
+scenario5_blackhole_0_2_whole
+succ_ratio:0.08263888888888889 avg_delay:6379.970588235294
+total_hold:30 total_gen:2880, total_succ:238
+scenario5_blackhole_0_2_pure
+succ_ratio:0.08714837286265857 avg_delay:6324.2531645569625
+total_hold:28 total_gen:1813, total_succ:158
+
+scenario6_blackhole_detectban__0_2_whole
+succ_ratio:0.46875 avg_delay:169484.56740740742
+total_hold:978 total_gen:2880, total_succ:1350
+scenario6_blackhole_detectban__0_2_pure
+succ_ratio:0.4699393270821842 avg_delay:171771.7323943662
+total_hold:976 total_gen:1813, total_succ:852
+scenario6_blackhole_detectban__0_2_state
+self.list_selfish:\[78 46 94 60 24 32 97 89  3 43 23 11 64 62 30 83 42 40 65 12]
+self.DetectResult:
+[[65986   168]
+ [  187 16380]]
+self.DetectdEve:
+[[65955   199]
+ [  172 16395]]
+self.DetectindEve:
+[[65955   199]
+ [  172 16395]]
+scenario6_blackhole_detectban__0_2_tmp_state
+self.tmp_DetectResult:
+[[3190  166 5555    2 6467    0 6511    0 6809    0 7332    0 7486    0
+  7395    0 7519    0 7722    0]
+ [ 187  693    0 1302    0 1649    0 1605    0 1805    0 1786    0 1887
+     0 1866    0 1982    0 1805]]
+self.tmp_DetectdEve:
+[[3159  197 5555    2 6467    0 6511    0 6809    0 7332    0 7486    0
+  7395    0 7519    0 7722    0]
+ [ 172  708    0 1302    0 1649    0 1605    0 1805    0 1786    0 1887
+     0 1866    0 1982    0 1805]]
+self.tmp_DetectindEve:
+[[3159  197 5555    2 6467    0 6511    0 6809    0 7332    0 7486    0
+  7395    0 7519    0 7722    0]
+ [ 172  708    0 1302    0 1649    0 1605    0 1805    0 1786    0 1887
+     0 1866    0 1982    0 1805]]
+
+scenario7_blackhole_0_3_whole
+succ_ratio:0.06354166666666666 avg_delay:4237.830601092896
+total_hold:15 total_gen:2880, total_succ:183
+scenario7_blackhole_0_3_pure
+succ_ratio:0.055197132616487454 avg_delay:4796.025974025974
+total_hold:12 total_gen:1395, total_succ:77
+
+scenario8_blackhole_detectban__0_3_whole
+succ_ratio:0.4444444444444444 avg_delay:155284.340625
+total_hold:1010 total_gen:2880, total_succ:1280
+scenario8_blackhole_detectban__0_3_pure
+succ_ratio:0.4344086021505376 avg_delay:161543.66666666666
+total_hold:1007 total_gen:1395, total_succ:606
+scenario8_blackhole_detectban__0_3_state
+self.list_selfish:\[ 5 81 66 27 49 73 28 13  3 68 10 52 29 97 54  7 77 65  9 20 35 38 84 67
+ 19 36 98 18 44 83]
+self.DetectResult:
+[[50737    99]
+ [  222 21921]]
+self.DetectdEve:
+[[50720   116]
+ [  206 21937]]
+self.DetectindEve:
+[[50720   116]
+ [  206 21937]]
+scenario8_blackhole_detectban__0_3_tmp_state
+self.tmp_DetectResult:
+[[1935   98 4032    1 5033    0 4993    0 5498    0 5549    0 5790    0
+  5775    0 6046    0 6086    0]
+ [ 217  638    5 1778    0 2109    0 2248    0 2380    0 2672    0 2475
+     0 2493    0 2529    0 2599]]
+self.tmp_DetectdEve:
+[[1918  115 4032    1 5033    0 4993    0 5498    0 5549    0 5790    0
+  5775    0 6046    0 6086    0]
+ [ 201  654    5 1778    0 2109    0 2248    0 2380    0 2672    0 2475
+     0 2493    0 2529    0 2599]]
+self.tmp_DetectindEve:
+[[1918  115 4032    1 5033    0 4993    0 5498    0 5549    0 5790    0
+  5775    0 6046    0 6086    0]
+ [ 201  654    5 1778    0 2109    0 2248    0 2380    0 2672    0 2475
+     0 2493    0 2529    0 2599]]
+
+scenario9_blackhole_0_4_whole
+succ_ratio:0.04756944444444444 avg_delay:2767.8540145985403
+total_hold:13 total_gen:2880, total_succ:137
+scenario9_blackhole_0_4_pure
+succ_ratio:0.045965270684371805 avg_delay:3596.4666666666667
+total_hold:13 total_gen:979, total_succ:45
+
+scenario10_blackhole_detectban__0_4_whole
+succ_ratio:0.43194444444444446 avg_delay:151392.09083601285
+total_hold:957 total_gen:2880, total_succ:1244
+scenario10_blackhole_detectban__0_4_pure
+succ_ratio:0.4024514811031665 avg_delay:161042.0964467005
+total_hold:957 total_gen:979, total_succ:394
+scenario10_blackhole_detectban__0_4_state
+self.list_selfish:\[87 98  3 64 38 49 58 11 67 26 96 54  9 92 23 12 80 69 85 32 56 66 45 76
+ 50 19 16 40 37 30 21  2 31 20 44  0  5  8 90 43]
+self.DetectResult:
+[[38832    62]
+ [  285 25531]]
+self.DetectdEve:
+[[38820    74]
+ [  264 25552]]
+self.DetectindEve:
+[[38820    74]
+ [  264 25552]]
+scenario10_blackhole_detectban__0_4_tmp_state
+self.tmp_DetectResult:
+[[1229   62 2923    0 3769    0 3941    0 4263    0 4364    0 4610    0
+  4402    0 4602    0 4729    0]
+ [ 264  587   21 1841    0 2528    0 2522    0 2803    0 3031    0 2893
+     0 3179    0 2953    0 3194]]
+self.tmp_DetectdEve:
+[[1217   74 2923    0 3769    0 3941    0 4263    0 4364    0 4610    0
+  4402    0 4602    0 4729    0]
+ [ 243  608   21 1841    0 2528    0 2522    0 2803    0 3031    0 2893
+     0 3179    0 2953    0 3194]]
+self.tmp_DetectindEve:
+[[1217   74 2923    0 3769    0 3941    0 4263    0 4364    0 4610    0
+  4402    0 4602    0 4729    0]
+ [ 243  608   21 1841    0 2528    0 2522    0 2803    0 3031    0 2893
+     0 3179    0 2953    0 3194]]
+
+scenario11_blackhole_0_5_whole
+succ_ratio:0.03611111111111111 avg_delay:2013.9903846153845
+total_hold:5 total_gen:2880, total_succ:104
+scenario11_blackhole_0_5_pure
+succ_ratio:0.0335195530726257 avg_delay:2339.4166666666665
+total_hold:2 total_gen:716, total_succ:24
+
+scenario12_blackhole_detectban__0_5_whole
+succ_ratio:0.3385416666666667 avg_delay:146697.97333333333
+total_hold:1058 total_gen:2880, total_succ:975
+scenario12_blackhole_detectban__0_5_pure
+succ_ratio:0.3393854748603352 avg_delay:137203.64609053498
+total_hold:1052 total_gen:716, total_succ:243
+scenario12_blackhole_detectban__0_5_state
+self.list_selfish:\[74  5  4  7 90  1 41 57 86 49 60 96 33 40 39 99  8 69 35 92 97 79 63 32
+ 61 75 15 66 42 65  6 14 45 67 22 30 29 95 48 19 25  2 70 64 94 82 20 13
+ 62 91]
+self.DetectResult:
+[[27734    50]
+ [  377 27942]]
+self.DetectdEve:
+[[27727    57]
+ [  354 27965]]
+self.DetectindEve:
+[[27727    57]
+ [  354 27965]]
+scenario12_blackhole_detectban__0_5_tmp_state
+self.tmp_DetectResult:
+[[ 718   48 1922    2 2654    0 2979    0 3165    0 3285    0 3288    0
+  3165    0 3271    0 3287    0]
+ [ 303  434   74 1836    0 2790    0 2915    0 3035    0 3307    0 3247
+     0 3294    0 3504    0 3580]]
+self.tmp_DetectdEve:
+[[ 711   55 1922    2 2654    0 2979    0 3165    0 3285    0 3288    0
+  3165    0 3271    0 3287    0]
+ [ 280  457   74 1836    0 2790    0 2915    0 3035    0 3307    0 3247
+     0 3294    0 3504    0 3580]]
+self.tmp_DetectindEve:
+[[ 711   55 1922    2 2654    0 2979    0 3165    0 3285    0 3288    0
+  3165    0 3271    0 3287    0]
+ [ 280  457   74 1836    0 2790    0 2915    0 3035    0 3307    0 3247
+     0 3294    0 3504    0 3580]]
+

@@ -129,4 +129,5 @@ class RandomWalkGenerator(object):
         self.link_event_list.clear()
 
 if __name__ == "__main__":
-    the_generator = RandomWalkGenerator()
+    for i in range(10):
+        the_generator = RandomWalkGenerator()

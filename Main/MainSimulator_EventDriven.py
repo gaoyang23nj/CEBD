@@ -3,6 +3,7 @@ import datetime
 import time
 import sys
 import winsound
+import os
 
 from Main.DTNScenario_EP import DTNScenario_EP
 from Main.DTNScenario_Prophet import DTNScenario_Prophet
@@ -16,11 +17,10 @@ from Main.DTNScenario_Prophet_Blackhole_DetectandBan import DTNScenario_Prophet_
 
 # 事件驱动
 class Simulator(object):
-    def __init__(self):
+    def __init__(self, enco_file, pktgen_freq):
         # 相遇记录文件
-        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191203021550.tmp'
-        # self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191205104415.tmp'
-        self.ENCO_HIST_FILE = '..\EncoHistData\encohist_20191220182008.tmp'
+        self.ENCO_HIST_FILE = enco_file
+
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
         # 最大运行时间 执行时间 36000*12个间隔, 即12hour; 应该根据 enco_hist 进行更新
@@ -30,7 +30,7 @@ class Simulator(object):
         # 仿真环境 现在的时刻
         self.sim_TimeNow = 0
         # 报文生成的间隔,即每10*60*20个时间间隔(10*60*20*0.1s 即20分钟)生成一个报文
-        self.THR_PKT_GEN_CNT = 10*30
+        self.THR_PKT_GEN_CNT = pktgen_freq
         # # node所组成的list
         # self.list_nodes = []
         # 生成报文的时间计数器 & 生成报文计算器的触发值
@@ -197,48 +197,6 @@ class Simulator(object):
         list_scena = list(self.scenaDict.keys())
         return list_scena
 
-    # blackhole场景下 准备detect模型训练所需要的数据
-    def init_scenario_blackhole_todetect(self):
-        index = 0
-        # ===============================场景0 Epidemic ===================================
-        tmp_senario_name = 'scenario' + str(index)+'_Epidemic'
-        tmpscenario = DTNScenario_EP(tmp_senario_name, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景1 Spary and Wait ===================================
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)+'_SparyWait'
-        tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景2 Prophet ===================================
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)+'_Prophet'
-        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # 0.1 0.2 0.3 0.4 0.5
-        for j in range(5):
-            # ===============================场景3 Prophet + Blackhole + toDetect 0.1===================================
-            # # 随机生成序列
-            tmp = j + 1
-            percent_selfish = 0.1 * tmp
-            indices = np.random.permutation(self.MAX_NODE_NUM)
-            malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-            normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-
-            index += 1
-            tmp_senario_name = 'scenario' + str(index)+'_blackhole_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-
-            index += 1
-            tmp_senario_name = 'scenario' + str(index)+ '_blackhole_todetect_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
-                                                                 20000, self.MAX_RUNNING_TIMES, True)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景单个单个的实验吧===================================
-        list_scena = list(self.scenaDict.keys())
-        return list_scena
-
     # blackhole场景下 detect ban 检测抑制方法 的效果实验
     def init_scenario_blackhole(self):
         index = 0
@@ -272,12 +230,6 @@ class Simulator(object):
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_todetect_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
-                                                                 20000, self.MAX_RUNNING_TIMES, True)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-            index += 1
             tmp_senario_name = 'scenario' + str(index)+ '_blackhole_detectban__0_' + str(tmp)
             tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan(
                 tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
@@ -289,7 +241,6 @@ class Simulator(object):
 
     def init_scenario(self):
         self.scenaDict = {}
-        # list_scena = self.init_scenario_blackhole_todetect()
         list_scena = self.init_scenario_blackhole()
         return list_scena
 
@@ -309,12 +260,25 @@ class Simulator(object):
 if __name__ == "__main__":
     t1 = datetime.datetime.now()
     print(datetime.datetime.now())
-    t_start = time.time()
-    theSimulator = Simulator()
-    t_end = time.time()
+
+    simdurationlist = []
+    encohistdir = '..\\EncoHistData\\test'
+    filelist = os.listdir(encohistdir)
+    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
+    for filename in filelist:
+        filepath = os.path.join(encohistdir, filename)
+        for genpkt_freq in genpkt_freqlist:
+            print(filepath, genpkt_freq)
+            t_start = time.time()
+            theSimulator = Simulator(filepath, genpkt_freq)
+            t_end = time.time()
+            print('running time:{}'.format(t_end - t_start))
+            simdurationlist.append(t_end - t_start)
+
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())
     winsound.Beep(500, 2000)
     print(t1)
     print(t2)
-    print('running time:{}'.format(t_end - t_start))
+    print('running time:{}'.format(t2 - t1))
+    print(simdurationlist)

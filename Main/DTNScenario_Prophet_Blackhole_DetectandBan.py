@@ -33,8 +33,9 @@ def process_predict(save_d_model_file_path, save_ind_model_file_path, max_abilit
         em = q_input.get(True)
         if em is None:
             break
-        d_predict = d_model.predict(em[1])
-        ind_predict = ind_model.predict(em[2])
+        input = np.hstack((em[1], em[2]))
+        d_predict = d_model.predict(input)
+        ind_predict = ind_model.predict(input)
         num_to_process = num_to_process + 1
         # print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
         if num_to_process >= max_ability[0]:
@@ -81,9 +82,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
-        dir = "..\\Main\\collect_data"
-        self.save_d_model_file_path = os.path.join(dir, 'ML_time\\deve_model.h5')
-        self.save_ind_model_file_path = os.path.join(dir, 'ML_time\\indeve_model.h5')
+        dir = "..\\Main\\ML"
+        self.save_d_model_file_path = os.path.join(dir, 'model.h5')
+        self.save_ind_model_file_path = os.path.join(dir, 'model.h5')
         self.MAX_Ability = (1000, 'Max Process Ability')
         global ProcessCtl_dict
         global q_input
@@ -300,14 +301,14 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         # # 否则 viewofb == 0
         # assert viewofb == 0
         # d_attrs = np.zeros((1, 3), dtype='int')
-        d_attrs = np.zeros((1, 4), dtype='int')
+        d_attrs = np.zeros((1, 3), dtype='int')
 
         d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
         d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
         d_attrs[0][2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
         # 还需归一化转化
         # ind_attrs = np.zeros((1, 300), dtype='int')
-        ind_attrs = np.zeros((1, 301), dtype='int')
+        ind_attrs = np.zeros((1, 300), dtype='int')
 
         ind_attrs[0][0: self.num_of_nodes] = ((theBufferDetect.get_ind_send_values().transpose())[b_id,:]).copy()
         ind_attrs[0][self.num_of_nodes: 2 * self.num_of_nodes] = \
@@ -315,13 +316,14 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         ind_attrs[0][2 * self.num_of_nodes: 3 * self.num_of_nodes] = \
             ((theBufferDetect.get_ind_receive_src_values().transpose())[b_id,:]).copy()
 
-        # 间接信息来源不足 间接证据对应的列 更换
-        ind_attrs[0, theBufferDetect.node_id] = ((theBufferDetect.get_send_values())[b_id]).copy()
-        ind_attrs[0, theBufferDetect.node_id + self.num_of_nodes] = ((theBufferDetect.get_receive_values())[b_id]).copy()
-        ind_attrs[0, theBufferDetect.node_id + self.num_of_nodes * 2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
+        # # 间接信息来源不足 间接证据对应的列 更换
+        # ind_attrs[0, theBufferDetect.node_id] = ((theBufferDetect.get_send_values())[b_id]).copy()
+        # ind_attrs[0, theBufferDetect.node_id + self.num_of_nodes] = ((theBufferDetect.get_receive_values())[b_id]).copy()
+        # ind_attrs[0, theBufferDetect.node_id + self.num_of_nodes * 2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
 
-        d_attrs[0][3] = float('%.2f' % ((self.index_time_block) * 0.1))
-        ind_attrs[0][-1] = float('%.2f' % ((self.index_time_block) * 0.1))
+        dect_time = np.zeros((1, 1), dtype='int')
+        dect_time[0][0] = float('%.2f' % ((self.index_time_block) * 0.1))
+        # ind_attrs[0][-1] = float('%.2f' % ((self.index_time_block) * 0.1))
         # tf的调用次数 加1
         self._tmpCallCnt = self._tmpCallCnt + 1
 
@@ -329,7 +331,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         global ProcessCtl_dict
         global q_input
         global q_output
-        request_element = (ProcessCtl_dict["key"], d_attrs.copy(), ind_attrs.copy())
+        request_element = (ProcessCtl_dict["key"], d_attrs.copy(), ind_attrs.copy(), dect_time.copy())
         ProcessCtl_dict["key"] = ProcessCtl_dict["key"] + 1
         q_input.put(request_element)
 
