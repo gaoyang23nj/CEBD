@@ -44,7 +44,7 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         print(output_str_whole + output_str_pure)
         # 进行标签值 和 属性值 的保存; 以便于offline训练model
         if self.isPrint:
-            self.__print_eve_res(basedir=".//collect_data//"+self.scenarioname, isEndoftime=True)
+            self.__print_eve_res(basedir=".//collect_data_blackhole//"+self.scenarioname, isEndoftime=True)
         return output_str_whole + output_str_pure
 
     # 生成新报文
@@ -53,7 +53,7 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         assert (self.index_time_block <= 10)
         if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
             add_str = '_0_' + str(self.index_time_block)
-            self.__print_eve_res(basedir=".//collect_data//" + self.scenarioname + add_str, isEndoftime=False)
+            self.__print_eve_res(basedir=".//collect_data_blackhole//" + self.scenarioname + add_str, isEndoftime=False)
             self.index_time_block = self.index_time_block + 1
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)

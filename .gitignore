@@ -8,4 +8,4 @@ EncoHistData
 EncoHistData_Seu
 EncoHistData_Helsink
 *.pyc
-Main/collect_data/*
+Main/collect_data_blackhole/*

@@ -79,7 +79,7 @@ def process_data_npz(file_path):
     return y_new, x_d_new, x_ind_new
 
 # 从文件中收集数据
-def collect_data_totrain_xdind(dir):
+def collect_data_totrain_xdind(dir, annotation_path):
     # 把文件名 和 对应的数据源 洗出来
     npz_tunple_list = []
     npz_dirs = os.listdir(dir)
@@ -98,8 +98,8 @@ def collect_data_totrain_xdind(dir):
     # 总的数据条目数未知; 但我们知道每个文件里有99条记录; 通过逐个文件读取 获得训练数据集合
     num_npzfile = len(npz_tunple_list)
     # y.shape 99*1;     # x1.shape 99*3;     # x2.shape 99*300
-    anno = "..\\Main\\anno\\anno.txt"
-    f = open(anno, 'w')
+    # anno = "..\\Main\\anno\\anno.txt"
+    f = open(annotation_path, 'w')
     for i in range(len(npz_tunple_list)):
         (npz_file_path, data_srcnode) = npz_tunple_list[i]
         f.write(npz_file_path)
@@ -138,8 +138,8 @@ if __name__ == "__main__":
     # 由于我这里仅有一块GPU,multi-GPU需要for一下
     tf.config.experimental.set_memory_growth(gpus[0], True)
 
-    dir = "..\\Main\\collect_data"
-    ml_dir = "..\\Main\\ML"
+    dir = "..\\Main\\collect_data_blackhole"
+    ml_dir = "..\\Main\\ML_blackhole"
     if os.path.exists(ml_dir):
         shutil.rmtree(ml_dir)
         print('delete dir ' + ml_dir)
@@ -153,10 +153,11 @@ if __name__ == "__main__":
     # 把文件名 和 对应的数据源 洗出来
     # y_final, x_final = collect_data_totrain(dir)
 
-    collect_data_totrain_xdind(dir)
+    annotation_path = "..\\Main\\anno_blackhole\\anno.txt"
+
+    collect_data_totrain_xdind(dir, annotation_path)
 
     # 0.7:0.1:0.2 train val test
-    annotation_path = "..\\Main\\anno\\anno.txt"
     val_test_split = 0.2
     # 0.1用于验证，0.9用于训练
     val_split = 0.1
