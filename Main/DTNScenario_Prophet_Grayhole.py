@@ -1,4 +1,3 @@
-# 处理中。。。。
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 
@@ -98,9 +97,8 @@ class DTNScenario_Prophet_Grayhole(object):
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                # blackhole b_id立刻发动
+                # 生成(0,1) 如果命中(即指定概率情况下 丢弃事件发生) 才发起drop
                 rd = np.random.random()
-                # 生成(0,1) 如果命中 才发起drop
                 if rd < self.dropratio:
                     self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
 

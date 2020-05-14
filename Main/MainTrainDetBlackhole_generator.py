@@ -13,7 +13,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
-def direct_and_indirect(lines_train, lines_val):
+def direct_and_indirect(lines_train, lines_val, h5_filepath):
     num_train = len(lines_train)
     num_val = len(lines_val)
     print('num_train, num_val: {},{}'.format(num_train, num_val))
@@ -35,9 +35,10 @@ def direct_and_indirect(lines_train, lines_val):
                         validation_steps=max(1, num_val // batch_size),
                         epochs=10,
                         initial_epoch=0)
-    model.save("..\\Main\\ML\\model.h5")
 
-def test(lines_test):
+    model.save(h5_filepath)
+
+def test(lines_test, h5_filepath):
     num_testlines = len(lines_test)
     # y.shape 99*1;     # x1.shape 99*3;     # x2.shape 99*300
     y_final = np.zeros(shape=(99 * num_testlines,))
@@ -48,7 +49,7 @@ def test(lines_test):
         y_final[i * 99: (i + 1) * 99] = y
         x_final[i * 99: (i + 1) * 99] = np.hstack((x1,x2))
 
-    model = tf.keras.models.load_model("..\\Main\\ML\\model.h5")
+    model = tf.keras.models.load_model(h5_filepath)
     # model.evaluate(X_train, Y_train, verbose=2)
     # model.evaluate(X_test, Y_test, verbose=2)
     y_pred_raw = model.predict(x_final)
@@ -79,12 +80,12 @@ def process_data_npz(file_path):
     return y_new, x_d_new, x_ind_new
 
 # 从文件中收集数据
-def collect_data_totrain_xdind(dir, annotation_path):
+def build_anno(eve_dir, annotation_path):
     # 把文件名 和 对应的数据源 洗出来
     npz_tunple_list = []
-    npz_dirs = os.listdir(dir)
+    npz_dirs = os.listdir(eve_dir)
     for npz_dir in npz_dirs:
-        npz_dir_path = os.path.join(dir, npz_dir)
+        npz_dir_path = os.path.join(eve_dir, npz_dir)
         if os.path.isdir(npz_dir_path):
             files = os.listdir(npz_dir_path)
             for file in files:
@@ -98,8 +99,7 @@ def collect_data_totrain_xdind(dir, annotation_path):
     # 总的数据条目数未知; 但我们知道每个文件里有99条记录; 通过逐个文件读取 获得训练数据集合
     num_npzfile = len(npz_tunple_list)
     # y.shape 99*1;     # x1.shape 99*3;     # x2.shape 99*300
-    # anno = "..\\Main\\anno\\anno.txt"
-    f = open(annotation_path, 'w')
+    f = open(annotation_path, 'w+')
     for i in range(len(npz_tunple_list)):
         (npz_file_path, data_srcnode) = npz_tunple_list[i]
         f.write(npz_file_path)
@@ -138,13 +138,14 @@ if __name__ == "__main__":
     # 由于我这里仅有一块GPU,multi-GPU需要for一下
     tf.config.experimental.set_memory_growth(gpus[0], True)
 
-    dir = "..\\Main\\collect_data_blackhole"
+    eve_dir = "..\\Main\\collect_data_blackhole"
     ml_dir = "..\\Main\\ML_blackhole"
     if os.path.exists(ml_dir):
         shutil.rmtree(ml_dir)
         print('delete dir ' + ml_dir)
     os.makedirs(ml_dir)
     print('add dir ' + ml_dir)
+    h5_filepath = ml_dir + "\\model.h5"
 
     x = tf.random.uniform([1, 1])
     tmp = x.device.endswith('GPU:0')
@@ -153,15 +154,19 @@ if __name__ == "__main__":
     # 把文件名 和 对应的数据源 洗出来
     # y_final, x_final = collect_data_totrain(dir)
 
-    annotation_path = "..\\Main\\anno_blackhole\\anno.txt"
+    annotation_path = "..\\Main\\anno_blackhole"
+    if os.path.exists(annotation_path):
+        shutil.rmtree(annotation_path)
+    os.makedirs(annotation_path)
+    anno_file = os.path.join(annotation_path, "anno.txt")
 
-    collect_data_totrain_xdind(dir, annotation_path)
+    build_anno(eve_dir, anno_file)
 
     # 0.7:0.1:0.2 train val test
     val_test_split = 0.2
     # 0.1用于验证，0.9用于训练
     val_split = 0.1
-    with open(annotation_path) as f:
+    with open(anno_file) as f:
         lines = f.readlines()
     np.random.shuffle(lines)
     num_test = int(len(lines) * val_test_split)
@@ -169,9 +174,9 @@ if __name__ == "__main__":
     num_train = len(lines) - num_val - num_test
     # lines[:num_train] lines[num_train:num_val] lines[num_train+num_val:]
 
-    direct_and_indirect(lines[: num_train], lines[num_train : num_train + num_val])
+    direct_and_indirect(lines[: num_train], lines[num_train : num_train + num_val], h5_filepath)
 
-    test(lines[num_train + num_val:])
+    test(lines[num_train + num_val:], h5_filepath)
 
 
     # train_from_DirectEvidence(y_final, x1_final, x2_final)

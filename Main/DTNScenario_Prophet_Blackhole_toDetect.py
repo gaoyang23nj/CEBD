@@ -1,5 +1,4 @@
 import shutil
-
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
@@ -35,6 +34,8 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
             self.listNodeBuffer.append(tmpBuffer)
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
+        # 实验所产生的证据 保存路径
+        self.eve_dir = ".//collect_data_blackhole//" + self.scenarioname
         return
 
     # 打印结果
@@ -44,7 +45,7 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         print(output_str_whole + output_str_pure)
         # 进行标签值 和 属性值 的保存; 以便于offline训练model
         if self.isPrint:
-            self.__print_eve_res(basedir=".//collect_data_blackhole//"+self.scenarioname, isEndoftime=True)
+            self.__print_eve_res(basedir= self.eve_dir, isEndoftime=True)
         return output_str_whole + output_str_pure
 
     # 生成新报文
@@ -52,8 +53,9 @@ class DTNScenario_Prophet_Blackhole_toDetect(object):
         # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
         assert (self.index_time_block <= 10)
         if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
+            # 过程中的结果
             add_str = '_0_' + str(self.index_time_block)
-            self.__print_eve_res(basedir=".//collect_data_blackhole//" + self.scenarioname + add_str, isEndoftime=False)
+            self.__print_eve_res(basedir= self.eve_dir + add_str, isEndoftime=False)
             self.index_time_block = self.index_time_block + 1
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)

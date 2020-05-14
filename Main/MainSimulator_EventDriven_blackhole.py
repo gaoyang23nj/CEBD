@@ -150,52 +150,52 @@ class Simulator(object):
             dst_index = dst_index + 1
         return (src_index, dst_index)
 
-    # spam场景下 detect ban 检测抑制方法 的效果实验
-    def init_scenario_spam(self):
-        index = 0
-        # ===============================场景5 Prophet + Spam ===================================
-        # # 随机生成序列
-        percent_selfish = 0.3
-        indices = np.random.permutation(self.MAX_NODE_NUM)
-        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_Prophet_Spam(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景6 Prophet + Spam ===================================
-        # # 随机生成序列
-        percent_selfish = 0.8
-        indices = np.random.permutation(self.MAX_NODE_NUM)
-        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_Prophet_Spam(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景7 Prophet + Spam E ===================================
-        # # 随机生成序列
-        percent_selfish = 0.3
-        indices = np.random.permutation(self.MAX_NODE_NUM)
-        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_Prophet_SpamE(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景8 Prophet + Spam E ===================================
-        # # 随机生成序列
-        percent_selfish = 0.8
-        indices = np.random.permutation(self.MAX_NODE_NUM)
-        malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-        normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)
-        tmpscenario = DTNScenario_Prophet_SpamE(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景单个单个的实验吧===================================
-        list_scena = list(self.scenaDict.keys())
-        return list_scena
+    # # spam场景下 detect ban 检测抑制方法 的效果实验
+    # def init_scenario_spam(self):
+    #     index = 0
+    #     # ===============================场景5 Prophet + Spam ===================================
+    #     # # 随机生成序列
+    #     percent_selfish = 0.3
+    #     indices = np.random.permutation(self.MAX_NODE_NUM)
+    #     malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+    #     normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+    #     index += 1
+    #     tmp_senario_name = 'scenario' + str(index)
+    #     tmpscenario = DTNScenario_Prophet_Spam(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+    #     self.scenaDict.update({tmp_senario_name: tmpscenario})
+    #     # ===============================场景6 Prophet + Spam ===================================
+    #     # # 随机生成序列
+    #     percent_selfish = 0.8
+    #     indices = np.random.permutation(self.MAX_NODE_NUM)
+    #     malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+    #     normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+    #     index += 1
+    #     tmp_senario_name = 'scenario' + str(index)
+    #     tmpscenario = DTNScenario_Prophet_Spam(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+    #     self.scenaDict.update({tmp_senario_name: tmpscenario})
+    #     # ===============================场景7 Prophet + Spam E ===================================
+    #     # # 随机生成序列
+    #     percent_selfish = 0.3
+    #     indices = np.random.permutation(self.MAX_NODE_NUM)
+    #     malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+    #     normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+    #     index += 1
+    #     tmp_senario_name = 'scenario' + str(index)
+    #     tmpscenario = DTNScenario_Prophet_SpamE(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+    #     self.scenaDict.update({tmp_senario_name: tmpscenario})
+    #     # ===============================场景8 Prophet + Spam E ===================================
+    #     # # 随机生成序列
+    #     percent_selfish = 0.8
+    #     indices = np.random.permutation(self.MAX_NODE_NUM)
+    #     malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+    #     normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+    #     index += 1
+    #     tmp_senario_name = 'scenario' + str(index)
+    #     tmpscenario = DTNScenario_Prophet_SpamE(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+    #     self.scenaDict.update({tmp_senario_name: tmpscenario})
+    #     # ===============================场景单个单个的实验吧===================================
+    #     list_scena = list(self.scenaDict.keys())
+    #     return list_scena
 
     # blackhole场景下 detect ban 检测抑制方法 的效果实验
     def init_scenario_blackhole(self):
@@ -264,16 +264,26 @@ if __name__ == "__main__":
     simdurationlist = []
     encohistdir = '..\\EncoHistData\\test'
     filelist = os.listdir(encohistdir)
-    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
-    for filename in filelist:
-        filepath = os.path.join(encohistdir, filename)
-        for genpkt_freq in genpkt_freqlist:
-            print(filepath, genpkt_freq)
-            t_start = time.time()
-            theSimulator = Simulator(filepath, genpkt_freq)
-            t_end = time.time()
-            print('running time:{}'.format(t_end - t_start))
-            simdurationlist.append(t_end - t_start)
+
+    # 1.真正的流程
+    # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
+
+    # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
+    # for filename in filelist:
+    #     filepath = os.path.join(encohistdir, filename)
+    #     for genpkt_freq in genpkt_freqlist:
+    #         print(filepath, genpkt_freq)
+    #         t_start = time.time()
+    #         theSimulator = Simulator(filepath, genpkt_freq)
+    #         t_end = time.time()
+    #         print('running time:{}'.format(t_end - t_start))
+    #         simdurationlist.append(t_end - t_start)
+
+    # or 2.简单测试的流程
+
+    genpkt_freqlist = 10 * 30
+    filepath = os.path.join(encohistdir, filelist[0])
+    theSimulator = Simulator(filepath, genpkt_freqlist)
 
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())
