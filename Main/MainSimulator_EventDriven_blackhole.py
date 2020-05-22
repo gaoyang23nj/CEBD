@@ -7,6 +7,7 @@ import os
 
 from Main.DTNScenario_EP import DTNScenario_EP
 from Main.DTNScenario_Prophet import DTNScenario_Prophet
+from Main.DTNScenario_Prophet_Blackhole_DetectandBan_Ex import DTNScenario_Prophet_Blackhole_DectectandBan_Ex
 from Main.DTNScenario_Prophet_Blackhole_toDetect import DTNScenario_Prophet_Blackhole_toDetect
 from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
 from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
@@ -229,9 +230,15 @@ class Simulator(object):
             tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
+            # index += 1
+            # tmp_senario_name = 'scenario' + str(index)+ '_blackhole_detectban__0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan(
+            #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
+
             index += 1
-            tmp_senario_name = 'scenario' + str(index)+ '_blackhole_detectban__0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan(
+            tmp_senario_name = 'scenario' + str(index)+ '_blackhole_detectban_ex_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_Ex(
                 tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 

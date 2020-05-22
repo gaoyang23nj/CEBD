@@ -13,54 +13,40 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
-def process_predict_detect(save_d_model_file_path, save_ind_model_file_path, max_ability, q_input, q_output):
-    # with tf.device('CPU:0'):
-    #     x = tf.random.uniform([1, 1])
-    #     tmp = x.device.endswith('CPU:0')
-    #     print('On CPU:{}'.format(tmp))
-    #     assert x.device.endswith('CPU:0')
-
+def process_predict_ex(save_model_file_path, max_ability, q_input_ex, q_output_ex):
     physical_devices = tf.config.experimental.list_physical_devices('GPU')
     assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-    # x = tf.random.uniform([1, 1])
-    # tmp = x.device.endswith('GPU:0')
-    # print('On GPU:{}'.format(tmp))
-    # print('On CPU:{}'.format(tmp))
-    # assert x.device.endswith('GPU:0')
-
     num_to_process = 0
     print('.........Process Running...pid[{}]'.format(os.getpid()))
-    d_model = tf.keras.models.load_model(save_d_model_file_path)
-    ind_model = tf.keras.models.load_model(save_ind_model_file_path)
+    the_model = tf.keras.models.load_model(save_model_file_path)
     while True:
-        em = q_input.get(True)
+        em = q_input_ex.get(True)
         if em is None:
             break
-        input = np.hstack((em[1], em[2]))
-        d_predict = d_model.predict(input)
-        ind_predict = ind_model.predict(input)
+        input = em[1]
+        predict_value = the_model.predict(input)
         num_to_process = num_to_process + 1
         # print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
         if num_to_process >= max_ability[0]:
-            res = (em[0], d_predict[0][1], ind_predict[0][1], max_ability[1])
-            q_output.put(res)
+            res = (em[0], predict_value[0][1], max_ability[1])
+            q_output_ex.put(res)
             break
         else:
-            res = (em[0], d_predict[0][1], ind_predict[0][1])
-            q_output.put(res)
+            res = (em[0], predict_value[0][1])
+            q_output_ex.put(res)
 
 
-ProcessCtl_dict = dict()
-ProcessCtl_dict["running_label"] = False
-ProcessCtl_dict["key"] = 0
-q_input = multiprocessing.Queue()
-q_output = multiprocessing.Queue()
+ProcessCtl_dict_ex = dict()
+ProcessCtl_dict_ex["running_label"] = False
+ProcessCtl_dict_ex["key"] = 0
+q_input_ex = multiprocessing.Queue()
+q_output_ex = multiprocessing.Queue()
 
 # 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_DectectandBan(object):
+class DTNScenario_Prophet_Blackhole_DectectandBan_Ex(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime):
         # tf的调用次数
@@ -88,18 +74,17 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
 
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
-        dir = "..\\Main\\ML_blackhole"
-        self.save_d_model_file_path = os.path.join(dir, 'model.h5')
-        self.save_ind_model_file_path = os.path.join(dir, 'model.h5')
+        dir = "..\\Main\\ML_blackhole_ex"
+        self.save_model_file_path = os.path.join(dir, 'model.h5')
 
         self.MAX_Ability = (1000, 'Max Process Ability')
-        global ProcessCtl_dict
-        global q_input
-        global q_output
-        if ProcessCtl_dict["running_label"] == False:
-            ProcessCtl_dict["running_label"] = True
-            j = multiprocessing.Process(target = process_predict_detect, args=(
-                self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, q_input, q_output))
+        global ProcessCtl_dict_ex
+        global q_input_ex
+        global q_output_ex
+        if ProcessCtl_dict_ex["running_label"] == False:
+            ProcessCtl_dict_ex["running_label"] = True
+            j = multiprocessing.Process(target=process_predict_ex, args=(
+                self.save_model_file_path, self.MAX_Ability, q_input_ex, q_output_ex))
             j.daemon = True
             j.start()
         # 保存真正使用的结果: self.DetectResult[0,1] False_Positive ; self.DetectResult[1,0] False_Negative
@@ -156,11 +141,11 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         # 不必进行标签值 和 属性值 的保存
         # self.print_eve_res()
         # 使得预测进程终止
-        global ProcessCtl_dict
-        global q_input
-        if ProcessCtl_dict["running_label"] == True:
-            q_input.put(None)
-            ProcessCtl_dict["running_label"] = False
+        global ProcessCtl_dict_ex
+        global q_input_ex
+        if ProcessCtl_dict_ex["running_label"] == True:
+            q_input_ex.put(None)
+            ProcessCtl_dict_ex["running_label"] = False
         return output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -245,7 +230,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 利用model进行判定 b_id是否是blackhole
-                bool_BH = self.__detect_blackhole(a_id, b_id)
+                bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 if not bool_BH:
                     self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
@@ -292,137 +277,66 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 利用model进行判定 b_id是否是blackhole
-                bool_BH = self.__detect_blackhole(a_id, b_id)
+                bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 if not bool_BH:
                     self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
 
-    def __detect_blackhole(self, a_id, b_id):
+    def __detect_blackhole(self, a_id, b_id, runningtime):
         theBufferDetect = self.listNodeBufferDetect[a_id]
+
+        dect_time = np.zeros((1, 1), dtype='float64')
+        dect_time[0][0] = runningtime / self.MAX_RUNNING_TIMES
 
         d_attrs = np.zeros((1, 1 * 3), dtype='int')
         d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
         d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
         d_attrs[0][2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
 
-        ind_attrs = np.zeros((1, self.num_of_nodes * 3), dtype='int')
+        ind_attrs = np.zeros((1, (self.num_of_nodes - 1) * 3), dtype='int')
         tmp_send = ((theBufferDetect.get_ind_send_values().transpose())[b_id, :]).copy()
         tmp_receive = ((theBufferDetect.get_ind_receive_values().transpose())[b_id, :]).copy()
         tmp_receive_src = ((theBufferDetect.get_ind_receive_src_values().transpose())[b_id, :]).copy()
-        ind_attrs[0][0: self.num_of_nodes] = tmp_send
-        ind_attrs[0][self.num_of_nodes: (self.num_of_nodes) * 2] = tmp_receive
-        ind_attrs[0][(self.num_of_nodes) * 2: (self.num_of_nodes) * 3] = tmp_receive_src
+        ind_attrs[0][0: self.num_of_nodes - 1] = np.delete(tmp_send, a_id, axis=0)
+        ind_attrs[0][self.num_of_nodes - 1: (self.num_of_nodes - 1) * 2] = np.delete(tmp_receive, a_id, axis=0)
+        ind_attrs[0][(self.num_of_nodes - 1) * 2: (self.num_of_nodes - 1) * 3] = np.delete(tmp_receive_src, a_id, axis=0)
 
-        dect_time = np.zeros((1, 1), dtype='int')
-        dect_time[0][0] = float('%.2f' % ((self.index_time_block) * 0.1))
+        x = np.hstack((dect_time, d_attrs, ind_attrs))
         # tf的调用次数 加1
         self._tmpCallCnt = self._tmpCallCnt + 1
 
         # 加载模型；进行预测
-        global ProcessCtl_dict
-        global q_input
-        global q_output
-        request_element = (ProcessCtl_dict["key"], d_attrs.copy(), ind_attrs.copy(), dect_time.copy())
-        ProcessCtl_dict["key"] = ProcessCtl_dict["key"] + 1
-        q_input.put(request_element)
+        global ProcessCtl_dict_ex
+        global q_input_ex
+        global q_output_ex
+        request_element = (ProcessCtl_dict_ex["key"], x.copy())
+        ProcessCtl_dict_ex["key"] = ProcessCtl_dict_ex["key"] + 1
+        q_input_ex.put(request_element)
 
-        result_element = q_output.get(True)
-        res_d = result_element[1]
-        res_ind = result_element[2]
-        if len(result_element) == 4 and result_element[3] == self.MAX_Ability[1]:
-            j = multiprocessing.Process(target = process_predict_detect, args=(
-                self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, q_input, q_output))
+        result_element = q_output_ex.get(True)
+        res_ind = result_element[1]
+        if len(result_element) == 3 and result_element[2] == self.MAX_Ability[1]:
+            j = multiprocessing.Process(target=process_predict_ex, args=(
+                self.save_model_file_path, self.MAX_Ability, q_input_ex, q_output_ex))
             j.daemon = True
             j.start()
 
         # 执行判定流程 & 结果更新过程
-        # 如果 判定结果不具有足够的倾向性 (只要任何一个判定不具有倾向性 即可做出判断)
-        abs_att = 0.15
-        if ((math.fabs(res_d - 0.5) < abs_att) or (math.fabs(res_ind - 0.5) < abs_att)):
-            # pass
-            boolBlackhole = False
-        # 如果 判定结果具有足够的倾向性 （两个判定都足够倾向 d_eve ind_eve）
-        else:
-            # 如果 直接证据 和 间接证据 相悖, 本次路由放过去, 需要后续研究；
-            # 可能存在虚假证据正在干扰；或者直接证据不足
-            if (res_d-0.5)*(res_ind-0.5) < 0:
-                boolBlackhole = False
-                # 进行虚假证据鉴定
-            else:
-                if res_ind > 0.5 + abs_att:
-                    assert res_d > 0.5 + abs_att
-                    boolBlackhole = True
-                    # # 1表示恶意节点
-                    # theBufferDetect.setviewofb(b_id, 1)
-                else:
-                    assert res_ind < 0.5 - abs_att
-                    assert res_d < 0.5 - abs_att
-                    boolBlackhole = False
-                    # # -1表示正常节点
-                    # theBufferDetect.setviewofb(b_id, -1)
-        is_res_d = res_d > 0.5
         is_res_ind = res_ind > 0.5
         isSelfish = (b_id in self.list_selfish)
-
-        # # d_res
-        # if isSelfish == False:
-        #     if is_res_d == False:
-        #         # True Negative
-        #         self.DetectdEve[0, 0] = self.DetectdEve[0, 0] + 1
-        #     else:
-        #         # False Positive
-        #         self.DetectdEve[0, 1] = self.DetectdEve[0, 1] + 1
-        # else:
-        #     if is_res_d == False:
-        #         # False Negative
-        #         self.DetectdEve[1, 0] = self.DetectdEve[1, 0] + 1
-        #     else:
-        #         # True Positive
-        #         self.DetectdEve[1, 1] = self.DetectdEve[1, 1] + 1
-        #
-        # # ind_res
-        # if isSelfish == False:
-        #     if is_res_ind == False:
-        #         # True Negative
-        #         self.DetectindEve[0, 0] = self.DetectindEve[0, 0] + 1
-        #     else:
-        #         # False Positive
-        #         self.DetectindEve[0, 1] = self.DetectindEve[0, 1] + 1
-        # else:
-        #     if is_res_ind == False:
-        #         # False Negative
-        #         self.DetectindEve[1, 0] = self.DetectindEve[1, 0] + 1
-        #     else:
-        #         # True Positive
-        #         self.DetectindEve[1, 1] = self.DetectindEve[1, 1] + 1
-        #
-        # # 对于选择的结果
-        # if isSelfish == False:
-        #     if boolBlackhole == False:
-        #         # True Negative
-        #         self.DetectResult[0, 0] = self.DetectResult[0, 0] + 1
-        #     else:
-        #         # False Positive
-        #         self.DetectResult[0, 1] = self.DetectResult[0, 1] + 1
-        # else:
-        #     if boolBlackhole == False:
-        #         # False Negative
-        #         self.DetectResult[1, 0] = self.DetectResult[1, 0] + 1
-        #     else:
-        #         # True Positive
-        #         self.DetectResult[1, 1] = self.DetectResult[1, 1] + 1
 
         # 使用节点证据进行评价
         boolBlackhole = is_res_ind
         # 打印出来
         if boolBlackhole == True and isSelfish == False:
-            print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), \033[1;37;41m{}, Truth:{}\033[0m'.
-                  format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
+            print('[{}] a({}) predict b({}): ind_eve_predict({}), Predict:\033[1;37;41m{}, Truth:{}\033[0m'.
+                  format(self._tmpCallCnt, a_id, b_id, res_ind, boolBlackhole, isSelfish))
         elif boolBlackhole == False and isSelfish == True:
-            print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), \033[1;32m{}, Truth:{}\033[0m'.
-                  format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
+            print('[{}] a({}) predict b({}): ind_eve_predict({}), Predict:\033[1;32m{}, Truth:{}\033[0m'.
+                  format(self._tmpCallCnt, a_id, b_id, res_ind, boolBlackhole, isSelfish))
         else:
+            # 预测正确 就不打印了
             # print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}, Truth:{}'.
             #       format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
             pass

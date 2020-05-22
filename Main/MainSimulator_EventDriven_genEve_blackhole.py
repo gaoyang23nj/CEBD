@@ -8,6 +8,7 @@ import winsound
 from Main.DTNScenario_EP import DTNScenario_EP
 from Main.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.DTNScenario_Prophet_Blackhole_toDetect import DTNScenario_Prophet_Blackhole_toDetect
+from Main.DTNScenario_Prophet_Blackhole_toDetect_Ex import DTNScenario_Prophet_Blackhole_toDetect_Ex
 from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
 from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
 from Main.DTNScenario_SandW import DTNScenario_SandW
@@ -189,6 +190,13 @@ class Simulator(object):
             tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
                                                                  20000, self.MAX_RUNNING_TIMES, True)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_ex_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect_Ex(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
+                                                                 20000, self.MAX_RUNNING_TIMES, True)
+
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())
         return list_scena
@@ -222,22 +230,22 @@ if __name__ == "__main__":
     # 1.真正的流程
     # 针对5个相遇记录 和 6个生成速率 分别进行实验（生成blackhole证据的实验）
 
-    # genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
-    # for filename in filelist:
-    #     filepath = os.path.join(encohistdir, filename)
-    #     for genpkt_freq in genpkt_freqlist:
-    #         print(filepath, genpkt_freq)
-    #         t_start = time.time()
-    #         theSimulator = Simulator(filepath, genpkt_freq)
-    #         t_end = time.time()
-    #         print('running time:{}'.format(t_end - t_start))
-    #         simdurationlist.append(t_end - t_start)
+    genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
+    for filename in filelist:
+        filepath = os.path.join(encohistdir, filename)
+        for genpkt_freq in genpkt_freqlist:
+            print(filepath, genpkt_freq)
+            t_start = time.time()
+            theSimulator = Simulator(filepath, genpkt_freq)
+            t_end = time.time()
+            print('running time:{}'.format(t_end - t_start))
+            simdurationlist.append(t_end - t_start)
 
     # or 2.简单测试的流程
 
-    genpkt_freqlist = 10 * 30
-    filepath = os.path.join(encohistdir, filelist[0])
-    theSimulator = Simulator(filepath, genpkt_freqlist)
+    # genpkt_freqlist = 10 * 30
+    # filepath = os.path.join(encohistdir, filelist[0])
+    # theSimulator = Simulator(filepath, genpkt_freqlist)
 
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())

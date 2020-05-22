@@ -1,3 +1,6 @@
+# 对每次需要判定时候 都记录进行记录 作为模型的训练数据
+import datetime
+import shutil
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
@@ -6,74 +9,21 @@ import copy
 import numpy as np
 import math
 import os
-import tensorflow as tf
-import multiprocessing
-import re
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
 
-def process_predict_detect(save_d_model_file_path, save_ind_model_file_path, max_ability, q_input, q_output):
-    # with tf.device('CPU:0'):
-    #     x = tf.random.uniform([1, 1])
-    #     tmp = x.device.endswith('CPU:0')
-    #     print('On CPU:{}'.format(tmp))
-    #     assert x.device.endswith('CPU:0')
-
-    physical_devices = tf.config.experimental.list_physical_devices('GPU')
-    assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-
-    # x = tf.random.uniform([1, 1])
-    # tmp = x.device.endswith('GPU:0')
-    # print('On GPU:{}'.format(tmp))
-    # print('On CPU:{}'.format(tmp))
-    # assert x.device.endswith('GPU:0')
-
-    num_to_process = 0
-    print('.........Process Running...pid[{}]'.format(os.getpid()))
-    d_model = tf.keras.models.load_model(save_d_model_file_path)
-    ind_model = tf.keras.models.load_model(save_ind_model_file_path)
-    while True:
-        em = q_input.get(True)
-        if em is None:
-            break
-        input = np.hstack((em[1], em[2]))
-        d_predict = d_model.predict(input)
-        ind_predict = ind_model.predict(input)
-        num_to_process = num_to_process + 1
-        # print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
-        if num_to_process >= max_ability[0]:
-            res = (em[0], d_predict[0][1], ind_predict[0][1], max_ability[1])
-            q_output.put(res)
-            break
-        else:
-            res = (em[0], d_predict[0][1], ind_predict[0][1])
-            q_output.put(res)
-
-
-ProcessCtl_dict = dict()
-ProcessCtl_dict["running_label"] = False
-ProcessCtl_dict["key"] = 0
-q_input = multiprocessing.Queue()
-q_output = multiprocessing.Queue()
-
-# 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_DectectandBan(object):
+class DTNScenario_Prophet_Blackhole_toDetect_Ex(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime):
-        # tf的调用次数
-        self._tmpCallCnt = 0
+    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime, isPrintDetectAtt):
+        self.isPrint = isPrintDetectAtt
         self.scenarioname = scenarioname
         self.list_selfish = list_selfish
         self.num_of_nodes = num_of_nodes
+        # 为了打印临时证据 以便训练更好的分类器; 从1到9(从0.1到0.9) 最后一个time block
+        self.index_time_block = 1
+        self.MAX_RUNNING_TIMES = total_runningtime
         # 为各个node建立虚拟空间 <buffer+router>
         self.listNodeBuffer = []
         self.listRouter = []
-        # 为了打印 获得临时的分类结果 以便观察分类结果; 从1到9(从0.1到0.9) 最后一个time block
-        self.index_time_block = 1
-        self.MAX_RUNNING_TIMES = total_runningtime
         # 为各个node建立检测用的 证据存储空间 BufferDetect
         self.listNodeBufferDetect = []
         for node_id in range(num_of_nodes):
@@ -86,91 +36,43 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
             self.listNodeBuffer.append(tmpBuffer)
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
-
-        # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
-        dir = "..\\Main\\ML_blackhole"
-        self.save_d_model_file_path = os.path.join(dir, 'model.h5')
-        self.save_ind_model_file_path = os.path.join(dir, 'model.h5')
-
-        self.MAX_Ability = (1000, 'Max Process Ability')
-        global ProcessCtl_dict
-        global q_input
-        global q_output
-        if ProcessCtl_dict["running_label"] == False:
-            ProcessCtl_dict["running_label"] = True
-            j = multiprocessing.Process(target = process_predict_detect, args=(
-                self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, q_input, q_output))
-            j.daemon = True
-            j.start()
-        # 保存真正使用的结果: self.DetectResult[0,1] False_Positive ; self.DetectResult[1,0] False_Negative
-        self.DetectResult = np.zeros((2,2),dtype='int')
-        # 保存直接证据的预测结果
-        self.DetectdEve = np.zeros((2, 2), dtype='int')
-        # 保存间接证据的预测结果
-        self.DetectindEve = np.zeros((2, 2), dtype='int')
-
-        # tmp 临时结果
-        self.tmp0_DetectResult = np.zeros((2, 2), dtype='int')
-        self.tmp0_DetectdEve = np.zeros((2, 2), dtype='int')
-        self.tmp0_DetectindEve = np.zeros((2, 2), dtype='int')
-        self.tmp_DetectResult = np.zeros((2, 20), dtype='int')
-        self.tmp_DetectdEve = np.zeros((2, 20), dtype='int')
-        self.tmp_DetectindEve = np.zeros((2, 20), dtype='int')
+        # 实验所产生的证据 保存路径
+        self.eve_dir = ".//collect_data_blackhole_ex//" + self.scenarioname
+        if os.path.exists(self.eve_dir):
+            shutil.rmtree(self.eve_dir)
+        os.makedirs(self.eve_dir)
+        # 证据文件 1+1*3+99*3; 该矩阵不断更新，直到写入成为文件为止;
+        # 矩阵属性可以考虑更改
+        self.matrix_x = np.zeros((0, 301))
+        self.matrix_y = np.zeros((0, 1))
         return
 
-    # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
-    def __update_tmp_conf_matrix(self, gentime, isEndoftime):
-        assert(self.index_time_block <= 10)
-        if (isEndoftime == True) or (gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES):
-            index = self.index_time_block - 1
-            tmp_ = self.DetectResult - self.tmp0_DetectResult
-            self.tmp_DetectResult[:, index * 2 : index*2+2] = tmp_
-            self.tmp0_DetectResult = self.DetectResult.copy()
-
-            tmp_ = self.DetectdEve - self.tmp0_DetectdEve
-            self.tmp_DetectdEve[:, index * 2 : index*2+2] = tmp_
-            self.tmp0_DetectdEve = self.DetectdEve.copy()
-
-            tmp_ = self.DetectindEve - self.tmp0_DetectindEve
-            self.tmp_DetectindEve[:, index * 2 : index*2+2] = tmp_
-            self.tmp0_DetectindEve = self.DetectindEve.copy()
-
-            self.index_time_block = self.index_time_block + 1
-
-    def __print_tmp_conf_matrix(self):
-        # end of time; 最后一次刷新
-        self.__update_tmp_conf_matrix(-1, True)
-        output_str = '{}_tmp_state\n'.format(self.scenarioname)
-        # self.DetectResult self.DetectdEve self.DetectindEve
-        output_str += 'self.tmp_DetectResult:\n{}\nself.tmp_DetectdEve:\n{}\nself.tmp_DetectindEve:\n{}\n'.format(
-            self.tmp_DetectResult, self.tmp_DetectdEve, self.tmp_DetectindEve)
-        return output_str
-
+    # 打印结果
     def print_res(self, listgenpkt):
-        # 打印混淆矩阵
-        output_str_tmp_state = self.__print_tmp_conf_matrix()
-        output_str_state = self.__print_conf_matrix()
         output_str_whole = self.__print_res_whole(listgenpkt)
         output_str_pure = self.__print_res_pure(listgenpkt)
-        print(output_str_whole + output_str_pure + output_str_state + output_str_tmp_state)
-        # 不必进行标签值 和 属性值 的保存
-        # self.print_eve_res()
-        # 使得预测进程终止
-        global ProcessCtl_dict
-        global q_input
-        if ProcessCtl_dict["running_label"] == True:
-            q_input.put(None)
-            ProcessCtl_dict["running_label"] = False
-        return output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
+        print(output_str_whole + output_str_pure)
+        # # 进行标签值 和 属性值 的保存; 以便于offline训练model
+        # if self.isPrint:
+        #     self.__print_eve_res(basedir= self.eve_dir, isEndoftime=True)
+        return output_str_whole + output_str_pure
 
+    # 生成新报文
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
-        self.__update_tmp_conf_matrix(gentime, False)
+        # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
+        assert (self.index_time_block <= 10)
+        if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
+            # 过程中的结果
+            add_str = '_0_' + str(self.index_time_block)
+            # self.__print_eve_res(basedir= self.eve_dir + add_str, isEndoftime=False)
+            self.index_time_block = self.index_time_block + 1
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
 
-    # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id
+    # 相遇事件发生 交换报文
+    # routing接到指令aid和bid相遇，开始进行消息交换a_id <-> b_id
     def swappkt(self, runningtime, a_id, b_id):
         # 交换直接评价信息，更新间接评价
         a_sendvalues = self.listNodeBufferDetect[a_id].get_send_values()
@@ -181,6 +83,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         b_receivesrcvalues = self.listNodeBufferDetect[a_id].get_receive_src_values()
         self.listNodeBufferDetect[b_id].renewindeve(runningtime, a_id, a_sendvalues, a_receivevalues, a_receivesrcvalues)
         self.listNodeBufferDetect[a_id].renewindeve(runningtime, b_id, b_sendvalues, b_receivevalues, b_receivesrcvalues)
+        # 进行标签值 和 属性值 的保存; 以便于offline训练model
+        self.__save_eve_res(self.eve_dir, a_id, b_id, runningtime)
+        self.__save_eve_res(self.eve_dir, b_id, a_id, runningtime)
         # ================== 控制信息 交换==========================
         # 对称操作!!!
         # 获取 b_node Router 向各节点的值(带有老化计算)
@@ -244,11 +149,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
-                # 利用model进行判定 b_id是否是blackhole
-                bool_BH = self.__detect_blackhole(a_id, b_id)
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
-                if not bool_BH:
-                    self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
                 # blackhole b_id立刻发动
                 self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
@@ -286,147 +188,10 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
                 break
         for tmp_pkt in totran_pktlist:
             # <是目的节点 OR P值更大> 才进行传输; 单播 只要传输就要删除原来的副本
-            if tmp_pkt.dst_id == b_id:
+            if tmp_pkt.dst_id == b_id or P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
-            elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
-                # 利用model进行判定 b_id是否是blackhole
-                bool_BH = self.__detect_blackhole(a_id, b_id)
-                self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
-                if not bool_BH:
-                    self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
-
-    def __detect_blackhole(self, a_id, b_id):
-        theBufferDetect = self.listNodeBufferDetect[a_id]
-
-        d_attrs = np.zeros((1, 1 * 3), dtype='int')
-        d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
-        d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
-        d_attrs[0][2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
-
-        ind_attrs = np.zeros((1, self.num_of_nodes * 3), dtype='int')
-        tmp_send = ((theBufferDetect.get_ind_send_values().transpose())[b_id, :]).copy()
-        tmp_receive = ((theBufferDetect.get_ind_receive_values().transpose())[b_id, :]).copy()
-        tmp_receive_src = ((theBufferDetect.get_ind_receive_src_values().transpose())[b_id, :]).copy()
-        ind_attrs[0][0: self.num_of_nodes] = tmp_send
-        ind_attrs[0][self.num_of_nodes: (self.num_of_nodes) * 2] = tmp_receive
-        ind_attrs[0][(self.num_of_nodes) * 2: (self.num_of_nodes) * 3] = tmp_receive_src
-
-        dect_time = np.zeros((1, 1), dtype='int')
-        dect_time[0][0] = float('%.2f' % ((self.index_time_block) * 0.1))
-        # tf的调用次数 加1
-        self._tmpCallCnt = self._tmpCallCnt + 1
-
-        # 加载模型；进行预测
-        global ProcessCtl_dict
-        global q_input
-        global q_output
-        request_element = (ProcessCtl_dict["key"], d_attrs.copy(), ind_attrs.copy(), dect_time.copy())
-        ProcessCtl_dict["key"] = ProcessCtl_dict["key"] + 1
-        q_input.put(request_element)
-
-        result_element = q_output.get(True)
-        res_d = result_element[1]
-        res_ind = result_element[2]
-        if len(result_element) == 4 and result_element[3] == self.MAX_Ability[1]:
-            j = multiprocessing.Process(target = process_predict_detect, args=(
-                self.save_d_model_file_path, self.save_ind_model_file_path, self.MAX_Ability, q_input, q_output))
-            j.daemon = True
-            j.start()
-
-        # 执行判定流程 & 结果更新过程
-        # 如果 判定结果不具有足够的倾向性 (只要任何一个判定不具有倾向性 即可做出判断)
-        abs_att = 0.15
-        if ((math.fabs(res_d - 0.5) < abs_att) or (math.fabs(res_ind - 0.5) < abs_att)):
-            # pass
-            boolBlackhole = False
-        # 如果 判定结果具有足够的倾向性 （两个判定都足够倾向 d_eve ind_eve）
-        else:
-            # 如果 直接证据 和 间接证据 相悖, 本次路由放过去, 需要后续研究；
-            # 可能存在虚假证据正在干扰；或者直接证据不足
-            if (res_d-0.5)*(res_ind-0.5) < 0:
-                boolBlackhole = False
-                # 进行虚假证据鉴定
-            else:
-                if res_ind > 0.5 + abs_att:
-                    assert res_d > 0.5 + abs_att
-                    boolBlackhole = True
-                    # # 1表示恶意节点
-                    # theBufferDetect.setviewofb(b_id, 1)
-                else:
-                    assert res_ind < 0.5 - abs_att
-                    assert res_d < 0.5 - abs_att
-                    boolBlackhole = False
-                    # # -1表示正常节点
-                    # theBufferDetect.setviewofb(b_id, -1)
-        is_res_d = res_d > 0.5
-        is_res_ind = res_ind > 0.5
-        isSelfish = (b_id in self.list_selfish)
-
-        # # d_res
-        # if isSelfish == False:
-        #     if is_res_d == False:
-        #         # True Negative
-        #         self.DetectdEve[0, 0] = self.DetectdEve[0, 0] + 1
-        #     else:
-        #         # False Positive
-        #         self.DetectdEve[0, 1] = self.DetectdEve[0, 1] + 1
-        # else:
-        #     if is_res_d == False:
-        #         # False Negative
-        #         self.DetectdEve[1, 0] = self.DetectdEve[1, 0] + 1
-        #     else:
-        #         # True Positive
-        #         self.DetectdEve[1, 1] = self.DetectdEve[1, 1] + 1
-        #
-        # # ind_res
-        # if isSelfish == False:
-        #     if is_res_ind == False:
-        #         # True Negative
-        #         self.DetectindEve[0, 0] = self.DetectindEve[0, 0] + 1
-        #     else:
-        #         # False Positive
-        #         self.DetectindEve[0, 1] = self.DetectindEve[0, 1] + 1
-        # else:
-        #     if is_res_ind == False:
-        #         # False Negative
-        #         self.DetectindEve[1, 0] = self.DetectindEve[1, 0] + 1
-        #     else:
-        #         # True Positive
-        #         self.DetectindEve[1, 1] = self.DetectindEve[1, 1] + 1
-        #
-        # # 对于选择的结果
-        # if isSelfish == False:
-        #     if boolBlackhole == False:
-        #         # True Negative
-        #         self.DetectResult[0, 0] = self.DetectResult[0, 0] + 1
-        #     else:
-        #         # False Positive
-        #         self.DetectResult[0, 1] = self.DetectResult[0, 1] + 1
-        # else:
-        #     if boolBlackhole == False:
-        #         # False Negative
-        #         self.DetectResult[1, 0] = self.DetectResult[1, 0] + 1
-        #     else:
-        #         # True Positive
-        #         self.DetectResult[1, 1] = self.DetectResult[1, 1] + 1
-
-        # 使用节点证据进行评价
-        boolBlackhole = is_res_ind
-        # 打印出来
-        if boolBlackhole == True and isSelfish == False:
-            print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), \033[1;37;41m{}, Truth:{}\033[0m'.
-                  format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
-        elif boolBlackhole == False and isSelfish == True:
-            print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), \033[1;32m{}, Truth:{}\033[0m'.
-                  format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
-        else:
-            # print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}, Truth:{}'.
-            #       format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
-            pass
-        return boolBlackhole
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, src_id, dst_id):
@@ -435,12 +200,42 @@ class DTNScenario_Prophet_Blackhole_DectectandBan(object):
         if src_id == a_id:
             self.listNodeBufferDetect[b_id].receivefromsrc(a_id)
 
-    def __print_conf_matrix(self):
-        output_str = '{}_state\n'.format(self.scenarioname)
-        output_str += 'self.list_selfish:\{}\n'.format(self.list_selfish)
-        # self.DetectResult self.DetectdEve self.DetectindEve
-        output_str += 'self.DetectResult:\n{}\nself.DetectdEve:\n{}\nself.DetectindEve:\n{}\n'.format(self.DetectResult, self.DetectdEve, self.DetectindEve)
-        return output_str
+    # 从a观察b 收集证据
+    def __save_eve_res(self, basedir, a_id, b_id, runningtime):
+        theBufferDetect = self.listNodeBufferDetect[a_id]
+
+        dect_time = np.zeros((1, 1), dtype='int')
+        dect_time[0][0] = runningtime
+
+        d_attrs = np.zeros((1, 1*3), dtype='int')
+        d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
+        d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
+        d_attrs[0][2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
+
+        ind_attrs = np.zeros((1, (self.num_of_nodes-1)*3), dtype='int')
+        tmp_send = ((theBufferDetect.get_ind_send_values().transpose())[b_id, :]).copy()
+        tmp_receive = ((theBufferDetect.get_ind_receive_values().transpose())[b_id, :]).copy()
+        tmp_receive_src = ((theBufferDetect.get_ind_receive_src_values().transpose())[b_id,:]).copy()
+        ind_attrs[0][0: self.num_of_nodes-1] = np.delete(tmp_send, a_id, axis=0)
+        ind_attrs[0][self.num_of_nodes-1: (self.num_of_nodes-1)*2] = np.delete(tmp_receive, a_id, axis=0)
+        ind_attrs[0][(self.num_of_nodes-1)*2: (self.num_of_nodes-1)*3] = np.delete(tmp_receive_src, a_id, axis=0)
+
+        label = np.zeros((1, 1), dtype='int')
+        if b_id in self.list_selfish:
+            label[0][0] = 1
+
+        new_x = np.hstack((dect_time, d_attrs, ind_attrs))
+        self.matrix_x = np.vstack((self.matrix_x, new_x))
+        self.matrix_y = np.vstack((self.matrix_y, label))
+        # 如果足够长 就生成文件；并重置 matrix
+        if self.matrix_x.shape[0] >= 100:
+            short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+            filename = '' + short_time + '.npz'
+            filename = os.path.join(self.eve_dir, filename)
+            np.savez(filename, y=self.matrix_y, x=self.matrix_x)
+            self.matrix_x = np.zeros((0, 301))
+            self.matrix_y = np.zeros((0, 1))
+        return
 
     def __print_res_whole(self, listgenpkt):
         num_genpkt = len(listgenpkt)
