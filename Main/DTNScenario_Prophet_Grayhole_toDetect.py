@@ -1,3 +1,5 @@
+# 对每次需要判定时候 都记录进行记录 作为模型的训练数据
+import datetime
 import shutil
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
@@ -7,6 +9,8 @@ import copy
 import numpy as np
 import math
 import os
+
+NPZ_DATA_SIZE = 1000
 
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
 class DTNScenario_Prophet_Grayhole_toDetect(object):
@@ -35,23 +39,28 @@ class DTNScenario_Prophet_Grayhole_toDetect(object):
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         # 实验所产生的证据 保存路径
-        self.eve_dir = ".//collect_data_grayhole//" + self.scenarioname
+        self.eve_dir = "E://collect_data_grayhole//" + self.scenarioname
         if os.path.exists(self.eve_dir):
             shutil.rmtree(self.eve_dir)
         os.makedirs(self.eve_dir)
-        self.eve_dir = self.eve_dir + "//"
+        # 证据文件 1+1*3+99*3; 该矩阵不断更新，直到写入成为文件为止;
+        # 矩阵属性可以考虑更改
+        self.matrix_x = np.zeros((0, 301))
+        self.matrix_y = np.zeros((0, 1))
         self.dropratio = dropratio
         return
 
     # 打印结果
     def print_res(self, listgenpkt):
         output_str_whole = self.__print_res_whole(listgenpkt)
-        output_str_pure = self.__print_res_pure(listgenpkt)
+        output_str_pure, succ_ratio, avg_delay = self.__print_res_pure(listgenpkt)
         print(output_str_whole + output_str_pure)
-        # 进行标签值 和 属性值 的保存; 以便于offline训练model
-        if self.isPrint:
-            self.__print_eve_res(basedir= self.eve_dir + "final", isEndoftime=True)
-        return output_str_whole + output_str_pure
+
+        outstr = output_str_whole + output_str_pure
+        percent_selfish = len(self.list_selfish) / self.num_of_nodes
+        res = (succ_ratio, avg_delay)
+        config = (percent_selfish, self.dropratio)
+        return outstr, res, config
 
     # 生成新报文
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -59,8 +68,8 @@ class DTNScenario_Prophet_Grayhole_toDetect(object):
         assert (self.index_time_block <= 10)
         if gentime >= 0.1 * self.index_time_block * self.MAX_RUNNING_TIMES:
             # 过程中的结果
-            add_str = 'timeindex_0_' + str(self.index_time_block)
-            self.__print_eve_res(basedir= self.eve_dir + add_str, isEndoftime=False)
+            add_str = '_0_' + str(self.index_time_block)
+            # self.__print_eve_res(basedir= self.eve_dir + add_str, isEndoftime=False)
             self.index_time_block = self.index_time_block + 1
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
@@ -79,6 +88,9 @@ class DTNScenario_Prophet_Grayhole_toDetect(object):
         b_receivesrcvalues = self.listNodeBufferDetect[a_id].get_receive_src_values()
         self.listNodeBufferDetect[b_id].renewindeve(runningtime, a_id, a_sendvalues, a_receivevalues, a_receivesrcvalues)
         self.listNodeBufferDetect[a_id].renewindeve(runningtime, b_id, b_sendvalues, b_receivevalues, b_receivesrcvalues)
+        # 进行标签值 和 属性值 的保存; 以便于offline训练model
+        self.__save_eve_res(self.eve_dir, a_id, b_id, runningtime)
+        self.__save_eve_res(self.eve_dir, b_id, a_id, runningtime)
         # ================== 控制信息 交换==========================
         # 对称操作!!!
         # 获取 b_node Router 向各节点的值(带有老化计算)
@@ -196,41 +208,42 @@ class DTNScenario_Prophet_Grayhole_toDetect(object):
         if src_id == a_id:
             self.listNodeBufferDetect[b_id].receivefromsrc(a_id)
 
-    # 保存标签值和属性值 以便于训练预测模型
-    def __print_eve_res(self, basedir, isEndoftime):
-        # 如果已经产生了 则清空;
-        if os.path.exists(basedir):
-            shutil.rmtree(basedir)
-        os.makedirs(basedir)
-        # 计算y值 标签值
-        y = np.zeros(self.num_of_nodes, dtype='int')
-        for node_id in range(self.num_of_nodes):
-            if node_id in self.list_selfish:
-                y[node_id] = 1
-        # 收集属性 属性值 在node_tmpBufferDetect 里面
-        for tmpBufferDetect in self.listNodeBufferDetect:
-            # label.shape(100,),表示各点的类别 0表示正常节点, 1表示异常节点, -1表示自己节点
-            # 标识自己
-            label = y.copy()
-            label[tmpBufferDetect.node_id] = -1
-            x_deve = np.zeros((self.num_of_nodes, 3), dtype='int')
-            # x_deve.shape (100,3) 三个属性 分别表示send/receive/receive_src的个数
-            x_deve[:, 0] = tmpBufferDetect.get_send_values()
-            x_deve[:, 1] = tmpBufferDetect.get_receive_values()
-            x_deve[:, 2] = tmpBufferDetect.get_receive_src_values()
-            # x_indeve.shape (100,300) 300个 属性
-            x_indeve = np.zeros((self.num_of_nodes, 3 * self.num_of_nodes), dtype='int')
-            x_indeve[:, 0: self.num_of_nodes] = tmpBufferDetect.get_ind_send_values().transpose()
-            x_indeve[:, self.num_of_nodes : 2 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_values().transpose()
-            x_indeve[:, 2*self.num_of_nodes: 3 * self.num_of_nodes] = tmpBufferDetect.get_ind_receive_src_values().transpose()
-            if isEndoftime:
-                time_index = 1.0
-            else:
-                time_index = float('%.2f' % ((self.index_time_block) * 0.1))
-            se = len(self.list_selfish) / self.num_of_nodes
-            dropratio = self.dropratio
-            filename = basedir+'//{}.npz'.format(tmpBufferDetect.node_id)
-            np.savez(filename, y=label, x_d=x_deve, x_ind=x_indeve, datasrc = tmpBufferDetect.node_id, ti=time_index, sel = se, dpr = dropratio)
+    # 从a观察b 收集证据
+    def __save_eve_res(self, basedir, a_id, b_id, runningtime):
+        theBufferDetect = self.listNodeBufferDetect[a_id]
+
+        dect_time = np.zeros((1, 1), dtype='int')
+        dect_time[0][0] = runningtime
+
+        d_attrs = np.zeros((1, 1*3), dtype='int')
+        d_attrs[0][0] = ((theBufferDetect.get_send_values())[b_id]).copy()
+        d_attrs[0][1] = ((theBufferDetect.get_receive_values())[b_id]).copy()
+        d_attrs[0][2] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
+
+        ind_attrs = np.zeros((1, (self.num_of_nodes-1)*3), dtype='int')
+        tmp_send = ((theBufferDetect.get_ind_send_values().transpose())[b_id, :]).copy()
+        tmp_receive = ((theBufferDetect.get_ind_receive_values().transpose())[b_id, :]).copy()
+        tmp_receive_src = ((theBufferDetect.get_ind_receive_src_values().transpose())[b_id,:]).copy()
+        ind_attrs[0][0: self.num_of_nodes-1] = np.delete(tmp_send, a_id, axis=0)
+        ind_attrs[0][self.num_of_nodes-1: (self.num_of_nodes-1)*2] = np.delete(tmp_receive, a_id, axis=0)
+        ind_attrs[0][(self.num_of_nodes-1)*2: (self.num_of_nodes-1)*3] = np.delete(tmp_receive_src, a_id, axis=0)
+
+        label = np.zeros((1, 1), dtype='int')
+        if b_id in self.list_selfish:
+            label[0][0] = 1
+
+        new_x = np.hstack((dect_time, d_attrs, ind_attrs))
+        self.matrix_x = np.vstack((self.matrix_x, new_x))
+        self.matrix_y = np.vstack((self.matrix_y, label))
+        # 如果足够长 就生成文件；并重置 matrix
+        if self.matrix_x.shape[0] >= NPZ_DATA_SIZE:
+            short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+            filename = '' + short_time + '.npz'
+            filename = os.path.join(self.eve_dir, filename)
+            np.savez(filename, y=self.matrix_y, x=self.matrix_x)
+            self.matrix_x = np.zeros((0, 301))
+            self.matrix_y = np.zeros((0, 1))
+        return
 
     def __print_res_whole(self, listgenpkt):
         num_genpkt = len(listgenpkt)
@@ -288,9 +301,10 @@ class DTNScenario_Prophet_Grayhole_toDetect(object):
             avg_delay = total_delay/total_succnum
             output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
         else:
+            avg_delay = ()
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        return output_str
+        return output_str, succ_ratio, avg_delay
 
 class RoutingProphet(object):
     def __init__(self, node_id, num_of_nodes, p_init=0.75, gamma=0.98, beta=0.25):
