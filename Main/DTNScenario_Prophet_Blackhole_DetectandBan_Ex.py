@@ -13,7 +13,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
-def process_predict_ex(save_model_file_path, max_ability, q_input_ex, q_output_ex):
+def process_predict_blackhole_ex(save_model_file_path, max_ability, q_input_ex, q_output_ex):
     physical_devices = tf.config.experimental.list_physical_devices('GPU')
     assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
@@ -26,15 +26,25 @@ def process_predict_ex(save_model_file_path, max_ability, q_input_ex, q_output_e
         if em is None:
             break
         input = em[1]
+        i_isSelfish = em[2]
+
         predict_value = the_model.predict(input)
+        isBlackhole = predict_value[0][1] > 0.5
+        y_final = np.zeros((1), dtype='int')
+        y_predict = np.zeros((1), dtype='int')
+        y_final[0] = i_isSelfish
+        y_predict[0] = int(isBlackhole)
+        conf_matrix = np.array(tf.math.confusion_matrix(y_final, y_predict, num_classes=2))
         num_to_process = num_to_process + 1
         # print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
         if num_to_process >= max_ability[0]:
-            res = (em[0], predict_value[0][1], max_ability[1])
+            # 到达 最大可执行数目
+            res = (em[0], isBlackhole, conf_matrix, max_ability[1])
             q_output_ex.put(res)
             break
         else:
-            res = (em[0], predict_value[0][1])
+            # 仍然可以执行
+            res = (em[0], isBlackhole, conf_matrix, max_ability[2])
             q_output_ex.put(res)
 
 
@@ -77,30 +87,22 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_Ex(object):
         dir = "..\\Main\\ML_blackhole_ex"
         self.save_model_file_path = os.path.join(dir, 'model.h5')
 
-        self.MAX_Ability = (1000, 'Max Process Ability')
+        self.MAX_Ability = (10000, 'Max Process Ability', 'Continue')
         global ProcessCtl_dict_ex
         global q_input_ex
         global q_output_ex
         if ProcessCtl_dict_ex["running_label"] == False:
             ProcessCtl_dict_ex["running_label"] = True
-            j = multiprocessing.Process(target=process_predict_ex, args=(
+            j = multiprocessing.Process(target=process_predict_blackhole_ex, args=(
                 self.save_model_file_path, self.MAX_Ability, q_input_ex, q_output_ex))
             j.daemon = True
             j.start()
         # 保存真正使用的结果: self.DetectResult[0,1] False_Positive ; self.DetectResult[1,0] False_Negative
         self.DetectResult = np.zeros((2,2),dtype='int')
-        # 保存直接证据的预测结果
-        self.DetectdEve = np.zeros((2, 2), dtype='int')
-        # 保存间接证据的预测结果
-        self.DetectindEve = np.zeros((2, 2), dtype='int')
-
         # tmp 临时结果
         self.tmp0_DetectResult = np.zeros((2, 2), dtype='int')
-        self.tmp0_DetectdEve = np.zeros((2, 2), dtype='int')
-        self.tmp0_DetectindEve = np.zeros((2, 2), dtype='int')
         self.tmp_DetectResult = np.zeros((2, 20), dtype='int')
-        self.tmp_DetectdEve = np.zeros((2, 20), dtype='int')
-        self.tmp_DetectindEve = np.zeros((2, 20), dtype='int')
+
         return
 
     # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
@@ -111,32 +113,23 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_Ex(object):
             tmp_ = self.DetectResult - self.tmp0_DetectResult
             self.tmp_DetectResult[:, index * 2 : index*2+2] = tmp_
             self.tmp0_DetectResult = self.DetectResult.copy()
-
-            tmp_ = self.DetectdEve - self.tmp0_DetectdEve
-            self.tmp_DetectdEve[:, index * 2 : index*2+2] = tmp_
-            self.tmp0_DetectdEve = self.DetectdEve.copy()
-
-            tmp_ = self.DetectindEve - self.tmp0_DetectindEve
-            self.tmp_DetectindEve[:, index * 2 : index*2+2] = tmp_
-            self.tmp0_DetectindEve = self.DetectindEve.copy()
-
             self.index_time_block = self.index_time_block + 1
+        return
 
     def __print_tmp_conf_matrix(self):
         # end of time; 最后一次刷新
         self.__update_tmp_conf_matrix(-1, True)
         output_str = '{}_tmp_state\n'.format(self.scenarioname)
         # self.DetectResult self.DetectdEve self.DetectindEve
-        output_str += 'self.tmp_DetectResult:\n{}\nself.tmp_DetectdEve:\n{}\nself.tmp_DetectindEve:\n{}\n'.format(
-            self.tmp_DetectResult, self.tmp_DetectdEve, self.tmp_DetectindEve)
+        output_str += 'self.tmp_DetectResult:\n{}\n'.format(self.tmp_DetectResult)
         return output_str
 
     def print_res(self, listgenpkt):
-        # 打印混淆矩阵
-        output_str_tmp_state = self.__print_tmp_conf_matrix()
-        output_str_state = self.__print_conf_matrix()
         output_str_whole = self.__print_res_whole(listgenpkt)
-        output_str_pure = self.__print_res_pure(listgenpkt)
+        output_str_pure, succ_ratio, avg_delay = self.__print_res_pure(listgenpkt)
+        # 打印混淆矩阵
+        output_str_state = self.__print_conf_matrix()
+        output_str_tmp_state = self.__print_tmp_conf_matrix()
         print(output_str_whole + output_str_pure + output_str_state + output_str_tmp_state)
         # 不必进行标签值 和 属性值 的保存
         # self.print_eve_res()
@@ -146,7 +139,11 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_Ex(object):
         if ProcessCtl_dict_ex["running_label"] == True:
             q_input_ex.put(None)
             ProcessCtl_dict_ex["running_label"] = False
-        return output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
+        outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
+        percent_selfish = len(self.list_selfish) / self.num_of_nodes
+        res = (succ_ratio, avg_delay, self.DetectResult, self.tmp_DetectResult)
+        config = (percent_selfish, 1)
+        return outstr, res, config
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         self.__update_tmp_conf_matrix(gentime, False)
@@ -306,40 +303,42 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_Ex(object):
         # tf的调用次数 加1
         self._tmpCallCnt = self._tmpCallCnt + 1
 
+        i_isSelfish = int(b_id in self.list_selfish)
+
         # 加载模型；进行预测
         global ProcessCtl_dict_ex
         global q_input_ex
         global q_output_ex
-        request_element = (ProcessCtl_dict_ex["key"], x.copy())
+        request_element = (ProcessCtl_dict_ex["key"], x.copy(), i_isSelfish)
         ProcessCtl_dict_ex["key"] = ProcessCtl_dict_ex["key"] + 1
         q_input_ex.put(request_element)
 
         result_element = q_output_ex.get(True)
-        res_ind = result_element[1]
-        if len(result_element) == 3 and result_element[2] == self.MAX_Ability[1]:
-            j = multiprocessing.Process(target=process_predict_ex, args=(
+        boolBlackhole = result_element[1]
+        conf_matrix = result_element[2]
+        if result_element[3] == self.MAX_Ability[1]:
+            j = multiprocessing.Process(target=process_predict_blackhole_ex, args=(
                 self.save_model_file_path, self.MAX_Ability, q_input_ex, q_output_ex))
             j.daemon = True
             j.start()
 
         # 执行判定流程 & 结果更新过程
-        is_res_ind = res_ind > 0.5
-        isSelfish = (b_id in self.list_selfish)
-
         # 使用节点证据进行评价
-        boolBlackhole = is_res_ind
-        # 打印出来
-        if boolBlackhole == True and isSelfish == False:
-            print('[{}] a({}) predict b({}): ind_eve_predict({}), Predict:\033[1;37;41m{}, Truth:{}\033[0m'.
-                  format(self._tmpCallCnt, a_id, b_id, res_ind, boolBlackhole, isSelfish))
-        elif boolBlackhole == False and isSelfish == True:
-            print('[{}] a({}) predict b({}): ind_eve_predict({}), Predict:\033[1;32m{}, Truth:{}\033[0m'.
-                  format(self._tmpCallCnt, a_id, b_id, res_ind, boolBlackhole, isSelfish))
-        else:
+
+        # # 打印出来
+        # if boolBlackhole == True and isSelfish == False:
+        #     print('[{}] a({}) predict b({}): ind_eve_predict({}), Predict:\033[1;37;41m{}, Truth:{}\033[0m'.
+        #           format(self._tmpCallCnt, a_id, b_id, res_ind, boolBlackhole, isSelfish))
+        # elif boolBlackhole == False and isSelfish == True:
+        #     print('[{}] a({}) predict b({}): ind_eve_predict({}), Predict:\033[1;32m{}, Truth:{}\033[0m'.
+        #           format(self._tmpCallCnt, a_id, b_id, res_ind, boolBlackhole, isSelfish))
+        # else:
             # 预测正确 就不打印了
             # print('[{}] a({}) predict b({}): d_eve_predict({}), ind_eve_predict({}), {}, Truth:{}'.
             #       format(self._tmpCallCnt, a_id, b_id, res_d, res_ind, boolBlackhole, isSelfish))
-            pass
+            # pass
+
+        self.DetectResult = self.DetectResult + conf_matrix
         return boolBlackhole
 
     # 改变检测buffer的值
@@ -352,8 +351,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_Ex(object):
     def __print_conf_matrix(self):
         output_str = '{}_state\n'.format(self.scenarioname)
         output_str += 'self.list_selfish:\{}\n'.format(self.list_selfish)
-        # self.DetectResult self.DetectdEve self.DetectindEve
-        output_str += 'self.DetectResult:\n{}\nself.DetectdEve:\n{}\nself.DetectindEve:\n{}\n'.format(self.DetectResult, self.DetectdEve, self.DetectindEve)
+        output_str += 'self.DetectResult:\n{}\n'.format(self.DetectResult)
         return output_str
 
     def __print_res_whole(self, listgenpkt):
@@ -412,9 +410,10 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_Ex(object):
             avg_delay = total_delay/total_succnum
             output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
         else:
+            avg_delay = ()
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        return output_str
+        return output_str, succ_ratio, avg_delay
 
 class RoutingProphet(object):
     def __init__(self, node_id, num_of_nodes, p_init=0.75, gamma=0.98, beta=0.25):

@@ -10,6 +10,8 @@ class DTNScenario_Prophet_Blackhole(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size):
         self.scenarioname = scenarioname
+        self.list_selfish = list_selfish
+        self.num_of_nodes = num_of_nodes
         # 为各个node建立虚拟空间 <内存+router>
         self.listNodeBuffer = []
         self.listRouter = []
@@ -137,9 +139,13 @@ class DTNScenario_Prophet_Blackhole(object):
 
     def print_res(self, listgenpkt):
         output_str_whole = self.print_res_whole(listgenpkt)
-        output_str_pure = self.print_res_pure(listgenpkt)
+        output_str_pure, succ_ratio, avg_delay = self.print_res_pure(listgenpkt)
         print(output_str_whole + output_str_pure)
-        return output_str_whole + output_str_pure
+
+        outstr = output_str_whole + output_str_pure
+        res = (succ_ratio, avg_delay)
+        config = ()
+        return outstr, res, config
 
     def print_res_whole(self, listgenpkt):
         num_genpkt = len(listgenpkt)
@@ -197,9 +203,10 @@ class DTNScenario_Prophet_Blackhole(object):
             avg_delay = total_delay/total_succnum
             output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
         else:
+            avg_delay = ()
             output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        return output_str
+        return output_str, succ_ratio, avg_delay
 
 class RoutingProphet(object):
     def __init__(self, node_id, num_of_nodes, p_init=0.75, gamma=0.98, beta=0.25):

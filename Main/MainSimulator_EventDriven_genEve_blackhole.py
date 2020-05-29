@@ -6,14 +6,14 @@ import os
 import winsound
 
 from Main.DTNScenario_EP import DTNScenario_EP
+from Main.DTNScenario_SandW import DTNScenario_SandW
 from Main.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.DTNScenario_Prophet_Blackhole_toDetect import DTNScenario_Prophet_Blackhole_toDetect
 from Main.DTNScenario_Prophet_Blackhole_toDetect_Ex import DTNScenario_Prophet_Blackhole_toDetect_Ex
+from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
 from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
 from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
-from Main.DTNScenario_SandW import DTNScenario_SandW
-from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
-from Main.DTNScenario_Prophet_Blackhole_DetectandBan import DTNScenario_Prophet_Blackhole_DectectandBan
+
 # 简化处理流程 传输速率无限
 
 # 事件驱动

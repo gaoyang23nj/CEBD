@@ -6,21 +6,19 @@ import winsound
 import os
 
 from Main.DTNScenario_EP import DTNScenario_EP
-from Main.DTNScenario_Prophet import DTNScenario_Prophet
-from Main.DTNScenario_Prophet_Blackhole_DetectandBan_Ex import DTNScenario_Prophet_Blackhole_DectectandBan_Ex
-from Main.DTNScenario_Prophet_Blackhole_toDetect import DTNScenario_Prophet_Blackhole_toDetect
-from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
-from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
 from Main.DTNScenario_SandW import DTNScenario_SandW
+from Main.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
-from Main.DTNScenario_Prophet_Blackhole_DetectandBan import DTNScenario_Prophet_Blackhole_DectectandBan
+from Main.DTNScenario_Prophet_Blackhole_DetectandBan_Ex import DTNScenario_Prophet_Blackhole_DectectandBan_Ex
 # 简化处理流程 传输速率无限
 
 # 事件驱动
 class Simulator(object):
-    def __init__(self, enco_file, pktgen_freq):
+    def __init__(self, enco_file, pktgen_freq, result_file_path):
         # 相遇记录文件
         self.ENCO_HIST_FILE = enco_file
+        # 汇总 实验结果
+        self.result_file_path = result_file_path
 
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
@@ -253,15 +251,34 @@ class Simulator(object):
 
     # 打印出结果
     def print_res(self, filename, ctstring):
+        # 防止numpy转化时候换行
+        np.set_printoptions(linewidth=200)
+
+        res_file_object = open(self.result_file_path, ctstring, encoding="utf-8")
+        res_file_object.write('gen_freq, delivery ratio, avg delivery delay, graynodes ratio\n')
+
         file_object = open(filename, ctstring, encoding="utf-8")
         gen_total_num = len(self.list_genpkt)
-
         file_object.write('genfreq:{} RunningTime_Max:{} gen_num:{} nr_nodes:{}\n '.format(
             self.THR_PKT_GEN_CNT, self.MAX_RUNNING_TIMES, gen_total_num, self.MAX_NODE_NUM))
+
         for key, value in self.scenaDict.items():
-            str = value.print_res(self.list_genpkt)
-            file_object.write(str+'\n')
+            outstr, res, config = value.print_res(self.list_genpkt)
+            file_object.write(outstr+'\n')
+
+            res_file_object.write(str(self.THR_PKT_GEN_CNT)+',')
+            assert((len(res)==2) or (len(res)==4))
+            for i in range(2):
+                res_file_object.write(str(res[i])+',')
+            for i_config in config:
+                res_file_object.write(str(i_config) + ',')
+            if len(res) == 4:
+                res_file_object.write('\n' + str(res[2]) + '\n' + str(res[3]) + ',')
+            res_file_object.write('\n')
+
         file_object.close()
+        res_file_object.write('\n')
+        res_file_object.close()
 
 
 if __name__ == "__main__":
@@ -272,6 +289,10 @@ if __name__ == "__main__":
     encohistdir = '..\\EncoHistData\\test'
     filelist = os.listdir(encohistdir)
 
+    # result file path
+    short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    result_file_path = "res_blackhole_" + short_time + ".csv"
+
     # 1.真正的流程
     # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
 
@@ -281,16 +302,16 @@ if __name__ == "__main__":
     #     for genpkt_freq in genpkt_freqlist:
     #         print(filepath, genpkt_freq)
     #         t_start = time.time()
-    #         theSimulator = Simulator(filepath, genpkt_freq)
+    #         theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
     #         t_end = time.time()
     #         print('running time:{}'.format(t_end - t_start))
     #         simdurationlist.append(t_end - t_start)
 
     # or 2.简单测试的流程
 
-    genpkt_freqlist = 10 * 30
+    genpkt_freqlist = 10 * 180
     filepath = os.path.join(encohistdir, filelist[0])
-    theSimulator = Simulator(filepath, genpkt_freqlist)
+    theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
 
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())
