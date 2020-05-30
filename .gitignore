@@ -8,7 +8,7 @@ EncoHistData
 EncoHistData_Seu
 EncoHistData_Helsink
 *.pyc
-backup/*
+
 Main/collect_data_blackhole/*
 Main/collect_data_blackhole_ex/*
 Main/collect_data_grayhole/*
@@ -16,3 +16,4 @@ Main/*.tmp
 Main/anno_blackhole/anno.txt
 Main/anno_blackhole_ex/anno.txt
 Main/anno_grayhole/anno.txt
+
