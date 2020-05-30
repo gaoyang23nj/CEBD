@@ -17,3 +17,5 @@ Main/anno_blackhole/anno.txt
 Main/anno_blackhole_ex/anno.txt
 Main/anno_grayhole/anno.txt
 
+backup_routing/*
+backup_blackholescenario/*
