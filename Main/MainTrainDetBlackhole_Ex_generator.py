@@ -35,7 +35,7 @@ def direct_and_indirect(lines_train, lines_val, h5_filepath):
     print(model.summary)
 
     # 参数设置
-    log_dir = 'logs/'
+    log_dir = 'logs_black\\'
     # update_freq == 'batch'
     logging = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
     checkpoint = tf.keras.callbacks.ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
