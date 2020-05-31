@@ -15,7 +15,7 @@ Main/collect_data_blackhole_ex/*
 Main/collect_data_grayhole/*
 
 Main/*.tmp
-Main/logs
+
 
 backup_routing/*
 backup_blackholescenario/*
