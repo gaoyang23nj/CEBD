@@ -8,9 +8,11 @@ import winsound
 from Main.DTNScenario_EP import DTNScenario_EP
 from Main.DTNScenario_SandW import DTNScenario_SandW
 from Main.DTNScenario_Prophet import DTNScenario_Prophet
-from Main.DTNScenario_Prophet_Blackhole_toDetect import DTNScenario_Prophet_Blackhole_toDetect
-from Main.DTNScenario_Prophet_Blackhole_toDetect_Ex import DTNScenario_Prophet_Blackhole_toDetect_Ex
+
 from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
+from Main.DTNScenario_Prophet_Blackhole_toDetect_time import DTNScenario_Prophet_Blackhole_toDetect_time
+from Main.DTNScenario_Prophet_Blackhole_toDetect_Ex import DTNScenario_Prophet_Blackhole_toDetect_Ex
+
 from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
 from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
 
@@ -185,17 +187,24 @@ class Simulator(object):
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
 
-            index += 1
-            tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
-                                                                 20000, self.MAX_RUNNING_TIMES, True)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
+            # index += 1
+            # tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
+            #                                                      20000, self.MAX_RUNNING_TIMES, True)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
-            index += 1
-            tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_ex_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect_Ex(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
-                                                                 20000, self.MAX_RUNNING_TIMES, True)
+            # 1time + 3*99 301属性
+            # index += 1
+            # tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_ex_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_toDetect_Ex(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
+            #                                                      20000, self.MAX_RUNNING_TIMES, True)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
+            # 1*9 + 98*9 = 891个属性// 融合
+            index += 1
+            tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_time_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect_time(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
+                                                                 20000, self.MAX_RUNNING_TIMES, True)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())
@@ -214,10 +223,9 @@ class Simulator(object):
         file_object.write('genfreq:{} RunningTime_Max:{} gen_num:{} nr_nodes:{}\n '.format(
             self.THR_PKT_GEN_CNT, self.MAX_RUNNING_TIMES, gen_total_num, self.MAX_NODE_NUM))
         for key, value in self.scenaDict.items():
-            str = value.print_res(self.list_genpkt)
-            file_object.write(str+'\n')
+            outstr, res, config = value.print_res(self.list_genpkt)
+            file_object.write(outstr + '\n')
         file_object.close()
-
 
 if __name__ == "__main__":
     t1 = datetime.datetime.now()
