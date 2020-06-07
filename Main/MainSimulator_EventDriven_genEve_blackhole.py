@@ -238,9 +238,14 @@ if __name__ == "__main__":
     # 1.真正的流程
     # 针对5个相遇记录 和 6个生成速率 分别进行实验（生成blackhole证据的实验）
 
-    genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
-    for filename in filelist:
-        filepath = os.path.join(encohistdir, filename)
+    # genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
+    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+    # for i_filename in range(len(filelist)):
+    # 从指定为位置开始保存
+    # i_filename = 0
+    i_filename = 3
+    while i_filename < len(filelist):
+        filepath = os.path.join(encohistdir, filelist[i_filename])
         for genpkt_freq in genpkt_freqlist:
             print(filepath, genpkt_freq)
             t_start = time.time()
@@ -248,6 +253,7 @@ if __name__ == "__main__":
             t_end = time.time()
             print('running time:{}'.format(t_end - t_start))
             simdurationlist.append(t_end - t_start)
+        i_filename = i_filename + 1
 
     # or 2.简单测试的流程
 

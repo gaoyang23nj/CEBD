@@ -19,6 +19,9 @@ class DTNNodeBuffer_Detect(object):
         # a发送的所有pkt中 pkt的dst是b 的 pkt个数;  self.send_dst_values[i]表示a发送的报文中dst为i的pkt个数
         self.send_dst_values = np.zeros(num_of_nodes, dtype='int')
 
+        #a发送给b的pkt中 pkt的src也是a的pkt个数;  self.receive_from_and_pktsrc[i]表示a发送的报文中src也是a的pkt个数
+        self.receive_from_and_src = np.zeros(num_of_nodes, dtype='int')
+
         # a发送给所有节点 的pkt总数
         self.send_all = np.zeros(1, dtype='int')
         # a从所有节点接收 的pkt总数
@@ -39,6 +42,9 @@ class DTNNodeBuffer_Detect(object):
         self.ind_send_src_values = np.zeros((num_of_nodes, num_of_nodes), dtype='int')
         # 行号i 代表 证据来自的节点i;   列号j 代表 所评价的节点j;  self.in_receive_src_values[i,j] 表示  i发送的所有pkt中 pkt的dst是b 的pkt个数
         self.ind_send_dst_values = np.zeros((num_of_nodes, num_of_nodes), dtype='int')
+
+        #行号i 代表 证据来自的节点i;   列号j 代表 所评价的节点j;  self.receive_from_and_pktsrc[i,j]表示i从j收到的报文中, pkt src也是a的pkt个数
+        self.ind_receive_from_and_src = np.zeros((num_of_nodes, num_of_nodes), dtype='int')
 
         # 行号i 代表 证据来自的节点i; i所给出的证据 更新的时间
         self.ind_eve_updatetime = np.zeros(num_of_nodes, dtype='int')
@@ -81,7 +87,11 @@ class DTNNodeBuffer_Detect(object):
     def receive_from_pkt_dst(self, dst_id):
         self.receive_dst_values[dst_id] = self.receive_dst_values[dst_id] + 1
 
-    def renewindeve(self, runningtime, b_id, b_send, b_receive, b_send_all, b_receive_all, b_receive_src, b_receive_dst, b_send_src, b_send_dst):
+    def receive_from_and_pktsrc(self, a_id, pkt_src_id):
+        assert a_id == pkt_src_id
+        self.receive_from_and_src[a_id] =  self.receive_from_and_src[a_id] + 1
+
+    def renewindeve(self, runningtime, b_id, b_send, b_receive, b_send_all, b_receive_all, b_receive_src, b_receive_dst, b_send_src, b_send_dst, b_receive_from_and_src):
         # 现在相遇时刻 必然晚于 之前相遇时刻 assert一下
         assert (runningtime >= self.ind_eve_updatetime[b_id])
 
@@ -97,6 +107,8 @@ class DTNNodeBuffer_Detect(object):
         self.ind_eve_updatetime[b_id] = runningtime
         self.ind_send_all[b_id] = b_send_all
         self.ind_receive_all[b_id] = b_receive_all
+
+        self.ind_receive_from_and_src[b_id] = b_receive_from_and_src
 
 
     # =============================================================================================================
@@ -123,6 +135,9 @@ class DTNNodeBuffer_Detect(object):
 
     def get_receive_all(self):
         return self.receive_all.copy()
+
+    def get_receive_from_and_pktsrc(self):
+        return self.receive_from_and_src.copy()
 
     # =============================================================================================================
     def get_ind_send_values(self):
@@ -151,3 +166,6 @@ class DTNNodeBuffer_Detect(object):
 
     def get_ind_receive_all(self):
         return self.ind_receive_all.copy()
+
+    def get_ind_receive_from_and_pktsrc(self):
+        return self.ind_receive_from_and_src.copy()

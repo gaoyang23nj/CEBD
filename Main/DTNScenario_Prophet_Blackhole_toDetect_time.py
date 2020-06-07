@@ -37,13 +37,15 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         # 实验所产生的证据 保存路径
-        self.eve_dir = ".//collect_data_blackhole_time//" + self.scenarioname
+        self.eve_dir = "E://collect_data_blackhole_time//" + self.scenarioname
         if os.path.exists(self.eve_dir):
             shutil.rmtree(self.eve_dir)
         os.makedirs(self.eve_dir)
         # 证据文件 1*(3+1)+99*(3+1); 该矩阵不断更新，直到写入成为文件为止;
         # 矩阵属性可以考虑更改
-        self.matrix_x = np.zeros((0, 99*9))
+        self.num_of_att = 10
+        # 99*10个值
+        self.matrix_x = np.zeros((0, (self.num_of_nodes-1)*self.num_of_att))
         self.matrix_y = np.zeros((0, 1))
         # 目前矩阵里有效值 的 个数
         self.matrix_index = 0
@@ -91,7 +93,7 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         a_receive_dst = self.listNodeBufferDetect[a_id].get_receive_dst_values()
         a_send_src = self.listNodeBufferDetect[a_id].get_send_src_values()
         a_send_dst = self.listNodeBufferDetect[a_id].get_send_dst_values()
-
+        a_receive_from_and_src = self.listNodeBufferDetect[a_id].get_receive_from_and_pktsrc()
 
         b_send = self.listNodeBufferDetect[b_id].get_send_values()
         b_receive = self.listNodeBufferDetect[b_id].get_receive_values()
@@ -101,9 +103,10 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         b_receive_dst = self.listNodeBufferDetect[b_id].get_receive_dst_values()
         b_send_src = self.listNodeBufferDetect[b_id].get_send_src_values()
         b_send_dst = self.listNodeBufferDetect[b_id].get_send_dst_values()
+        b_receive_from_and_src = self.listNodeBufferDetect[b_id].get_receive_from_and_pktsrc()
 
-        self.listNodeBufferDetect[b_id].renewindeve(runningtime, a_id, a_send, a_receive, a_send_all, a_receive_all, a_receive_src, a_receive_dst, a_send_src, a_send_dst)
-        self.listNodeBufferDetect[a_id].renewindeve(runningtime, b_id, b_send, b_receive, b_send_all, b_receive_all, b_receive_src, b_receive_dst, b_send_src, b_send_dst)
+        self.listNodeBufferDetect[b_id].renewindeve(runningtime, a_id, a_send, a_receive, a_send_all, a_receive_all, a_receive_src, a_receive_dst, a_send_src, a_send_dst, a_receive_from_and_src)
+        self.listNodeBufferDetect[a_id].renewindeve(runningtime, b_id, b_send, b_receive, b_send_all, b_receive_all, b_receive_src, b_receive_dst, b_send_src, b_send_dst, b_receive_from_and_src)
         # 进行标签值 和 属性值 的保存; 以便于offline训练model
         self.__save_eve_res(self.eve_dir, a_id, b_id, runningtime)
         self.__save_eve_res(self.eve_dir, b_id, a_id, runningtime)
@@ -224,6 +227,9 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         self.listNodeBufferDetect[b_id].receive_from_pkt_src(pkt_src_id)
         self.listNodeBufferDetect[b_id].receive_from_pkt_dst(pkt_dst_id)
 
+        if a_id == pkt_src_id:
+            self.listNodeBufferDetect[b_id].receive_from_and_pktsrc(a_id, pkt_src_id)
+
     # 保存所有的证据 因为self.matrix_x里可能仍有剩余
     def __save_eve_res_final(self):
         assert self.matrix_index == self.matrix_x.shape[0]
@@ -231,8 +237,8 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
         filename = '' + short_time + '.npz'
         filename = os.path.join(self.eve_dir, filename)
-        np.savez(filename, y=self.matrix_y, x=self.matrix_x, length = self.matrix_index)
-        self.matrix_x = np.zeros((0, 99 * 9))
+        np.savez(filename, y=self.matrix_y, x=self.matrix_x, length = self.matrix_index, num_of_att = self.num_of_att)
+        self.matrix_x = np.zeros((0, (self.num_of_nodes-1)*self.num_of_att))
         self.matrix_y = np.zeros((0, 1))
         self.matrix_index = 0
 
@@ -244,7 +250,7 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         # a和b相遇 来自a的是直接证据
         # i提供给a一些证据 作为间接证据
 
-        d_attrs = np.zeros((1, 1*9), dtype='int')
+        d_attrs = np.zeros((1, 1*self.num_of_att), dtype='int')
         d_attrs[0][0] = runningtime
         d_attrs[0][1] = ((theBufferDetect.get_send_values())[b_id]).copy()
         d_attrs[0][2] = ((theBufferDetect.get_receive_values())[b_id]).copy()
@@ -254,12 +260,13 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         d_attrs[0][6] = ((theBufferDetect.get_send_dst_values())[b_id]).copy()
         d_attrs[0][7] = theBufferDetect.get_send_all().copy()
         d_attrs[0][8] = theBufferDetect.get_receive_all().copy()
+        d_attrs[0][9] = ((theBufferDetect.get_receive_from_and_pktsrc())[b_id]).copy()
 
         mask = [True]* (self.num_of_nodes)
         mask[a_id] = False
         mask[b_id] = False
         n = self.num_of_nodes-2
-        ind_attrs = np.zeros((1, n*9), dtype='int')
+        ind_attrs = np.zeros((1, n*self.num_of_att), dtype='int')
         # 来自各个节点评价b_id; (1)作为间接证据 除去a_id的观察 (2)去除嫌疑 去掉b_id的观察
         tmp_send = (theBufferDetect.get_ind_send_values())[:, b_id].transpose().copy()
         tmp_receive = (theBufferDetect.get_ind_receive_values())[:, b_id].transpose().copy()
@@ -271,6 +278,7 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         tmp_time = (theBufferDetect.get_ind_time())[b_id].transpose().copy()
         tmp_send_all = (theBufferDetect.get_ind_send_all())[b_id].transpose().copy()
         tmp_receive_all = (theBufferDetect.get_ind_receive_all())[b_id].transpose().copy()
+        tmp_receive_from_and_pktsrc = (theBufferDetect.get_ind_receive_from_and_pktsrc())[:, b_id].transpose().copy()
 
         ind_attrs[0][0: n] = tmp_time
         ind_attrs[0][n: 2*n] = tmp_send[mask]
@@ -282,6 +290,7 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
 
         ind_attrs[0][7*n: 8*n] = tmp_send_all
         ind_attrs[0][8*n: 9*n] = tmp_receive_all
+        ind_attrs[0][9*n: 10*n] = tmp_receive_from_and_pktsrc[mask]
 
         label = np.zeros((1, 1), dtype='int')
         if b_id in self.list_selfish:
@@ -297,8 +306,8 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
             short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
             filename = '' + short_time + '.npz'
             filename = os.path.join(self.eve_dir, filename)
-            np.savez(filename, y=self.matrix_y, x=self.matrix_x, length=self.matrix_index)
-            self.matrix_x = np.zeros((0, 99*9))
+            np.savez(filename, y=self.matrix_y, x=self.matrix_x, length=self.matrix_index, num_of_att = self.num_of_att)
+            self.matrix_x = np.zeros((0, (self.num_of_nodes - 1) * self.num_of_att))
             self.matrix_y = np.zeros((0, 1))
             self.matrix_index = 0
         return
