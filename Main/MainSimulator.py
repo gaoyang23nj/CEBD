@@ -2,7 +2,7 @@ import numpy as np
 import datetime
 
 
-from Main.DTNScenario_EP import DTNScenario_EP
+from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
 # 简化处理流程 传输速率无限
 
 class Simulator(object):

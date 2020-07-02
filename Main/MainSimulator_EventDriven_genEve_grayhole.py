@@ -5,11 +5,11 @@ import sys
 import os
 import winsound
 
-from Main.DTNScenario_EP import DTNScenario_EP
-from Main.DTNScenario_SandW import DTNScenario_SandW
-from Main.DTNScenario_Prophet import DTNScenario_Prophet
-from Main.DTNScenario_Prophet_Grayhole import DTNScenario_Prophet_Grayhole
-from Main.DTNScenario_Prophet_Grayhole_toDetect import DTNScenario_Prophet_Grayhole_toDetect
+from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
+from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
+from Main.Scenario.DTNScenario_Prophet import DTNScenario_Prophet
+from Main.Scenario.DTNScenario_Prophet_Grayhole import DTNScenario_Prophet_Grayhole
+from Main.Scenario.DTNScenario_Prophet_Grayhole_toDetect import DTNScenario_Prophet_Grayhole_toDetect
 
 
 # 简化处理流程 传输速率无限

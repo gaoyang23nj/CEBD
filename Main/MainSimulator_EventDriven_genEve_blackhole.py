@@ -5,16 +5,13 @@ import sys
 import os
 import winsound
 
-from Main.DTNScenario_EP import DTNScenario_EP
-from Main.DTNScenario_SandW import DTNScenario_SandW
-from Main.DTNScenario_Prophet import DTNScenario_Prophet
+from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
+from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
+from Main.Scenario.DTNScenario_Prophet import DTNScenario_Prophet
 
-from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
-from Main.DTNScenario_Prophet_Blackhole_toDetect_time import DTNScenario_Prophet_Blackhole_toDetect_time
-from Main.DTNScenario_Prophet_Blackhole_toDetect_Ex import DTNScenario_Prophet_Blackhole_toDetect_Ex
+from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
+from Main.Scenario.DTNScenario_Prophet_Blackhole_toDetect_time import DTNScenario_Prophet_Blackhole_toDetect_time
 
-from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
-from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
 
 # 简化处理流程 传输速率无限
 
