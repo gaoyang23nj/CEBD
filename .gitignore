@@ -1,4 +1,3 @@
-
 *.xml
 .idea
 .idea/workspace.xml
@@ -9,10 +8,6 @@ EncoHistGenerator_Seu/ComplementMovementRecord
 EncoHistData
 EncoHistData_Seu
 EncoHistData_Helsink
-
-
-Main/collect_data_blackhole_ex/*
-Main/collect_data_grayhole/*
 
 Main/*.tmp
 Main/logs_black
@@ -28,10 +23,14 @@ Main/anno_blackhole_time/anno.txt
 Main/ML_blackhole_ex/model.h5
 Main/ML_grayhole/model.h5
 
-Main/collect_data_blackhole_time/*
-
 Main/logs_black_time_direct/*
 Main/logs_black_time_indirect/*
 Main/logs_black_combine/*
 
 Main/ML_blackhole_time/*
+
+
+Main/collect_data_grayhole/*
+Main/collect_data_blackhole_time/*
+*.npz
+Main/collect_data_blackhole_time/*.npz
