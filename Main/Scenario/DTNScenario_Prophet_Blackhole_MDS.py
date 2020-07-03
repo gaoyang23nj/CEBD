@@ -18,9 +18,138 @@ NUM_of_DIRECT_INPUTS = 7
 NUM_of_INDIRECT_INPUTS = 8
 MAX_RUNNING_TIMES = 864000
 
-# 使用训练好的model 在消息投递时候 增加对对端节点的判定
+# *** 未完成
+# 应该加入 黑名单LBL 等到时候超时才放出
+# 0值ER 可能会使TR虚高
+class DTNNodeBuffer_Detect_MDS(object):
+    def __init__(self, node_id, num_of_nodes):
+        self.node_id = node_id
+        self.w_max = 100
+        self.tr_init = 0.5
+        self.tr_reduced_init = 0.4
+        self.TR_list = np.ones(num_of_nodes, dtype='float')*self.tr_init
+        # 对于Prophet来说
+        # TR更新用的变化值
+        self.tr_gamma = 0.04
+        self.tr_rho = 0.09
+        self.tr_lambda = 0.06
+        # failstep 判断阈值
+        self.Nth_b = 0.8
+        self.Nth_a = 4
+        self.NRth = 0.7
+        # TR阈值
+        self.TRth_evil = 0.3
+        self.TRth_friend = 0.8
+        # 保存的信息, ER等
+        self.ER_list = []
+        # 临时ER 在传输报文过程前启用, 传输结束后加入到ER_list,并重置
+        self.tmp_ER = {"partner_id":-1, "send_to_partner":0, "recv_from_partner":0, "gensend_to_partner":0, "running":0}
+        # 超时时间1个小时
+        self.expriation = 3600*10
+        self.LBL_list = []
+        self.LBL_resume_time_list = []
+
+    def get_ER_list(self):
+        return self.ER_list.copy()
+
+    def detect_node_j(self, j_id, j_ER_list, runningtime):
+        j_is_blackhole = False
+        # 检查LBL
+        if j_id in self.LBL_list:
+            j_is_blackhole = True
+            # 如果j在黑名单LBL上 则查看j的恢复时刻
+            index_j_id = self.LBL_list.index(j_id)
+            # 规定的恢复时刻已经到了
+            if self.LBL_resume_time_list[index_j_id] <= runningtime:
+                j_is_blackhole = False
+                self.LBL_list.pop(index_j_id)
+                self.LBL_resume_time_list.pop(index_j_id)
+            return j_is_blackhole
+        # 开始检测
+        fail_step = 0
+        N_send = 0
+        N_recv = 0
+        N_jsend = 0
+        for one_ER in j_ER_list:
+            N_send = N_send + one_ER["send_to_partner"]
+            N_recv = N_recv + one_ER["recv_from_partner"]
+            N_jsend = N_jsend + one_ER["gensend_to_partner"]
+        # 第5步
+        # 计算 theta
+        if N_recv == 0:
+            N_recv = 1
+        theta = (N_send + 0.0) / N_recv
+        Nth = self.__get_Nth(len(j_ER_list))
+        if theta < Nth:
+            fail_step = fail_step + 1
+        # 第6步
+        psi = (N_jsend + 0.0) / N_send
+        if psi >= self.NRth:
+            fail_step = fail_step + 1
+        # 更新 TR值
+        if fail_step == 0:
+            self.TR_list[j_id] = self.TR_list[j_id] + self.tr_lambda
+        elif fail_step == 1:
+            self.TR_list[j_id] = self.TR_list[j_id] - self.tr_gamma
+        elif fail_step == 2:
+            self.TR_list[j_id] = self.TR_list[j_id] - self.tr_rho
+        else:
+            assert 0 == 0
+        # 返回判断结果
+        if self.TR_list[j_id] < self.TRth_evil:
+            # 应该加入 黑名单LBL 等到时候超时才放出
+            j_is_blackhole = True
+            # 不可有重复
+            assert not j_id in self.LBL_list
+            self.LBL_list.append(j_id)
+            self.LBL_resume_time_list.append(runningtime + self.expriation)
+            self.TR_list[j_id] = self.tr_reduced_init
+        elif self.TR_list[j_id] < self.TRth_evil:
+            j_is_blackhole = False
+
+        return j_is_blackhole
+
+    def __get_Nth(self, len_ER_list):
+        w = len_ER_list
+        if w == 0:
+            w = 1
+        Nth = self.Nth_b - (self.Nth_a / w)
+        return Nth
+
+    # begin a new encounter with a node; input the encountered node's id
+    def begin_new_encounter(self, partner_id):
+        self.tmp_ER["partner_id"] = partner_id
+        self.tmp_ER["running"] = 1
+
+    # 结束目前的encounter
+    def end_new_encounter(self, partner_id):
+        assert self.tmp_ER["partner_id"] == partner_id
+        new_ER = (self.tmp_ER["partner_id"], self.tmp_ER["send_to_partner"], self.tmp_ER["recv_from_partner"], self.tmp_ER["gensend_to_partner"])
+        # 窗口大小限制
+        if len(self.ER_list) <= self.w_max:
+            self.ER_list.append(new_ER)
+        else:
+            self.ER_list.pop(0)
+            self.ER_list.append(new_ER)
+        self.tmp_ER["partner_id"] = -1
+        self.tmp_ER["send_to_partner"] = 0
+        self.tmp_ER["recv_from_partner"] = 0
+        self.tmp_ER["gensend_to_partner"] = 0
+        self.tmp_ER["running"] = 0
+
+    def send_one_pkt_to_partner(self, partner_id, pkt_src):
+        assert self.tmp_ER["partner_id"] == partner_id
+        self.tmp_ER["send_to_partner"] = self.tmp_ER["send_to_partner"] + 1
+        if pkt_src == self.node_id:
+            self.tmp_ER["gensend_to_partner"] = self.tmp_ER["gensend_to_partner"] + 1
+
+    def receive_one_pkt_from_partner(self, partner_id):
+        assert self.tmp_ER["partner_id"] == partner_id
+        self.tmp_ER["recv_from_partner"] = self.tmp_ER["recv_from_partner"] + 1
+
+
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_SDBG(object):
+class DTNScenario_Prophet_Blackhole_MDS(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime):
         # tf的调用次数
@@ -35,7 +164,7 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         self.index_time_block = 1
         self.MAX_RUNNING_TIMES = total_runningtime
         # 为各个node建立检测用的 证据存储空间 BufferDetect
-        self.listNodeBufferDetect = []
+        self.listNodeBufferDetect_MDS = []
         for node_id in range(num_of_nodes):
             if node_id in list_selfish:
                 tmpRouter = RoutingBlackhole(node_id, num_of_nodes)
@@ -44,8 +173,9 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
             self.listRouter.append(tmpRouter)
             tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
-            tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
-            self.listNodeBufferDetect.append(tmpBuffer_Detect)
+            # 基于ER的检测系统
+            tmpBuffer_Detect  = DTNNodeBuffer_Detect_MDS(node_id, num_of_nodes)
+            self.listNodeBufferDetect_MDS.append(tmpBuffer_Detect)
 
         # 保存真正使用的结果: self.DetectResult[0,1] False_Positive ; self.DetectResult[1,0] False_Negative
         self.DetectResult = np.zeros((2,2),dtype='int')
@@ -97,35 +227,28 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
 
-    # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id
+    # routing接到指令aid和bid相遇，开始进行消息交换a_id <-> b_id
     def swappkt(self, runningtime, a_id, b_id):
         # 交换直接评价信息，更新间接评价
-        a_send = self.listNodeBufferDetect[a_id].get_send_values()
-        a_receive = self.listNodeBufferDetect[a_id].get_receive_values()
-        a_send_all = self.listNodeBufferDetect[a_id].get_send_all()
-        a_receive_all = self.listNodeBufferDetect[a_id].get_receive_all()
-        a_receive_src = self.listNodeBufferDetect[a_id].get_receive_src_values()
-        a_receive_dst = self.listNodeBufferDetect[a_id].get_receive_dst_values()
-        a_send_src = self.listNodeBufferDetect[a_id].get_send_src_values()
-        a_send_dst = self.listNodeBufferDetect[a_id].get_send_dst_values()
-        a_receive_from_and_src = self.listNodeBufferDetect[a_id].get_receive_from_and_pktsrc()
+        bool_BH_a_to_b = self.__detect_blackhole(a_id, b_id, runningtime)
+        bool_BH_b_to_a = self.__detect_blackhole(b_id, a_id, runningtime)
 
-        b_send = self.listNodeBufferDetect[b_id].get_send_values()
-        b_receive = self.listNodeBufferDetect[b_id].get_receive_values()
-        b_send_all = self.listNodeBufferDetect[b_id].get_send_all()
-        b_receive_all = self.listNodeBufferDetect[b_id].get_receive_all()
-        b_receive_src = self.listNodeBufferDetect[b_id].get_receive_src_values()
-        b_receive_dst = self.listNodeBufferDetect[b_id].get_receive_dst_values()
-        b_send_src = self.listNodeBufferDetect[b_id].get_send_src_values()
-        b_send_dst = self.listNodeBufferDetect[b_id].get_send_dst_values()
-        b_receive_from_and_src = self.listNodeBufferDetect[b_id].get_receive_from_and_pktsrc()
 
-        self.listNodeBufferDetect[b_id].renewindeve(runningtime, a_id, a_send, a_receive, a_send_all, a_receive_all,
-                                                    a_receive_src, a_receive_dst, a_send_src, a_send_dst,
-                                                    a_receive_from_and_src)
-        self.listNodeBufferDetect[a_id].renewindeve(runningtime, b_id, b_send, b_receive, b_send_all, b_receive_all,
-                                                    b_receive_src, b_receive_dst, b_send_src, b_send_dst,
-                                                    b_receive_from_and_src)
+        # 任何一方认为对方是blackhole, 就会拒绝报文交换; 如果 ER 0值交换 会产生提高TR
+        if bool_BH_a_to_b or bool_BH_a_to_b:
+            # theBufferDetect_a = self.listNodeBufferDetect_MDS[a_id]
+            # theBufferDetect_a.begin_new_encounter(b_id)
+            # theBufferDetect_b = self.listNodeBufferDetect_MDS[b_id]
+            # theBufferDetect_b.begin_new_encounter(a_id)
+            # theBufferDetect_a.end_new_encounter(b_id)
+            # theBufferDetect_b.end_new_encounter(a_id)
+            return
+
+        # 通知 DTNNodeBuffer_Detect_MDS, 建立新的ER; a和b各自单独执行
+        theBufferDetect_a = self.listNodeBufferDetect_MDS[a_id]
+        theBufferDetect_a.begin_new_encounter(b_id)
+        theBufferDetect_b = self.listNodeBufferDetect_MDS[b_id]
+        theBufferDetect_b.begin_new_encounter(a_id)
 
         # ================== 控制信息 交换==========================
         # 对称操作!!!
@@ -151,6 +274,10 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
             # ================== 报文 交换==========================
             self.__sendpkt(runningtime, a_id, b_id)
             self.__sendpkt(runningtime, b_id, a_id)
+
+        # 通知 DTNNodeBuffer_Detect_MDS, 把这个新的ER归档
+        theBufferDetect_a.end_new_encounter(b_id)
+        theBufferDetect_b.end_new_encounter(a_id)
 
     # 报文发送 a_id -> b_id
     def __sendpkt_toblackhole(self, runningtime, a_id, b_id):
@@ -191,10 +318,11 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 利用model进行判定 b_id是否是blackhole
-                bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
+                # bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
-                if not bool_BH:
-                    self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                # if not bool_BH:
+                #     self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
                 # blackhole b_id立刻发动
                 self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
@@ -238,81 +366,39 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 利用model进行判定 b_id是否是blackhole
-                bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
+                # bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
-                if not bool_BH:
-                    self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                # if not bool_BH:
+                #     self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
 
+    # a节点检测b节点
     def __detect_blackhole(self, a_id, b_id, runningtime):
-        theBufferDetect = self.listNodeBufferDetect[a_id]
-        # a和b相遇 来自a的是直接证据
-        # i提供给a一些证据 作为间接证据
+        theBufferDetect_a = self.listNodeBufferDetect_MDS[a_id]
 
-        d_attrs = np.zeros((1, 1 * self.num_of_att), dtype='int')
-        d_attrs[0][0] = runningtime
-        d_attrs[0][1] = ((theBufferDetect.get_send_values())[b_id]).copy()
-        d_attrs[0][2] = ((theBufferDetect.get_receive_values())[b_id]).copy()
-        d_attrs[0][3] = ((theBufferDetect.get_receive_src_values())[b_id]).copy()
-        d_attrs[0][4] = ((theBufferDetect.get_receive_dst_values())[b_id]).copy()
-        d_attrs[0][5] = ((theBufferDetect.get_send_src_values())[b_id]).copy()
-        d_attrs[0][6] = ((theBufferDetect.get_send_dst_values())[b_id]).copy()
-        d_attrs[0][7] = theBufferDetect.get_send_all().copy()
-        d_attrs[0][8] = theBufferDetect.get_receive_all().copy()
-        d_attrs[0][9] = ((theBufferDetect.get_receive_from_and_pktsrc())[b_id]).copy()
+        theBufferDetect_b = self.listNodeBufferDetect_MDS[b_id]
+        ER_list = theBufferDetect_b.get_ER_list()
 
-        mask = [True] * (self.num_of_nodes)
-        mask[a_id] = False
-        mask[b_id] = False
-        n = self.num_of_nodes - 2
-        ind_attrs = np.zeros((1, n * self.num_of_att), dtype='int')
-        # 来自各个节点评价b_id; (1)作为间接证据 除去a_id的观察 (2)去除嫌疑 去掉b_id的观察
-        tmp_send = (theBufferDetect.get_ind_send_values())[:, b_id].transpose().copy()
-        tmp_receive = (theBufferDetect.get_ind_receive_values())[:, b_id].transpose().copy()
-        tmp_receive_src = (theBufferDetect.get_ind_receive_src_values())[:, b_id].transpose().copy()
-        tmp_receive_dst = (theBufferDetect.get_ind_receive_dst_values())[:, b_id].transpose().copy()
-        tmp_send_src = (theBufferDetect.get_ind_send_src_values())[:, b_id].transpose().copy()
-        tmp_send_dst = (theBufferDetect.get_ind_send_dst_values())[:, b_id].transpose().copy()
+        bool_BH = theBufferDetect_a.detect_node_j(b_id, ER_list, runningtime)
 
-        tmp_time = (theBufferDetect.get_ind_time())[b_id].transpose().copy()
-        tmp_send_all = (theBufferDetect.get_ind_send_all())[b_id].transpose().copy()
-        tmp_receive_all = (theBufferDetect.get_ind_receive_all())[b_id].transpose().copy()
-        tmp_receive_from_and_pktsrc = (theBufferDetect.get_ind_receive_from_and_pktsrc())[:, b_id].transpose().copy()
-
-        ind_attrs[0][0: n] = tmp_time
-        ind_attrs[0][n: 2 * n] = tmp_send[mask]
-        ind_attrs[0][2 * n: 3 * n] = tmp_receive[mask]
-        ind_attrs[0][3 * n: 4 * n] = tmp_receive_src[mask]
-        ind_attrs[0][4 * n: 5 * n] = tmp_receive_dst[mask]
-        ind_attrs[0][5 * n: 6 * n] = tmp_send_src[mask]
-        ind_attrs[0][6 * n: 7 * n] = tmp_send_dst[mask]
-
-        ind_attrs[0][7 * n: 8 * n] = tmp_send_all
-        ind_attrs[0][8 * n: 9 * n] = tmp_receive_all
-        ind_attrs[0][9 * n: 10 * n] = tmp_receive_from_and_pktsrc[mask]
-
-        new_x = np.hstack((d_attrs, ind_attrs))
-        # tf的调用次数 加1
-        self._tmpCallCnt = self._tmpCallCnt + 1
-
+        y_predict = np.zeros((1), dtype='int')
+        y_predict[0] = int(bool_BH)
         i_isSelfish = int(b_id in self.list_selfish)
-
+        y_final = np.zeros((1), dtype='int')
+        y_final[0] = i_isSelfish
+        conf_matrix = np.array(tf.math.confusion_matrix(y_final, y_predict, num_classes=2))
 
         self.DetectResult = self.DetectResult + conf_matrix
-        return boolBlackhole
+        return bool_BH
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, pkt_src_id, pkt_dst_id):
-        self.listNodeBufferDetect[a_id].send_to_b(b_id)
-        self.listNodeBufferDetect[a_id].send_to_pkt_src(pkt_src_id)
-        self.listNodeBufferDetect[a_id].send_to_pkt_dst(pkt_dst_id)
-
-        self.listNodeBufferDetect[b_id].receive_from_a(a_id)
-        self.listNodeBufferDetect[b_id].receive_from_pkt_src(pkt_src_id)
-        self.listNodeBufferDetect[b_id].receive_from_pkt_dst(pkt_dst_id)
-
-        if a_id == pkt_src_id:
-            self.listNodeBufferDetect[b_id].receive_from_and_pktsrc(a_id, pkt_src_id)
+        # 有一个pkt从a_id 发送给 b_id; a 和 b 的MDS中 临时ER要响应的增加
+        theBufferDetect_a = self.listNodeBufferDetect_MDS[a_id]
+        theBufferDetect_a.send_one_pkt_to_partner(b_id, pkt_src_id)
+        theBufferDetect_b = self.listNodeBufferDetect_MDS[b_id]
+        theBufferDetect_b.receive_one_pkt_from_partner(a_id)
 
     def __print_conf_matrix(self):
         output_str = '{}_state\n'.format(self.scenarioname)
