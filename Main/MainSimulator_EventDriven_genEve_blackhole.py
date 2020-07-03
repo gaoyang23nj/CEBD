@@ -5,14 +5,13 @@ import sys
 import os
 import winsound
 
-from Main.DTNScenario_EP import DTNScenario_EP
-from Main.DTNScenario_SandW import DTNScenario_SandW
-from Main.DTNScenario_Prophet import DTNScenario_Prophet
-from Main.DTNScenario_Prophet_Blackhole_toDetect import DTNScenario_Prophet_Blackhole_toDetect
-from Main.DTNScenario_Prophet_Blackhole_toDetect_Ex import DTNScenario_Prophet_Blackhole_toDetect_Ex
-from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
-from Main.DTNScenario_Prophet_Spam import DTNScenario_Prophet_Spam
-from Main.DTNScenario_Prophet_SpamE import DTNScenario_Prophet_SpamE
+from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
+from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
+from Main.Scenario.DTNScenario_Prophet import DTNScenario_Prophet
+
+from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
+from Main.Scenario.DTNScenario_Prophet_Blackhole_toDetect_time import DTNScenario_Prophet_Blackhole_toDetect_time
+
 
 # 简化处理流程 传输速率无限
 
@@ -185,17 +184,24 @@ class Simulator(object):
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
 
-            index += 1
-            tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
-                                                                 20000, self.MAX_RUNNING_TIMES, True)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
+            # index += 1
+            # tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_toDetect(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
+            #                                                      20000, self.MAX_RUNNING_TIMES, True)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
-            index += 1
-            tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_ex_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect_Ex(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
-                                                                 20000, self.MAX_RUNNING_TIMES, True)
+            # 1time + 3*99 301属性
+            # index += 1
+            # tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_ex_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_toDetect_Ex(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
+            #                                                      20000, self.MAX_RUNNING_TIMES, True)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
+            # 1*9 + 98*9 = 891个属性// 融合
+            index += 1
+            tmp_senario_name = 'traindata_' + str(self.ENCO_ID) + '_' + str(self.THR_PKT_GEN_CNT) + '_' + 'scenario' + str(index)+ '_blackhole_todetect_time_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_toDetect_time(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM,
+                                                                 20000, self.MAX_RUNNING_TIMES, True)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())
@@ -214,10 +220,9 @@ class Simulator(object):
         file_object.write('genfreq:{} RunningTime_Max:{} gen_num:{} nr_nodes:{}\n '.format(
             self.THR_PKT_GEN_CNT, self.MAX_RUNNING_TIMES, gen_total_num, self.MAX_NODE_NUM))
         for key, value in self.scenaDict.items():
-            str = value.print_res(self.list_genpkt)
-            file_object.write(str+'\n')
+            outstr, res, config = value.print_res(self.list_genpkt)
+            file_object.write(outstr + '\n')
         file_object.close()
-
 
 if __name__ == "__main__":
     t1 = datetime.datetime.now()
@@ -230,9 +235,14 @@ if __name__ == "__main__":
     # 1.真正的流程
     # 针对5个相遇记录 和 6个生成速率 分别进行实验（生成blackhole证据的实验）
 
-    genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
-    for filename in filelist:
-        filepath = os.path.join(encohistdir, filename)
+    # genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
+    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+    # for i_filename in range(len(filelist)):
+    # 从指定为位置开始保存
+    # i_filename = 0
+    i_filename = 3
+    while i_filename < len(filelist):
+        filepath = os.path.join(encohistdir, filelist[i_filename])
         for genpkt_freq in genpkt_freqlist:
             print(filepath, genpkt_freq)
             t_start = time.time()
@@ -240,6 +250,7 @@ if __name__ == "__main__":
             t_end = time.time()
             print('running time:{}'.format(t_end - t_start))
             simdurationlist.append(t_end - t_start)
+        i_filename = i_filename + 1
 
     # or 2.简单测试的流程
 

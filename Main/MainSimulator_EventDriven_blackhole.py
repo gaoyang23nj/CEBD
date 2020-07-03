@@ -5,11 +5,14 @@ import sys
 import winsound
 import os
 
-from Main.DTNScenario_EP import DTNScenario_EP
-from Main.DTNScenario_SandW import DTNScenario_SandW
-from Main.DTNScenario_Prophet import DTNScenario_Prophet
-from Main.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
-from Main.DTNScenario_Prophet_Blackhole_DetectandBan_Ex import DTNScenario_Prophet_Blackhole_DectectandBan_Ex
+from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
+from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
+from Main.Scenario.DTNScenario_Prophet import DTNScenario_Prophet
+from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
+
+from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_combine import DTNScenario_Prophet_Blackhole_DectectandBan_combine
+
+
 # 简化处理流程 传输速率无限
 
 # 事件驱动
@@ -234,11 +237,24 @@ class Simulator(object):
             #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
+            # index += 1
+            # tmp_senario_name = 'scenario' + str(index)+ '_blackhole_detectban_ex_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_Ex(
+            #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            # index += 1
+            # tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_time_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_time(
+            #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
+
             index += 1
-            tmp_senario_name = 'scenario' + str(index)+ '_blackhole_detectban_ex_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_Ex(
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_combine_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_combine(
                 tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
+
 
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())
@@ -297,21 +313,22 @@ if __name__ == "__main__":
     # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
 
     # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
-    # for filename in filelist:
-    #     filepath = os.path.join(encohistdir, filename)
-    #     for genpkt_freq in genpkt_freqlist:
-    #         print(filepath, genpkt_freq)
-    #         t_start = time.time()
-    #         theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
-    #         t_end = time.time()
-    #         print('running time:{}'.format(t_end - t_start))
-    #         simdurationlist.append(t_end - t_start)
+    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+    for filename in filelist:
+        filepath = os.path.join(encohistdir, filename)
+        for genpkt_freq in genpkt_freqlist:
+            print(filepath, genpkt_freq)
+            t_start = time.time()
+            theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
+            t_end = time.time()
+            print('running time:{}'.format(t_end - t_start))
+            simdurationlist.append(t_end - t_start)
 
     # or 2.简单测试的流程
 
-    genpkt_freqlist = 10 * 180
-    filepath = os.path.join(encohistdir, filelist[0])
-    theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
+    # genpkt_freqlist = 10 * 180
+    # filepath = os.path.join(encohistdir, filelist[0])
+    # theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
 
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())
