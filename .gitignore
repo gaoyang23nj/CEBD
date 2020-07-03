@@ -29,8 +29,5 @@ Main/logs_black_combine/*
 
 Main/ML_blackhole_time/*
 
-
-Main/collect_data_grayhole/*
-Main/collect_data_blackhole_time/*
-*.npz
+Main/collect_data_grayhole/*.npz
 Main/collect_data_blackhole_time/*.npz
