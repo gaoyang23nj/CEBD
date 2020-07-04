@@ -23,10 +23,11 @@ class ProcessENCFile(object):
         self.MAX_RUNNING_TIME_up = 0
         self.MAX_RUNNING_TIME_down = 0
         self.input_num_encos = 0
+        self.output_num_encos = 0
         self.settings = ''
         self.read_enco_hist_file()
         self.write_enc_file()
-        self.output_num_encos = len(self.list_enco_hist)
+
         print('num_enc: before:{}, after:{}'.format(self.input_num_encos, self.output_num_encos))
         print('filename: before:{}, after:{}'.format(self.input_tmp_filepath, self.output_enc_filepath))
 
@@ -38,8 +39,12 @@ class ProcessENCFile(object):
         file_object = open(self.output_enc_filepath, 'a+', encoding="utf-8")
         file_object.write(self.settings[:-1])
         for tunple in self.list_enco_hist:
-            (time_linkup, x_id, y_id) = tunple
-            file_object.write('{},{},{}\n'.format(time_linkup, x_id, y_id))
+            # 执行相遇事件list 同一时刻可能有多个相遇事件
+            list_eve = tunple[1:]
+            for enc_eve in list_eve:
+                (time_linkup, x_id, y_id) = enc_eve
+                file_object.write('{},{},{}\n'.format(time_linkup, x_id, y_id))
+                self.output_num_encos = self.output_num_encos + 1
         file_object.close()
 
     def read_enco_hist_file(self):
