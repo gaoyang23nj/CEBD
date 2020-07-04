@@ -1,5 +1,6 @@
-# 本文件旨在:生成<相遇历史记录>，结果保存在 Simulation_ONE/EncoHistData/文件夹下
-#
+# 本程序按照随机移动生成<相遇历史记录>，结果保存在 Simulation_ONE/EncoHistData/文件夹下
+# 文件内容 每行为 linkuptime, linkdowntime, node_i, node_j,
+# 保存的文件名为 例如 encohist_20191220182008.tmp
 
 import numpy as np
 # import tensorflow as tf
