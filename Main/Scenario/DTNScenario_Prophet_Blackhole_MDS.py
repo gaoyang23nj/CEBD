@@ -71,9 +71,12 @@ class DTNNodeBuffer_Detect_MDS(object):
         N_recv = 0
         N_jsend = 0
         for one_ER in j_ER_list:
-            N_send = N_send + one_ER["send_to_partner"]
-            N_recv = N_recv + one_ER["recv_from_partner"]
-            N_jsend = N_jsend + one_ER["gensend_to_partner"]
+            # N_send = N_send + one_ER["send_to_partner"]
+            # N_recv = N_recv + one_ER["recv_from_partner"]
+            # N_jsend = N_jsend + one_ER["gensend_to_partner"]
+            N_send = N_send + one_ER[1]
+            N_recv = N_recv + one_ER[2]
+            N_jsend = N_jsend + one_ER[3]
         # 第5步
         # 计算 theta
         if N_recv == 0:
@@ -83,6 +86,8 @@ class DTNNodeBuffer_Detect_MDS(object):
         if theta < Nth:
             fail_step = fail_step + 1
         # 第6步
+        if N_send == 0:
+            N_send = 1
         psi = (N_jsend + 0.0) / N_send
         if psi >= self.NRth:
             fail_step = fail_step + 1

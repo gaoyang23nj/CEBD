@@ -10,12 +10,18 @@ from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
 from Main.Scenario.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
 
-from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_combine import DTNScenario_Prophet_Blackhole_DectectandBan_combine
-
+from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_combine import \
+    DTNScenario_Prophet_Blackhole_DectectandBan_combine
+from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_time import \
+    DTNScenario_Prophet_Blackhole_DectectandBan_time
+from Main.Scenario.DTNScenario_Prophet_Blackhole_MDS import DTNScenario_Prophet_Blackhole_MDS
 
 # 简化处理流程 传输速率无限
 
 # 事件驱动
+
+
+
 class Simulator(object):
     def __init__(self, enco_file, pktgen_freq, result_file_path):
         # 相遇记录文件
@@ -243,11 +249,11 @@ class Simulator(object):
             #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
-            # index += 1
-            # tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_time_0_' + str(tmp)
-            # tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_time(
-            #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            # self.scenaDict.update({tmp_senario_name: tmpscenario})
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_time_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_time(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
             tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_combine_0_' + str(tmp)
@@ -255,6 +261,11 @@ class Simulator(object):
                 tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_MDS_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_MDS(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
 
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())
