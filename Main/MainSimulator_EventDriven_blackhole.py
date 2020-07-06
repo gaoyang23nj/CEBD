@@ -336,7 +336,6 @@ if __name__ == "__main__":
             simdurationlist.append(t_end - t_start)
 
     # or 2.简单测试的流程
-
     # genpkt_freqlist = 10 * 180
     # filepath = os.path.join(encohistdir, filelist[0])
     # theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
