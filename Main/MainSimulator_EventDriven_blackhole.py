@@ -31,7 +31,7 @@ class Simulator(object):
 
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
-        # 最大运行时间 执行时间 36000*12个间隔, 即12hour; 应该根据 enco_hist 进行更新
+        # 最大运行时间 执行时间 36000*24个间隔, 即24hour; 应该根据 enco_hist 进行更新
         self.MAX_RUNNING_TIMES = 0
         # 每个间隔的时间长度 0.1s
         self.sim_TimeStep = 0.1
