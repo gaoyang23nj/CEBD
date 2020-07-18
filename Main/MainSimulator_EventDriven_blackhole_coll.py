@@ -14,6 +14,10 @@ from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_combine import \
     DTNScenario_Prophet_Blackhole_DectectandBan_combine
 from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall import \
     DTNScenario_Prophet_Blackhole_DectectandBan_refuseall
+from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall_collusionF import \
+    DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF
+from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall_collusionF_without import \
+    DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without
 from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_time import \
     DTNScenario_Prophet_Blackhole_DectectandBan_time
 from Main.Scenario.DTNScenario_Prophet_Blackhole_MDS import DTNScenario_Prophet_Blackhole_MDS
@@ -160,7 +164,7 @@ class Simulator(object):
             dst_index = dst_index + 1
         return (src_index, dst_index)
 
-    def init_scenario_test_refuse(self):
+    def init_scenario_test_coll(self):
         index = -1
         # ===============================场景2 Prophet ===================================
         index += 1
@@ -168,7 +172,7 @@ class Simulator(object):
         tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # 0.1 0.2 0.3 0.4 0.5
-        for j in range(5):
+        for j in range(3):
             # ===============================场景3 Prophet + Blackhole 0.1 ===================================
             # # 随机生成序列
             tmp = j + 1
@@ -177,59 +181,16 @@ class Simulator(object):
             malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
             normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
 
-            index += 1
-            tmp_senario_name = 'scenario' + str(index)+'_blackhole_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-            index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_time_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_time(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-            index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_refuseall_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-            index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_MDS_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_MDS(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-        # ===============================场景单个单个的实验吧===================================
-        list_scena = list(self.scenaDict.keys())
-        return list_scena
-
-    # blackhole场景下 detect ban 检测抑制方法 的效果实验
-    def init_scenario_blackhole(self):
-        index = 0
-        # ===============================场景0 Epidemic ===================================
-        tmp_senario_name = 'scenario' + str(index)+'_Epidemic'
-        tmpscenario = DTNScenario_EP(tmp_senario_name, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景1 Spary and Wait ===================================
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)+'_SparyWait'
-        tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景2 Prophet ===================================
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)+'_Prophet'
-        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # 0.1 0.2 0.3 0.4 0.5
-        for j in range(5):
-            # ===============================场景3 Prophet + Blackhole 0.1 ===================================
-            # # 随机生成序列
-            tmp = j + 1
-            percent_selfish = 0.1*tmp
-            indices = np.random.permutation(self.MAX_NODE_NUM)
-            malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
-            normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+            # 获取 5对 10对collusion 的id
+            coll_pairs = []
+            num_pairs = 5
+            new_coll_indices = []
+            for pair_i in range(num_pairs):
+                # corrupted node & black hole node
+                coll_pairs.append((normal_indices[pair_i], malicious_indices[pair_i]))
+                new_coll_indices.append(normal_indices[pair_i])
+            print(coll_pairs)
+            new_normal_indices = normal_indices[num_pairs:]
 
             index += 1
             tmp_senario_name = 'scenario' + str(index)+'_blackhole_0_' + str(tmp)
@@ -237,21 +198,15 @@ class Simulator(object):
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_time_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_time(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(
+                tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_combine_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_combine(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-            index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_MDS_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_MDS(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without(
+                tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
         # ===============================场景单个单个的实验吧===================================
@@ -261,7 +216,7 @@ class Simulator(object):
     def init_scenario(self):
         self.scenaDict = {}
         # list_scena = self.init_scenario_blackhole()
-        list_scena = self.init_scenario_test_refuse()
+        list_scena = self.init_scenario_test_coll()
         return list_scena
 
     # 打印出结果

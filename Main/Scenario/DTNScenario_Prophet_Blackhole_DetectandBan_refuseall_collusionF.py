@@ -1,6 +1,7 @@
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
+from Main.DTNNodeBuffer_Detect_coll import DTNNodeBuffer_Detect_coll
 
 import copy
 import numpy as np
@@ -148,13 +149,25 @@ DectectandBan_time_q_output = multiprocessing.Queue()
 
 # 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
+class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime):
+    def __init__(self, scenarioname, list_selfish, new_normal_indices, new_coll_indices, coll_pairs, num_of_nodes, buffer_size, total_runningtime):
         # tf的调用次数
         self._tmpCallCnt = 0
         self.scenarioname = scenarioname
         self.list_selfish = list_selfish
+        self.list_normal = new_normal_indices
+
+        # 所有colluded节点
+        self.list_coll = new_coll_indices
+        # collusion对
+        self.coll_pairs = coll_pairs
+        # colluded节点对应的bk节点
+        self.list_coll_corres_bk = []
+        for ele in self.coll_pairs:
+            (coll_node_id, bk_node_id) = ele
+            self.list_coll_corres_bk.append(bk_node_id)
+
         self.num_of_nodes = num_of_nodes
         # 为各个node建立虚拟空间 <buffer+router>
         self.listNodeBuffer = []
@@ -165,15 +178,26 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
         # 为各个node建立检测用的 证据存储空间 BufferDetect
         self.listNodeBufferDetect = []
         for node_id in range(num_of_nodes):
-            if node_id in list_selfish:
+            if node_id in self.list_selfish:
                 tmpRouter = RoutingBlackhole(node_id, num_of_nodes)
             else:
+                # 其中包含collusion节点
                 tmpRouter = RoutingProphet(node_id, num_of_nodes)
             self.listRouter.append(tmpRouter)
             tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
-            tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
+            if node_id in self.list_coll:
+                coll_node_id = -1
+                bk_node_id = -1
+                for ele in self.coll_pairs:
+                    (coll_node_id, bk_node_id) = ele
+                    if coll_node_id == node_id:
+                        break
+                tmpBuffer_Detect = DTNNodeBuffer_Detect_coll(node_id, num_of_nodes, bk_node_id)
+            else:
+                tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
+
 
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
         dir = "..\\Main\\ML_blackhole_time"
@@ -198,8 +222,19 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
         self.tmp_DetectResult = np.zeros((2, 20), dtype='int')
         # 矩阵属性可以考虑更改
         self.num_of_att = 10
+
         # collusion 检查的阈值; 需要经验确定
         self.collusion_alpha = 0.025
+        # 记录collusion检测的评价结果
+        # 合作的bk
+        self.coll_corr_bk_sum_evalu = 0.0
+        self.coll_corr_bk_num_evalu = 0
+        # 没合作的bk
+        self.bk_sum_evalu = 0.0
+        self.bk_num_evalu = 0
+        # 记录检测的精确程度
+        self.coll_DetectRes = np.zeros((2,2),dtype='int')
+
         return
 
     # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
@@ -221,13 +256,22 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
         output_str += 'self.tmp_DetectResult:\n{}\n'.format(self.tmp_DetectResult)
         return output_str
 
+    def __print_collusion(self):
+        coll_corr_bk_eva = self.coll_corr_bk_sum_evalu / self.coll_corr_bk_num_evalu
+        bk_eva = self.bk_sum_evalu / self.bk_num_evalu
+        output_str = '{}_collusion_state\n'.format(self.scenarioname)
+        output_str += 'coll_corr_bk_eva:{}\nbk_eva:{}\n'.format(coll_corr_bk_eva, bk_eva)
+        output_str += 'coll_DetectRes:\n{}\n'.format(self.coll_DetectRes)
+        return output_str
+
     def print_res(self, listgenpkt):
         output_str_whole = self.__print_res_whole(listgenpkt)
         output_str_pure, succ_ratio, avg_delay = self.__print_res_pure(listgenpkt)
         # 打印混淆矩阵
         output_str_state = self.__print_conf_matrix()
         output_str_tmp_state = self.__print_tmp_conf_matrix()
-        print(output_str_whole + output_str_pure + output_str_state + output_str_tmp_state)
+        output_str_coll = self.__print_collusion()
+        print(output_str_whole + output_str_pure + output_str_state + output_str_tmp_state + output_str_coll)
         # 不必进行标签值 和 属性值 的保存
         # self.print_eve_res()
         # 使得预测进程终止
@@ -236,7 +280,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
         if ProcessCtl_dict_time["running_label"] == True:
             DectectandBan_time_q_input.put(None)
             ProcessCtl_dict_time["running_label"] = False
-        outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
+        outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state + output_str_coll
         percent_selfish = len(self.list_selfish) / self.num_of_nodes
         res = (succ_ratio, avg_delay, self.DetectResult, self.tmp_DetectResult)
         config = (percent_selfish, 1)
@@ -251,7 +295,6 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
 
     # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id
     def swappkt(self, runningtime, a_id, b_id):
-        # 交换直接评价信息，更新间接评价
         a_send = self.listNodeBufferDetect[a_id].get_send_values()
         a_receive = self.listNodeBufferDetect[a_id].get_receive_values()
         a_send_all = self.listNodeBufferDetect[a_id].get_send_all()
@@ -278,13 +321,12 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
         self.listNodeBufferDetect[a_id].renewindeve(runningtime, b_id, b_send, b_receive, b_send_all, b_receive_all,
                                                     b_receive_src, b_receive_dst, b_send_src, b_send_dst,
                                                     b_receive_from_and_src)
+
         bool_BH_a_wch_b = self.__detect_blackhole(a_id, b_id, runningtime)
         bool_BH_b_wch_a = self.__detect_blackhole(b_id, a_id, runningtime)
         # 如果有一方不同意 则停止
         if bool_BH_a_wch_b or bool_BH_a_wch_b:
             return
-
-
 
         # ================== 控制信息 交换==========================
         # 对称操作!!!
@@ -481,10 +523,33 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
             j.start()
 
         # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
-        res_coll_id, res_coll_filtering = self.detect_collusion(ind_predict, to_collusion_index)
+        res_coll_id, res_coll_filtering = self.__detect_collusion(ind_predict, to_collusion_index)
         tmp_res = np.hstack((d_predict, res_coll_filtering))
         final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
         boolBlackhole = final_res > 0.5
+
+        if b_id in self.list_coll_corres_bk:
+            # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
+            self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + final_res
+            self.coll_corr_bk_num_evalu =  self.coll_corr_bk_num_evalu + 1
+        elif b_id in self.list_selfish:
+            # b_id是普通不合作的bk节点
+            self.bk_sum_evalu = self.bk_sum_evalu + final_res
+            self.bk_num_evalu = self.bk_num_evalu + 1
+        # 看看检测出来的准不准
+        tmp = np.zeros((2,2), dtype='int')
+        if (res_coll_id, b_id) in self.coll_pairs:
+            tmp[0][0] = 1
+        elif b_id in self.list_coll_corres_bk:
+            # 漏检
+            # assert res_coll_id !=
+            tmp[0][1] = 1
+        elif res_coll_id != -1:
+            # 误报 真实为‘1’误以为‘0’
+            tmp[1][0] = 1
+        else:
+            tmp[1][1] = 1
+        self.coll_DetectRes = self.coll_DetectRes + tmp
 
         conf_matrix = cal_conf_matrix(i_isSelfish, boolBlackhole, num_classes=2)
 
