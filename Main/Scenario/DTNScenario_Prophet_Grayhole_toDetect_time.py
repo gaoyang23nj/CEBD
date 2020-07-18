@@ -11,9 +11,9 @@ import math
 import os
 
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_toDetect_time(object):
+class DTNScenario_Prophet_Grayhole_toDetect_time(object):
     # node_id的list routingname的list
-    def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime, isPrintDetectAtt):
+    def __init__(self, scenarioname, list_selfish, dropratio, num_of_nodes, buffer_size, total_runningtime, isPrintDetectAtt):
         self.isPrint = isPrintDetectAtt
         self.scenarioname = scenarioname
         self.list_selfish = list_selfish
@@ -37,7 +37,7 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         # 实验所产生的证据 保存路径
-        self.eve_dir = "E://collect_data_blackhole_time//" + self.scenarioname
+        self.eve_dir = "E://collect_data_garyhole_time//" + self.scenarioname
         if os.path.exists(self.eve_dir):
             shutil.rmtree(self.eve_dir)
         os.makedirs(self.eve_dir)
@@ -50,6 +50,7 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         # 目前矩阵里有效值 的 个数
         self.matrix_index = 0
         self.limit_length_matrix = 1000
+        self.dropratio = dropratio
         return
 
     # 打印结果
@@ -65,7 +66,7 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
         outstr = output_str_whole + output_str_pure
         res = (succ_ratio, avg_delay)
         percent_selfish = len(self.list_selfish) / self.num_of_nodes
-        config = (percent_selfish)
+        config = (percent_selfish, self.dropratio)
         return outstr, res, config
 
     # 生成新报文
@@ -177,8 +178,10 @@ class DTNScenario_Prophet_Blackhole_toDetect_time(object):
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
-                # blackhole b_id立刻发动
-                self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                # 生成(0,1) 如果命中(即指定概率情况下 丢弃事件发生) 才发起drop
+                rd = np.random.random()
+                if rd < self.dropratio:
+                    self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
 
     # 报文发送 a_id -> b_id
     def __sendpkt(self, runningtime, a_id, b_id):
