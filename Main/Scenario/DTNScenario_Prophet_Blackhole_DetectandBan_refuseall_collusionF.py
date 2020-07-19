@@ -605,25 +605,34 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
     # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
     def __detect_collusion(self, ind_predict, to_collusion_index):
         assert ind_predict.shape[1] == to_collusion_index.shape[1]
+        assert ind_predict.shape[0] == to_collusion_index.shape[0]
+        assert ind_predict.shape[1] == self.num_of_nodes - 2
+        assert ind_predict.shape[0] == 1
         dim = ind_predict.shape[1]
+        # ind_predict = np.squeeze(ind_predict, axis=0)
+        # to_collusion_index = np.squeeze(to_collusion_index, axis=0)
         one_collu_list = []
         for i in range(dim):
+            # 0*(num_nodes - 3) 的
             mask = [True] * (dim)
             mask[i] = False
+            mask = np.array(mask).reshape(-1,dim)
             tmp_leave_one_array = ind_predict[mask]
             tmp_leave_one_std = np.std(tmp_leave_one_array)
-            one_collu_list.append((tmp_leave_one_std, to_collusion_index[i]))
+            # 记录leave one以后的std 和 对应的index
+            one_collu_list.append((tmp_leave_one_std, to_collusion_index[0][i], i))
         # sort
         one_collu_list.sort(reverse=True)
         if (one_collu_list[0][0] - one_collu_list[1][0]) > self.collusion_alpha:
             coll_node_id = one_collu_list[0][1]
-            # 1*(num_nodes-2-1)
-            coll_std = np.zeros((1, dim-1),dtype='float')
-            i=1
-            while i < len(one_collu_list):
-                coll_std[0][i] = one_collu_list[i][1]
-                i = i+1
-            return coll_node_id, coll_std
+
+            mask = [True] * (dim)
+            # 出问题的位置 为false
+            mask[one_collu_list[0][2]] = False
+            mask = np.array(mask).reshape(-1, dim)
+            good_indirect_predict_res = ind_predict[mask]
+
+            return coll_node_id, good_indirect_predict_res
         else:
             return -1, ind_predict
 
