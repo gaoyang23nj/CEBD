@@ -1,3 +1,5 @@
+import datetime
+
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
@@ -161,10 +163,10 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         # 所有colluded节点
         self.list_coll = new_coll_indices
         # collusion对
-        self.coll_pairs = coll_pairs
+        self.list_coll_pairs = coll_pairs
         # colluded节点对应的bk节点
         self.list_coll_corres_bk = []
-        for ele in self.coll_pairs:
+        for ele in self.list_coll_pairs:
             (coll_node_id, bk_node_id) = ele
             self.list_coll_corres_bk.append(bk_node_id)
 
@@ -189,7 +191,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             if node_id in self.list_coll:
                 coll_node_id = -1
                 bk_node_id = -1
-                for ele in self.coll_pairs:
+                for ele in self.list_coll_pairs:
                     (coll_node_id, bk_node_id) = ele
                     if coll_node_id == node_id:
                         break
@@ -225,13 +227,26 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
 
         # collusion 检查的阈值; 需要经验确定
         self.collusion_alpha = 0.025
-        # 记录collusion检测的评价结果
+        # 记录collusion检测的评价结果 并 用list记录下来/带上时间；
         # 合作的bk
         self.coll_corr_bk_sum_evalu = 0.0
         self.coll_corr_bk_num_evalu = 0
+        self.coll_corr_bk_recd_list = []
         # 没合作的bk
         self.bk_sum_evalu = 0.0
         self.bk_num_evalu = 0
+        self.bk_recd_list = []
+        # colluded节点
+        self.coll_sum_evalu = 0.0
+        self.coll_num_evalu = 0
+        self.coll_recd_list = []
+        # normal节点
+        self.normal_sum_evalu = 0.0
+        self.normal_num_evalu = 0
+        self.normal_recd_list = []
+
+        # 结果保存到文件中
+
         # 记录检测的精确程度
         self.coll_DetectRes = np.zeros((2,2),dtype='int')
 
@@ -259,9 +274,22 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
     def __print_collusion(self):
         coll_corr_bk_eva = self.coll_corr_bk_sum_evalu / self.coll_corr_bk_num_evalu
         bk_eva = self.bk_sum_evalu / self.bk_num_evalu
+        coll_eva = self.coll_sum_evalu / self.coll_num_evalu
+        normal_eva = self.normal_sum_evalu / self.normal_num_evalu
+
         output_str = '{}_collusion_state\n'.format(self.scenarioname)
-        output_str += 'coll_corr_bk_eva:{}\nbk_eva:{}\n'.format(coll_corr_bk_eva, bk_eva)
+        output_str += 'coll_corr_bk_eva:{}\nbk_eva:{}\ncoll_eva:{}\nnormal_eva:{}\n'.format(coll_corr_bk_eva, bk_eva, coll_eva, normal_eva)
         output_str += 'coll_DetectRes:\n{}\n'.format(self.coll_DetectRes)
+
+        short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+        filename = '' + short_time + '.npz'
+        tmp_num_pairs = len(self.list_coll_pairs)
+        tmp_ratio_bk = len(self.list_selfish) / (len(self.list_normal) + len(self.list_coll) + len(self.list_selfish))
+        # # 结果保存到文件中
+        self.collfilter_recd_path = "..\\collfilter_"+short_time+"_pair"+str(tmp_num_pairs)+"_ratio_0_"+str(int(10*tmp_ratio_bk))+".npz"
+        np.save(self.collfilter_recd_path, coll_corr_bk_recd = self.coll_corr_bk_recd_list,
+                bk_recd = self.bk_recd_list, coll_recd = self.coll_recd_list, normal_recd = self.normal_recd_list,
+                num_paris = tmp_num_pairs, ratio_bk = tmp_ratio_bk)
         return output_str
 
     def print_res(self, listgenpkt):
@@ -534,20 +562,35 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
                 # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
                 self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + final_res
                 self.coll_corr_bk_num_evalu =  self.coll_corr_bk_num_evalu + 1
+                self.coll_corr_bk_recd_list.append((final_res, runningtime))
             elif b_id in self.list_selfish:
                 # b_id是普通的bk节点 (没有colluded节点与b_id合作)
                 self.bk_sum_evalu = self.bk_sum_evalu + final_res
                 self.bk_num_evalu = self.bk_num_evalu + 1
-            elif b_id in self
+                self.bk_recd_list.append((final_res, runningtime))
+            elif b_id in self.list_coll:
+                self.coll_sum_evalu = self.coll_sum_evalu + final_res
+                self.coll_num_evalu = self.coll_num_evalu + 1
+                self.coll_recd_list.append((final_res, runningtime))
+            elif b_id in self.list_normal:
+                self.normal_sum_evalu = self.normal_sum_evalu + final_res
+                self.normal_num_evalu = self.normal_num_evalu + 1
+                self.normal_recd_list.append((final_res, runningtime))
+            else:
+                print('Internal Err! CollusionF calculate res!')
+
+        #  只有a_id是正常节点 才有观察的必要
+        if a_id in self.list_normal:
             # 看看检测出来的准不准
             tmp = np.zeros((2,2), dtype='int')
-            if (res_coll_id, b_id) in self.coll_pairs:
+            if (res_coll_id, b_id) in self.list_coll_pairs:
                 tmp[0][0] = 1
             elif b_id in self.list_coll_corres_bk:
-                # 漏检
+                # b_id是coll_corres_bk 存在的对应的colluded节点; 发生漏检
                 # assert res_coll_id !=
                 tmp[0][1] = 1
             elif res_coll_id != -1:
+                # b_id也不是coll_bk; 也没有正确发现; 但还是以为有coll_id
                 # 误报 真实为‘1’误以为‘0’
                 tmp[1][0] = 1
             else:
