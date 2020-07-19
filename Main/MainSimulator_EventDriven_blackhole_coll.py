@@ -184,12 +184,15 @@ class Simulator(object):
             # 获取 5对 10对collusion 的id
             coll_pairs = []
             num_pairs = 5
+            # 记录colluded 节点
             new_coll_indices = []
             for pair_i in range(num_pairs):
                 # corrupted node & black hole node
                 coll_pairs.append((normal_indices[pair_i], malicious_indices[pair_i]))
                 new_coll_indices.append(normal_indices[pair_i])
+            # 记录collusion对应的 blackhole节点
             print(coll_pairs)
+            # 只保留正常节点
             new_normal_indices = normal_indices[num_pairs:]
 
             index += 1
@@ -267,7 +270,8 @@ if __name__ == "__main__":
     # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
 
     # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
-    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+    # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+    genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
     for filename in filelist:
         filepath = os.path.join(encohistdir, filename)
         for genpkt_freq in genpkt_freqlist:

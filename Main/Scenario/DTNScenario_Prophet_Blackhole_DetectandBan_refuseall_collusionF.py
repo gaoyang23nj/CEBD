@@ -500,7 +500,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
 
         to_collusion_index = np.arange(self.num_of_nodes)
         to_collusion_index = to_collusion_index[mask]
-        to_collusion_index.reshape((-1, self.num_of_nodes-2))
+        to_collusion_index = to_collusion_index.reshape((-1, self.num_of_nodes-2))
         # to_collusion_index.reshape((-1, len(to_collusion_index)))
 
         # 加载模型；进行预测
@@ -528,28 +528,31 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
         boolBlackhole = final_res > 0.5
 
-        if b_id in self.list_coll_corres_bk:
-            # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
-            self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + final_res
-            self.coll_corr_bk_num_evalu =  self.coll_corr_bk_num_evalu + 1
-        elif b_id in self.list_selfish:
-            # b_id是普通不合作的bk节点
-            self.bk_sum_evalu = self.bk_sum_evalu + final_res
-            self.bk_num_evalu = self.bk_num_evalu + 1
-        # 看看检测出来的准不准
-        tmp = np.zeros((2,2), dtype='int')
-        if (res_coll_id, b_id) in self.coll_pairs:
-            tmp[0][0] = 1
-        elif b_id in self.list_coll_corres_bk:
-            # 漏检
-            # assert res_coll_id !=
-            tmp[0][1] = 1
-        elif res_coll_id != -1:
-            # 误报 真实为‘1’误以为‘0’
-            tmp[1][0] = 1
-        else:
-            tmp[1][1] = 1
-        self.coll_DetectRes = self.coll_DetectRes + tmp
+        # 只从正常节点的角度观察
+        if a_id in self.list_normal:
+            if b_id in self.list_coll_corres_bk:
+                # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
+                self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + final_res
+                self.coll_corr_bk_num_evalu =  self.coll_corr_bk_num_evalu + 1
+            elif b_id in self.list_selfish:
+                # b_id是普通的bk节点 (没有colluded节点与b_id合作)
+                self.bk_sum_evalu = self.bk_sum_evalu + final_res
+                self.bk_num_evalu = self.bk_num_evalu + 1
+            elif b_id in self
+            # 看看检测出来的准不准
+            tmp = np.zeros((2,2), dtype='int')
+            if (res_coll_id, b_id) in self.coll_pairs:
+                tmp[0][0] = 1
+            elif b_id in self.list_coll_corres_bk:
+                # 漏检
+                # assert res_coll_id !=
+                tmp[0][1] = 1
+            elif res_coll_id != -1:
+                # 误报 真实为‘1’误以为‘0’
+                tmp[1][0] = 1
+            else:
+                tmp[1][1] = 1
+            self.coll_DetectRes = self.coll_DetectRes + tmp
 
         conf_matrix = cal_conf_matrix(i_isSelfish, boolBlackhole, num_classes=2)
 
