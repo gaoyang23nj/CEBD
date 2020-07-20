@@ -551,7 +551,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             j.start()
 
         # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
-        res_coll_id, res_coll_filtering = self.__detect_collusion(ind_predict, to_collusion_index)
+        res_coll_id, res_coll_filtering, one_collu_list = self.__detect_collusion(ind_predict, to_collusion_index)
         tmp_res = np.hstack((d_predict, res_coll_filtering))
         final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
         boolBlackhole = final_res > 0.5
@@ -585,14 +585,17 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             tmp = np.zeros((2,2), dtype='int')
             if (res_coll_id, b_id) in self.list_coll_pairs:
                 tmp[0][0] = 1
+                print(one_collu_list[:5])
             elif b_id in self.list_coll_corres_bk:
                 # b_id是coll_corres_bk 存在的对应的colluded节点; 发生漏检
                 # assert res_coll_id !=
                 tmp[0][1] = 1
+                print("\033[41m", "有collude但没被找到, 以为是id_{}".format(res_coll_id), "\033[0m", one_collu_list[:5])
             elif res_coll_id != -1:
                 # b_id也不是coll_bk; 也没有正确发现; 但还是以为有coll_id
                 # 误报 真实为‘1’误以为‘0’
                 tmp[1][0] = 1
+                print("\033[44m", "没有collude但给出了，以为是id_{}".format(res_coll_id), "\033[0m", one_collu_list[:5])
             else:
                 tmp[1][1] = 1
             self.coll_DetectRes = self.coll_DetectRes + tmp
@@ -632,9 +635,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             mask = np.array(mask).reshape(-1, dim)
             good_indirect_predict_res = ind_predict[mask]
 
-            return coll_node_id, good_indirect_predict_res
+            return coll_node_id, good_indirect_predict_res, one_collu_list
         else:
-            return -1, ind_predict
+            return -1, ind_predict, one_collu_list
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, pkt_src_id, pkt_dst_id):
