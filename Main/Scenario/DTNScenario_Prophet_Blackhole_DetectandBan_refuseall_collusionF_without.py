@@ -1,3 +1,5 @@
+import datetime
+
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
@@ -161,10 +163,10 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without(o
         # 所有colluded节点
         self.list_coll = new_coll_indices
         # collusion对
-        self.coll_pairs = coll_pairs
+        self.list_coll_pairs = coll_pairs
         # colluded节点对应的bk节点
         self.list_coll_corres_bk = []
-        for ele in self.coll_pairs:
+        for ele in self.list_coll_pairs:
             (coll_node_id, bk_node_id) = ele
             self.list_coll_corres_bk.append(bk_node_id)
 
@@ -189,7 +191,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without(o
             if node_id in self.list_coll:
                 coll_node_id = -1
                 bk_node_id = -1
-                for ele in self.coll_pairs:
+                for ele in self.list_coll_pairs:
                     (coll_node_id, bk_node_id) = ele
                     if coll_node_id == node_id:
                         break
@@ -277,9 +279,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without(o
         tmp_ratio_bk = len(self.list_selfish) / (len(self.list_normal) + len(self.list_coll) + len(self.list_selfish))
         # # 结果保存到文件中
         self.collfilter_recd_path = "..\\collfilter_"+short_time+"_pair"+str(tmp_num_pairs)+"_ratio_0_"+str(int(10*tmp_ratio_bk))+".npz"
-        np.save(self.collfilter_recd_path, coll_corr_bk_recd = self.coll_corr_bk_recd_list,
-                bk_recd = self.bk_recd_list, coll_recd = self.coll_recd_list, normal_recd = self.normal_recd_list,
-                num_paris = tmp_num_pairs, ratio_bk = tmp_ratio_bk)
+        np.savez(self.collfilter_recd_path, coll_corr_bk_recd = self.coll_corr_bk_recd_list,
+                 bk_recd = self.bk_recd_list, coll_recd = self.coll_recd_list, normal_recd = self.normal_recd_list,
+                 num_paris = tmp_num_pairs, ratio_bk = tmp_ratio_bk)
         return output_str
 
     def print_res(self, listgenpkt):
@@ -571,7 +573,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without(o
                 print('Internal Err! CollusionF calculate res!')
 
 
-        conf_matrix = cal_conf_matrix(i_isSelfish, boolBlackhole, num_classes=2)
+        conf_matrix = cal_conf_matrix(i_isSelfish, int(boolBlackhole), num_classes=2)
 
         self.DetectResult = self.DetectResult + conf_matrix
         return boolBlackhole

@@ -287,9 +287,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         tmp_ratio_bk = len(self.list_selfish) / (len(self.list_normal) + len(self.list_coll) + len(self.list_selfish))
         # # 结果保存到文件中
         self.collfilter_recd_path = "..\\collfilter_"+short_time+"_pair"+str(tmp_num_pairs)+"_ratio_0_"+str(int(10*tmp_ratio_bk))+".npz"
-        np.save(self.collfilter_recd_path, coll_corr_bk_recd = self.coll_corr_bk_recd_list,
-                bk_recd = self.bk_recd_list, coll_recd = self.coll_recd_list, normal_recd = self.normal_recd_list,
-                num_paris = tmp_num_pairs, ratio_bk = tmp_ratio_bk)
+        np.savez(self.collfilter_recd_path, coll_corr_bk_recd = self.coll_corr_bk_recd_list,
+                 bk_recd = self.bk_recd_list, coll_recd = self.coll_recd_list, normal_recd = self.normal_recd_list,
+                 num_paris = tmp_num_pairs, ratio_bk = tmp_ratio_bk)
         return output_str
 
     def print_res(self, listgenpkt):
@@ -597,7 +597,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
                 tmp[1][1] = 1
             self.coll_DetectRes = self.coll_DetectRes + tmp
 
-        conf_matrix = cal_conf_matrix(i_isSelfish, boolBlackhole, num_classes=2)
+        conf_matrix = cal_conf_matrix(i_isSelfish, int(boolBlackhole), num_classes=2)
 
         self.DetectResult = self.DetectResult + conf_matrix
         return boolBlackhole
