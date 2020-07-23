@@ -219,7 +219,10 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         self.num_of_att = 10
 
         # collusion 检查的阈值; 需要经验确定
-        self.collusion_alpha = 0.0004
+        # list内阈值 内阈值 要小
+        self.collusion_alpha_inner = 0.0004
+        # list外阈值 总阈值 要高
+        self.collusion_alpha_outer = 0.0002
         # 记录collusion检测的评价结果 并 用list记录下来/带上时间；
         # 合作的bk
         self.coll_corr_bk_sum_evalu = 0.0
@@ -654,36 +657,73 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
     def __detect_collusion(self, ind_predict, to_collusion_index):
         assert ind_predict.shape[1] == to_collusion_index.shape[1]
         assert ind_predict.shape[0] == to_collusion_index.shape[0]
-        assert ind_predict.shape[1] == self.num_of_nodes - 2
-        assert ind_predict.shape[0] == 1
+        # assert ind_predict.shape[1] == self.num_of_nodes - 2
+        # assert ind_predict.shape[0] == 1
         dim = ind_predict.shape[1]
-        # ind_predict = np.squeeze(ind_predict, axis=0)
-        # to_collusion_index = np.squeeze(to_collusion_index, axis=0)
-        one_collu_list = []
-        for i in range(dim):
-            # 0*(num_nodes - 3) 的
-            mask = [True] * (dim)
-            mask[i] = False
-            mask = np.array(mask).reshape(-1,dim)
-            tmp_leave_one_array = ind_predict[mask]
-            tmp_leave_one_std = np.std(tmp_leave_one_array)
-            # 记录leave one以后的std 和 对应的index
-            one_collu_list.append((tmp_leave_one_std, to_collusion_index[0][i], i, ind_predict[0, i]))
-        # sort 从小到大 因为其他节点的评价很接近 ; leave-one std也很接近(变动大 较大); 但是collude的评价很独特, leave one std很小
-        one_collu_list.sort()
-        outdiff = math.fabs(one_collu_list[0][0] - one_collu_list[1][0])
-        if outdiff > self.collusion_alpha:
-            coll_node_id = one_collu_list[0][1]
-
-            mask = [True] * (dim)
-            # 出问题的位置 为false
-            mask[one_collu_list[0][2]] = False
-            mask = np.array(mask).reshape(-1, dim)
-            good_indirect_predict_res = ind_predict[mask].reshape((-1, dim-1))
-
-            return coll_node_id, good_indirect_predict_res, one_collu_list, outdiff
+        ind_predict_all = np.squeeze(ind_predict, axis=0)
+        to_index_all = np.squeeze(to_collusion_index, axis=0)
+        # divide into two list 1)按照0.5 2）按照分群
+        mask_0 = ind_predict_all <= 0.5
+        mask_1 = ind_predict_all > 0.5
+        ind_predict_0 = ind_predict_all[mask_0]
+        to_index_0 = to_index_all[mask_0]
+        ind_predict_1 = ind_predict_all[mask_1]
+        to_index_1 = to_index_all[mask_1]
+        # self.__detect_once_list(ind_predict_all, to_index_all)
+        # 长度不均匀 总计计算就可以了 我们认为到了后期
+        coll_node_id_all = -1
+        if len(ind_predict_0) < 3 or len(ind_predict_1) < 3:
+            coll_node_id_all, good_indirect_predict_res_all, tunple_list_all, divison_all = self.__detect_once_list(
+                ind_predict_all, to_index_all, self.collusion_alpha_outer)
+            return coll_node_id_all, good_indirect_predict_res_all, tunple_list_all, divison_all
         else:
-            return -1, ind_predict, one_collu_list, outdiff
+            coll_node_id_0, good_indirect_predict_res_0, tunple_list_0, divison_0 = self.__detect_once_list(
+                ind_predict_0, to_index_0, self.collusion_alpha_inner)
+            coll_node_id_1, good_indirect_predict_res_1, tunple_list_1, divison_1 = self.__detect_once_list(
+                ind_predict_1, to_index_1, self.collusion_alpha_inner)
+            if coll_node_id_0 != -1 and coll_node_id_1 == -1:
+                coll_node_id_all = coll_node_id_0
+            elif coll_node_id_0 == -1 and coll_node_id_1 != -1:
+                coll_node_id_all = coll_node_id_1
+            elif coll_node_id_0 != -1 and coll_node_id_1 != -1:
+                if divison_0 > divison_1:
+                    coll_node_id_all = coll_node_id_0
+                    diff = divison_0
+                else:
+                    coll_node_id_all = coll_node_id_1
+                    diff = divison_1
+            else:
+                # no coll
+                coll_node_id_all = -1
+            good_indirect_predict_res_all = np.hstack((good_indirect_predict_res_0, good_indirect_predict_res_1))
+            return coll_node_id_all, good_indirect_predict_res_all, (tunple_list_0, tunple_list_1), (divison_0, divison_1)
+
+    def __detect_once_list(self, to_predict_value, to_index, threshold):
+        dim = to_predict_value.shape[0]
+        # leave-one std
+        mask_matrix = np.logical_xor(True, np.eye(dim, dim, dtype='bool'))
+        value_matrix = to_predict_value.repeat(dim, axis=0)
+        # 实现leave one; 准备计算std
+        new_value_matrix = value_matrix[mask_matrix].reshape(dim, dim - 1)
+        leave_one_std = np.std(new_value_matrix, axis=1)
+        # form new list
+        tunple_list = []
+        for i in range(dim):
+            # leave-std, coll_node_id, index_in_this_list, predict_value
+            tmp_tunple = (leave_one_std[i], to_index[i], i, to_predict_value[i])
+            tunple_list.append(tmp_tunple)
+        tunple_list.sort(reverse=True)
+        divison = math.fabs(tunple_list[0][0] - tunple_list[1][0])
+        if divison > threshold:
+            coll_node_id = tunple_list[0][1]
+            mask = [True] * (dim)
+            # coll_node_id的位置 为false
+            mask[tunple_list[0][2]] = False
+            good_indirect_predict_res = to_predict_value[mask]
+            good_indirect_predict_res = good_indirect_predict_res.reshape(1,-1)
+            return coll_node_id, good_indirect_predict_res, tunple_list, divison
+        else:
+            return -1, to_predict_value, tunple_list, divison
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, pkt_src_id, pkt_dst_id):
