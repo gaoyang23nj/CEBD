@@ -172,10 +172,12 @@ class Simulator(object):
         tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # 0.1 0.2 0.3 0.4 0.5
-        for j in range(3):
+        ratiolist = [1, 3, 5]
+        ratiolist = [3]
+        for j in ratiolist:
             # ===============================场景3 Prophet + Blackhole 0.1 ===================================
             # # 随机生成序列
-            tmp = j + 1
+            tmp = j
             percent_selfish = 0.1*tmp
             indices = np.random.permutation(self.MAX_NODE_NUM)
             malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
@@ -191,7 +193,7 @@ class Simulator(object):
                 coll_pairs.append((normal_indices[pair_i], malicious_indices[pair_i]))
                 new_coll_indices.append(normal_indices[pair_i])
             # 记录collusion对应的 blackhole节点
-            print(coll_pairs)
+            # print(coll_pairs)
             # 只保留正常节点
             new_normal_indices = normal_indices[num_pairs:]
 
@@ -207,7 +209,7 @@ class Simulator(object):
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_0_' + str(tmp)
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_without_0_' + str(tmp)
             tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without(
                 tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
@@ -271,21 +273,21 @@ if __name__ == "__main__":
 
     # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
     # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
-    genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
-    for filename in filelist:
-        filepath = os.path.join(encohistdir, filename)
-        for genpkt_freq in genpkt_freqlist:
-            print(filepath, genpkt_freq)
-            t_start = time.time()
-            theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
-            t_end = time.time()
-            print('running time:{}'.format(t_end - t_start))
-            simdurationlist.append(t_end - t_start)
+    # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
+    # for filename in filelist:
+    #     filepath = os.path.join(encohistdir, filename)
+    #     for genpkt_freq in genpkt_freqlist:
+    #         print(filepath, genpkt_freq)
+    #         t_start = time.time()
+    #         theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
+    #         t_end = time.time()
+    #         print('running time:{}'.format(t_end - t_start))
+    #         simdurationlist.append(t_end - t_start)
 
     # or 2.简单测试的流程
-    # genpkt_freqlist = 10 * 180
-    # filepath = os.path.join(encohistdir, filelist[0])
-    # theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
+    genpkt_freqlist = 10 * 30
+    filepath = os.path.join(encohistdir, filelist[0])
+    theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
 
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())

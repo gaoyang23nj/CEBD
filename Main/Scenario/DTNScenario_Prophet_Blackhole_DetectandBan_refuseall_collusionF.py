@@ -179,6 +179,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         self.MAX_RUNNING_TIMES = total_runningtime
         # 为各个node建立检测用的 证据存储空间 BufferDetect
         self.listNodeBufferDetect = []
+        print(self.scenarioname, self.list_coll_pairs, self.list_coll, self.list_coll_corres_bk)
+        print(len(self.list_normal), len(self.list_selfish))
         for node_id in range(num_of_nodes):
             if node_id in self.list_selfish:
                 tmpRouter = RoutingBlackhole(node_id, num_of_nodes)
@@ -188,16 +190,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             self.listRouter.append(tmpRouter)
             tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
-            if node_id in self.list_coll:
-                coll_node_id = -1
-                bk_node_id = -1
-                for ele in self.list_coll_pairs:
-                    (coll_node_id, bk_node_id) = ele
-                    if coll_node_id == node_id:
-                        break
-                tmpBuffer_Detect = DTNNodeBuffer_Detect_coll(node_id, num_of_nodes, bk_node_id)
-            else:
-                tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
+            tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
 
 
@@ -226,7 +219,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         self.num_of_att = 10
 
         # collusion 检查的阈值; 需要经验确定
-        self.collusion_alpha = 0.025
+        self.collusion_alpha = 0.0004
         # 记录collusion检测的评价结果 并 用list记录下来/带上时间；
         # 合作的bk
         self.coll_corr_bk_sum_evalu = 0.0
@@ -272,15 +265,6 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         return output_str
 
     def __print_collusion(self):
-        coll_corr_bk_eva = self.coll_corr_bk_sum_evalu / self.coll_corr_bk_num_evalu
-        bk_eva = self.bk_sum_evalu / self.bk_num_evalu
-        coll_eva = self.coll_sum_evalu / self.coll_num_evalu
-        normal_eva = self.normal_sum_evalu / self.normal_num_evalu
-
-        output_str = '{}_collusion_state\n'.format(self.scenarioname)
-        output_str += 'coll_corr_bk_eva:{}\nbk_eva:{}\ncoll_eva:{}\nnormal_eva:{}\n'.format(coll_corr_bk_eva, bk_eva, coll_eva, normal_eva)
-        output_str += 'coll_DetectRes:\n{}\n'.format(self.coll_DetectRes)
-
         short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
         filename = '' + short_time + '.npz'
         tmp_num_pairs = len(self.list_coll_pairs)
@@ -290,6 +274,18 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         np.savez(self.collfilter_recd_path, coll_corr_bk_recd = self.coll_corr_bk_recd_list,
                  bk_recd = self.bk_recd_list, coll_recd = self.coll_recd_list, normal_recd = self.normal_recd_list,
                  num_paris = tmp_num_pairs, ratio_bk = tmp_ratio_bk)
+
+        coll_corr_bk_eva = self.coll_corr_bk_sum_evalu / self.coll_corr_bk_num_evalu
+        bk_eva = self.bk_sum_evalu / self.bk_num_evalu
+
+        coll_eva = self.coll_sum_evalu / self.coll_num_evalu
+
+        normal_eva = self.normal_sum_evalu / self.normal_num_evalu
+
+        output_str = '{}_collusion_state\n'.format(self.scenarioname)
+        output_str += 'coll_corr_bk_eva:{}\nbk_eva:{}\ncoll_eva:{}\nnormal_eva:{}\n'.format(coll_corr_bk_eva, bk_eva, coll_eva, normal_eva)
+        output_str += 'coll_DetectRes:\n{}\n'.format(self.coll_DetectRes)
+
         return output_str
 
     def print_res(self, listgenpkt):
@@ -550,14 +546,45 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             j.daemon = True
             j.start()
 
+        # 如果一切正常 应该取得的值
+        tmp_res = np.hstack((d_predict, ind_predict))
+        before_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
+
+        # 假设 collude节点 经过 多次尝试 使得神经网络能够给出想要的结果
+        true_collude_id = -1
+        if (a_id in self.list_normal) and (b_id in self.list_coll_corres_bk):
+            for ele in self.list_coll_pairs:
+                if ele[1] == b_id:
+                    true_collude_id = ele[0]
+                    break
+            if true_collude_id==-1:
+                print('Internal Err! --001')
+            else:
+                tmp_w = to_collusion_index.squeeze(axis=0)
+                tmp_w = tmp_w.tolist()
+                if true_collude_id in tmp_w:
+                    assert (true_collude_id, b_id) in self.list_coll_pairs
+                    target_loc = tmp_w.index(true_collude_id)
+                    # collude节点 伪造 好证据
+                    target_value = np.random.random()*0.2
+                    ind_predict[0, target_loc] = target_value
+                    print('{}to{} change{} loc[{}] {}'.format(a_id,b_id,true_collude_id,target_loc,target_value))
+                elif true_collude_id == a_id:
+                    pass
+                elif true_collude_id == b_id:
+                    print('Internal Err! --003')
+                else:
+                    # b_id是coll_res_bk 但是pair里给出的true_coll 却没有提供信息
+                    print('Internal Err! --002')
+
         # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
-        res_coll_id, res_coll_filtering, one_collu_list = self.__detect_collusion(ind_predict, to_collusion_index)
+        res_coll_id, res_coll_filtering, one_collu_list, outdiff = self.__detect_collusion(ind_predict, to_collusion_index)
         tmp_res = np.hstack((d_predict, res_coll_filtering))
         final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
         boolBlackhole = final_res > 0.5
 
-        # 只从正常节点的角度观察
-        if a_id in self.list_normal:
+        # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole
+        if (a_id in self.list_normal):
             if b_id in self.list_coll_corres_bk:
                 # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
                 self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + final_res
@@ -579,29 +606,47 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             else:
                 print('Internal Err! CollusionF calculate res!')
 
-        #  只有a_id是正常节点 才有观察的必要
-        if a_id in self.list_normal:
-            # 看看检测出来的准不准
-            tmp = np.zeros((2,2), dtype='int')
-            if (res_coll_id, b_id) in self.list_coll_pairs:
-                tmp[0][0] = 1
-                print(one_collu_list[:5])
-            elif b_id in self.list_coll_corres_bk:
-                # b_id是coll_corres_bk 存在的对应的colluded节点; 发生漏检
-                # assert res_coll_id !=
-                tmp[0][1] = 1
-                print("\033[41m", "有collude但没被找到, 以为是id_{}".format(res_coll_id), "\033[0m", one_collu_list[:5])
-            elif res_coll_id != -1:
-                # b_id也不是coll_bk; 也没有正确发现; 但还是以为有coll_id
-                # 误报 真实为‘1’误以为‘0’
-                tmp[1][0] = 1
-                print("\033[44m", "没有collude但给出了，以为是id_{}".format(res_coll_id), "\033[0m", one_collu_list[:5])
-            else:
-                tmp[1][1] = 1
-            self.coll_DetectRes = self.coll_DetectRes + tmp
+        if (a_id in self.list_normal):
+            if (b_id in self.list_coll_corres_bk):
+                print('{}to{} before_res:{} after_res:{}'.format(a_id, b_id, before_res, final_res))
+
+        # b: 1)selfish(coll_bk) 2)normal 3)coll
+        # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole; 没检查出来 就先不打印了
+        if (a_id in self.list_normal):
+            if (b_id in self.list_selfish) and (not boolBlackhole):
+                if (b_id in self.list_coll_corres_bk):
+                    print('hindden successfully')
+                else:
+                    print('no detect successfully')
+            elif (b_id in self.list_selfish) and (boolBlackhole):
+                # 看看检测出来的准不准
+                tmp = np.zeros((2,2), dtype='int')
+                if (res_coll_id, b_id) in self.list_coll_pairs:
+                    assert true_collude_id == res_coll_id
+                    tmp[0][0] = 1
+                    print("\033[42m",
+                          "value:{} b_id(id_{})找到了collude(id_{}) diff{}".format(final_res, b_id, true_collude_id, res_coll_id, outdiff),
+                          "\033[0m", one_collu_list)
+                elif b_id in self.list_coll_corres_bk:
+                    # b_id是coll_corres_bk 存在的对应的colluded节点; 发生漏检
+                    # assert res_coll_id !=
+                    tmp[0][1] = 1
+                    print("\033[41m", "value:{} a_id(id_{}) to b_id(id_{})有collude(id_{})但没被找到, 以为是id_{} diff{}".format(final_res, a_id, b_id, true_collude_id, res_coll_id, outdiff), "\033[0m", one_collu_list)
+                elif res_coll_id != -1:
+                    # b_id也不是coll_bk; 也没有正确发现; 但还是以为有coll_id
+                    # 误报 真实为‘1’误以为‘0’
+                    assert b_id not in self.list_coll_corres_bk
+                    tmp[1][0] = 1
+                    print("\033[44m", "value:{} a_id(id_{}) to b_id(id_{})没有collude但给出了，以为是id_{}".format(final_res, a_id, b_id, res_coll_id), "\033[0m", one_collu_list)
+                else:
+                    tmp[1][1] = 1
+                self.coll_DetectRes = self.coll_DetectRes + tmp
+                print(self.coll_DetectRes)
 
         conf_matrix = cal_conf_matrix(i_isSelfish, int(boolBlackhole), num_classes=2)
-
+        if i_isSelfish != int(boolBlackhole):
+            # print("\033[42m", "a_id(id_{}) to b_id(id_{}) real:{} predict:{} value:{}".format(a_id, b_id, i_isSelfish, boolBlackhole, final_res), "\033[0m")
+            pass
         self.DetectResult = self.DetectResult + conf_matrix
         return boolBlackhole
 
@@ -623,21 +668,22 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             tmp_leave_one_array = ind_predict[mask]
             tmp_leave_one_std = np.std(tmp_leave_one_array)
             # 记录leave one以后的std 和 对应的index
-            one_collu_list.append((tmp_leave_one_std, to_collusion_index[0][i], i))
-        # sort
-        one_collu_list.sort(reverse=True)
-        if (one_collu_list[0][0] - one_collu_list[1][0]) > self.collusion_alpha:
+            one_collu_list.append((tmp_leave_one_std, to_collusion_index[0][i], i, ind_predict[0, i]))
+        # sort 从小到大 因为其他节点的评价很接近 ; leave-one std也很接近(变动大 较大); 但是collude的评价很独特, leave one std很小
+        one_collu_list.sort()
+        outdiff = math.fabs(one_collu_list[0][0] - one_collu_list[1][0])
+        if outdiff > self.collusion_alpha:
             coll_node_id = one_collu_list[0][1]
 
             mask = [True] * (dim)
             # 出问题的位置 为false
             mask[one_collu_list[0][2]] = False
             mask = np.array(mask).reshape(-1, dim)
-            good_indirect_predict_res = ind_predict[mask]
+            good_indirect_predict_res = ind_predict[mask].reshape((-1, dim-1))
 
-            return coll_node_id, good_indirect_predict_res, one_collu_list
+            return coll_node_id, good_indirect_predict_res, one_collu_list, outdiff
         else:
-            return -1, ind_predict, one_collu_list
+            return -1, ind_predict, one_collu_list, outdiff
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, pkt_src_id, pkt_dst_id):
