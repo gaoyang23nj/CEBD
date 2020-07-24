@@ -220,9 +220,10 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
 
         # collusion 检查的阈值; 需要经验确定
         # list内阈值 内阈值 要小
-        self.collusion_alpha_inner = 0.0004
+        # self.collusion_alpha_inner = 0.0015
+        self.collusion_alpha_inner = 0.01
         # list外阈值 总阈值 要高
-        self.collusion_alpha_outer = 0.0002
+        self.collusion_alpha_outer = 0.0004
         # 记录collusion检测的评价结果 并 用list记录下来/带上时间；
         # 合作的bk
         self.coll_corr_bk_sum_evalu = 0.0
@@ -628,19 +629,21 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
                     assert true_collude_id == res_coll_id
                     tmp[0][0] = 1
                     print("\033[42m",
-                          "value:{} b_id(id_{})找到了collude(id_{}) diff{}".format(final_res, b_id, true_collude_id, res_coll_id, outdiff),
+                          "value:{} b_id(id_{})找到了collude(id_{}) diff:{}".format(final_res, b_id, true_collude_id, res_coll_id, outdiff),
                           "\033[0m", one_collu_list)
                 elif b_id in self.list_coll_corres_bk:
                     # b_id是coll_corres_bk 存在的对应的colluded节点; 发生漏检
                     # assert res_coll_id !=
                     tmp[0][1] = 1
-                    print("\033[41m", "value:{} a_id(id_{}) to b_id(id_{})有collude(id_{})但没被找到, 以为是id_{} diff{}".format(final_res, a_id, b_id, true_collude_id, res_coll_id, outdiff), "\033[0m", one_collu_list)
+                    print("\033[41m", "value:{} a_id(id_{}) to b_id(id_{})有collude(id_{})但没被找到, 以为是id_{} diff:{}".format(
+                        final_res, a_id, b_id, true_collude_id, res_coll_id, outdiff), "\033[0m", one_collu_list)
                 elif res_coll_id != -1:
                     # b_id也不是coll_bk; 也没有正确发现; 但还是以为有coll_id
                     # 误报 真实为‘1’误以为‘0’
                     assert b_id not in self.list_coll_corres_bk
                     tmp[1][0] = 1
-                    print("\033[44m", "value:{} a_id(id_{}) to b_id(id_{})没有collude但给出了，以为是id_{}".format(final_res, a_id, b_id, res_coll_id), "\033[0m", one_collu_list)
+                    print("\033[44m", "value:{} a_id(id_{}) to b_id(id_{})没有collude但给出了，以为是id_{} diff:{}".format(
+                        final_res, a_id, b_id, res_coll_id, outdiff), "\033[0m", one_collu_list)
                 else:
                     tmp[1][1] = 1
                 self.coll_DetectRes = self.coll_DetectRes + tmp
@@ -702,7 +705,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         dim = to_predict_value.shape[0]
         # leave-one std
         mask_matrix = np.logical_xor(True, np.eye(dim, dim, dtype='bool'))
-        value_matrix = to_predict_value.repeat(dim, axis=0)
+        tmp_to_predict_value = to_predict_value.reshape((1,dim))
+        value_matrix = tmp_to_predict_value.repeat(dim, axis=0)
         # 实现leave one; 准备计算std
         new_value_matrix = value_matrix[mask_matrix].reshape(dim, dim - 1)
         leave_one_std = np.std(new_value_matrix, axis=1)
@@ -712,7 +716,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             # leave-std, coll_node_id, index_in_this_list, predict_value
             tmp_tunple = (leave_one_std[i], to_index[i], i, to_predict_value[i])
             tunple_list.append(tmp_tunple)
-        tunple_list.sort(reverse=True)
+        tunple_list.sort()
         divison = math.fabs(tunple_list[0][0] - tunple_list[1][0])
         if divison > threshold:
             coll_node_id = tunple_list[0][1]
@@ -723,7 +727,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
             good_indirect_predict_res = good_indirect_predict_res.reshape(1,-1)
             return coll_node_id, good_indirect_predict_res, tunple_list, divison
         else:
-            return -1, to_predict_value, tunple_list, divison
+            out_predict_value = to_predict_value.reshape(1,-1)
+            return -1, out_predict_value, tunple_list, divison
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, pkt_src_id, pkt_dst_id):
