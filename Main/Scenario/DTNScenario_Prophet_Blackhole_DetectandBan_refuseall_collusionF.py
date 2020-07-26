@@ -218,6 +218,9 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         # 矩阵属性可以考虑更改
         self.num_of_att = 10
 
+        # 记录不平衡的个数
+        self.count_unb = 0
+        self.forge_value = 0.1
         # collusion 检查的阈值; 需要经验确定
         # list内阈值 内阈值 要小
         # self.collusion_alpha_inner = 0.0015
@@ -570,7 +573,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
                     assert (true_collude_id, b_id) in self.list_coll_pairs
                     target_loc = tmp_w.index(true_collude_id)
                     # collude节点 伪造 好证据
-                    target_value = np.random.random()*0.2
+                    target_value = np.random.random()*self.forge_value
                     ind_predict[0, target_loc] = target_value
                     print('{}to{} change{} loc[{}] {}'.format(a_id,b_id,true_collude_id,target_loc,target_value))
                 elif true_collude_id == a_id:
@@ -629,7 +632,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
                     assert true_collude_id == res_coll_id
                     tmp[0][0] = 1
                     print("\033[42m",
-                          "value:{} b_id(id_{})找到了collude(id_{}) diff:{}".format(final_res, b_id, true_collude_id, res_coll_id, outdiff),
+                          "value:{} b_id(id_{})找到了collude(id_{}) diff:{}".format(final_res, b_id, true_collude_id, outdiff),
                           "\033[0m", one_collu_list)
                 elif b_id in self.list_coll_corres_bk:
                     # b_id是coll_corres_bk 存在的对应的colluded节点; 发生漏检
@@ -675,31 +678,35 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(object):
         # self.__detect_once_list(ind_predict_all, to_index_all)
         # 长度不均匀 总计计算就可以了 我们认为到了后期
         coll_node_id_all = -1
-        if len(ind_predict_0) < 3 or len(ind_predict_1) < 3:
+        if len(ind_predict_0) < 3:
+            self.count_unb = self.count_unb + 1
+            print('unblanced list')
             coll_node_id_all, good_indirect_predict_res_all, tunple_list_all, divison_all = self.__detect_once_list(
                 ind_predict_all, to_index_all, self.collusion_alpha_outer)
             return coll_node_id_all, good_indirect_predict_res_all, tunple_list_all, divison_all
         else:
             coll_node_id_0, good_indirect_predict_res_0, tunple_list_0, divison_0 = self.__detect_once_list(
                 ind_predict_0, to_index_0, self.collusion_alpha_inner)
-            coll_node_id_1, good_indirect_predict_res_1, tunple_list_1, divison_1 = self.__detect_once_list(
-                ind_predict_1, to_index_1, self.collusion_alpha_inner)
-            if coll_node_id_0 != -1 and coll_node_id_1 == -1:
-                coll_node_id_all = coll_node_id_0
-            elif coll_node_id_0 == -1 and coll_node_id_1 != -1:
-                coll_node_id_all = coll_node_id_1
-            elif coll_node_id_0 != -1 and coll_node_id_1 != -1:
-                if divison_0 > divison_1:
-                    coll_node_id_all = coll_node_id_0
-                    diff = divison_0
-                else:
-                    coll_node_id_all = coll_node_id_1
-                    diff = divison_1
-            else:
-                # no coll
-                coll_node_id_all = -1
+            coll_node_id_all = coll_node_id_0
+            # coll_node_id_1, good_indirect_predict_res_1, tunple_list_1, divison_1 = self.__detect_once_list(
+            #     ind_predict_1, to_index_1, self.collusion_alpha_inner)
+            # if coll_node_id_0 != -1 and coll_node_id_1 == -1:
+            #     coll_node_id_all = coll_node_id_0
+            # elif coll_node_id_0 == -1 and coll_node_id_1 != -1:
+            #     coll_node_id_all = coll_node_id_1
+            # elif coll_node_id_0 != -1 and coll_node_id_1 != -1:
+            #     if divison_0 > divison_1:
+            #         coll_node_id_all = coll_node_id_0
+            #         diff = divison_0
+            #     else:
+            #         coll_node_id_all = coll_node_id_1
+            #         diff = divison_1
+            # else:
+            #     # no coll
+            #     coll_node_id_all = -1
+            good_indirect_predict_res_1 = ind_predict_1.reshape(1,-1)
             good_indirect_predict_res_all = np.hstack((good_indirect_predict_res_0, good_indirect_predict_res_1))
-            return coll_node_id_all, good_indirect_predict_res_all, (tunple_list_0, tunple_list_1), (divison_0, divison_1)
+            return coll_node_id_all, good_indirect_predict_res_all, tunple_list_0, divison_0
 
     def __detect_once_list(self, to_predict_value, to_index, threshold):
         dim = to_predict_value.shape[0]
