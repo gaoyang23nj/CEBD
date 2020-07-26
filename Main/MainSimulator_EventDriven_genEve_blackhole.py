@@ -6,11 +6,10 @@ import os
 import winsound
 
 from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
-from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
-from Main.Scenario.DTNScenario_Prophet import DTNScenario_Prophet
+from Main.Multi_Scenario.DTNScenario_Prophet import DTNScenario_Prophet
 
 from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
-from Main.Scenario.DTNScenario_Prophet_Blackhole_toDetect_time import DTNScenario_Prophet_Blackhole_toDetect_time
+from Main.Scenario_ToDetect.DTNScenario_Prophet_Blackhole_toDetect_time import DTNScenario_Prophet_Blackhole_toDetect_time
 
 
 # 简化处理流程 传输速率无限

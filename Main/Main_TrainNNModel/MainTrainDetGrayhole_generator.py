@@ -154,7 +154,7 @@ if __name__ == "__main__":
     tf.config.experimental.set_memory_growth(gpus[0], True)
 
     eve_dir = "E:\\collect_data_grayhole"
-    ml_dir = "..\\Main\\ML_grayhole"
+    ml_dir = "../ML_grayhole"
     if not os.path.exists(ml_dir):
         os.makedirs(ml_dir)
         print('add dir ' + ml_dir)
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     if os.path.exists(h5_filepath):
         os.remove(h5_filepath)
 
-    annotation_dir = "..\\Main\\anno_grayhole"
+    annotation_dir = "../anno_grayhole"
     if not os.path.exists(annotation_dir):
         os.makedirs(annotation_dir)
         print('add dir ' + annotation_dir)

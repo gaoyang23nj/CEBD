@@ -1,26 +1,17 @@
 import numpy as np
 import datetime
-import time
 import sys
 import winsound
 import os
 
-from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
-from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
-from Main.Scenario.DTNScenario_Prophet import DTNScenario_Prophet
+from Main.Multi_Scenario.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
 
-from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_combine import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_combine
-from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_refuseall
-from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall_collusionF import \
+from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall_collusionF import \
     DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF
-from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall_collusionF_without import \
+from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall_collusionF_without import \
     DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without
-from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_time import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_time
-from Main.Scenario.DTNScenario_Prophet_Blackhole_MDS import DTNScenario_Prophet_Blackhole_MDS
+
 
 # 简化处理流程 传输速率无限
 
