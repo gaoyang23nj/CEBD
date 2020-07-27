@@ -241,7 +241,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
 
-    # routing接到指令aid和bid相遇，开始进行消息交换a_id -> b_id
+    # routing接到指令aid和bid相遇，开始进行消息交换 a_id <-> b_id
     def swappkt(self, runningtime, a_id, b_id):
         # 交换直接评价信息，更新间接评价
         a_send = self.listNodeBufferDetect[a_id].get_send_values()
@@ -273,7 +273,7 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
         bool_BH_a_wch_b = self.__detect_blackhole(a_id, b_id, runningtime)
         bool_BH_b_wch_a = self.__detect_blackhole(b_id, a_id, runningtime)
         # 如果有一方不同意 则停止
-        if bool_BH_a_wch_b or bool_BH_a_wch_b:
+        if bool_BH_a_wch_b or bool_BH_b_wch_a:
             return
 
 

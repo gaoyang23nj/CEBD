@@ -2,6 +2,7 @@ from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
 
+
 import copy
 import numpy as np
 import math
@@ -232,7 +233,7 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
         return
 
-    # routing接到指令aid和bid相遇，开始进行消息交换a_id <-> b_id
+    # routing接到指令aid和bid相遇，开始进行消息交换 a_id <-> b_id
     def swappkt(self, runningtime, a_id, b_id):
         # 交换直接评价信息，更新间接评价
         bool_BH_a_to_b = self.__detect_blackhole(a_id, b_id, runningtime)
@@ -240,7 +241,7 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
 
 
         # 任何一方认为对方是blackhole, 就会拒绝报文交换; 如果 ER 0值交换 会产生提高TR
-        if bool_BH_a_to_b or bool_BH_a_to_b:
+        if bool_BH_a_to_b or bool_BH_b_to_a:
             # theBufferDetect_a = self.listNodeBufferDetect_MDS[a_id]
             # theBufferDetect_a.begin_new_encounter(b_id)
             # theBufferDetect_b = self.listNodeBufferDetect_MDS[b_id]
