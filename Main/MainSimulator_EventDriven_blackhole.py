@@ -21,7 +21,7 @@ from Main.Scenario.DTNScenario_Prophet_Blackhole_MDS import DTNScenario_Prophet_
 # 简化处理流程 传输速率无限
 
 # 事件驱动
-
+from Main.Scenario.DTNScenario_Prophet_Blackhole_SDBG import DTNScenario_Prophet_Blackhole_SDBG
 
 
 class Simulator(object):
@@ -160,6 +160,33 @@ class Simulator(object):
             dst_index = dst_index + 1
         return (src_index, dst_index)
 
+    def init_scenario_test_SDBG(self):
+        index = -1
+        # ===============================场景2 Prophet ===================================
+        index += 1
+        tmp_senario_name = 'scenario' + str(index) + '_Prophet'
+        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # 0.1 0.2 0.3 0.4 0.5
+        for j in range(5):
+            # ===============================场景3 Prophet + Blackhole 0.1 ===================================
+            # # 随机生成序列
+            tmp = j + 1
+            percent_selfish = 0.1 * tmp
+            indices = np.random.permutation(self.MAX_NODE_NUM)
+            malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+            normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_SDBG_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_SDBG(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+        # ===============================场景单个单个的实验吧===================================
+        list_scena = list(self.scenaDict.keys())
+        return list_scena
+
     def init_scenario_test_refuse(self):
         index = -1
         # ===============================场景2 Prophet ===================================
@@ -261,7 +288,8 @@ class Simulator(object):
     def init_scenario(self):
         self.scenaDict = {}
         # list_scena = self.init_scenario_blackhole()
-        list_scena = self.init_scenario_test_refuse()
+        # list_scena = self.init_scenario_test_refuse()
+        list_scena = self.init_scenario_test_SDBG()
         return list_scena
 
     # 打印出结果
