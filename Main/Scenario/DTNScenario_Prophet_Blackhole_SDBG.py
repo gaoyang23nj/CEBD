@@ -51,12 +51,7 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         print(output_str_whole + output_str_pure + output_str_state + output_str_tmp_state)
         # 不必进行标签值 和 属性值 的保存
         # self.print_eve_res()
-        # 使得预测进程终止
-        global ProcessCtl_dict_time
-        global DectectandBan_time_q_input
-        if ProcessCtl_dict_time["running_label"] == True:
-            DectectandBan_time_q_input.put(None)
-            ProcessCtl_dict_time["running_label"] = False
+
         outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
         percent_selfish = len(self.list_selfish) / self.num_of_nodes
         res = (succ_ratio, avg_delay, self.DetectResult, self.tmp_DetectResult)
@@ -245,11 +240,11 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         theBufferDetect = self.listNodeBufferDetect[a_id]
         boolBlackhole, collusion_list = theBufferDetect.detect_node_j(b_id, ER_list_j)
 
-        conf_matrix = self.__cal_conf_matrix(i_isSelfish, int(boolBlackhole), num_classes=2)
+        conf_matrix = self.__cal_conf_matrix(i_isSelfish, int(boolBlackhole), num_classes = 2)
         self.DetectResult = self.DetectResult + conf_matrix
         return boolBlackhole
 
-    def __cal_conf_matrix(y_true, y_predict, num_classes):
+    def __cal_conf_matrix(self, y_true, y_predict, num_classes):
         res = np.zeros((num_classes, num_classes), dtype='int')
         res[y_true][y_predict] = 1
         return res

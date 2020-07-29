@@ -116,7 +116,7 @@ def process_predict_blackhole_d_ind_direct(files_path, max_ability, q_input, q_o
         tmp_d = d_predict_y[:, 1].reshape(-1, 1)
         tmp_res = np.hstack((tmp_d, tmp_ind))
         final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
-        isB_predict = final_res > 0.5
+        isB_predict = final_res > 0.6
 
         y_predict = np.zeros((1), dtype='int')
         y_predict[0] = int(isB_predict)

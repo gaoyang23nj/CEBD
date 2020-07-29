@@ -3,16 +3,16 @@ import numpy as np
 class DTNNodeBuffer_Detect_SDBG(object):
     def __init__(self, node_id, numofnodes):
         # ID_i
-        self.node_id = self.node_id
+        self.node_id = node_id
         self.numofnodes = numofnodes
         # sn_i
         self.ER_sn = 0
         # sig_i 模拟一下好了
-        self.sig = 'sig_' + self.node_id
+        self.sig = 'sig_' + str(self.node_id)
 
         # 只在本地保存w个ER； presents them to the neighbors
         self.ER_List = []
-        self.w = 100
+        self.w = 300
 
         # 对其他剩余节点 都创建MS: (N-1)个MS
         # 100 * [j_node_id, latest_sn_j, latest_time_j, self.TR_init, 0(未设置)/1(设置)]
@@ -24,15 +24,21 @@ class DTNNodeBuffer_Detect_SDBG(object):
         self.Th_RR = 4
         self.Th_SFR = 0.08
 
-        self.Dec_gamma = 0.2
-        self.Dec_rho = 0.2
-        self.Inc_lambda = 0.5
+        # self.Dec_gamma = 0.2
+        # self.Dec_rho = 0.2
+        # self.Inc_lambda = 0.5
+
+        self.Dec_gamma = 0.04
+        self.Dec_rho = 0.09
+        self.Inc_lambda = 0.06
 
         self.Th_FXS = 2400
 
         # TR的阈值 good mal; >good的 高优先级; <good且>mal的 低优先级; < mal 不会交换报文 只交流控制信息
-        self.Th_good = 2
-        self.Th_mal = -2
+        # self.Th_good = 2
+        # self.Th_mal = -2
+        self.Th_good = 0.3
+        self.Th_mal = -0.3
 
         # ********************************************
         # 为了在一次contact中构建ER记录 需要把交换的报文都记录下来
@@ -57,14 +63,14 @@ class DTNNodeBuffer_Detect_SDBG(object):
 
     # 我(本节点) 发送给其他节点的报文list
     def add_SL_to_new_ER(self, node_j, runningtime, SL):
-        print('{} pkts {}->{}'.format(len(SL), self.node_id, node_j, ))
+        # print('{} pkts {}->{}'.format(len(SL), self.node_id, node_j))
         assert self.tmp_ER[1] == node_j and self.tmp_ER[4] == runningtime
         self.tmp_ER[5].extend(SL)
 
 
     # 我(本节点) 从其他节点接收的报文list
     def add_RL_to_new_ER(self, node_j, runningtime, RL):
-        print('{} pkts {}->{}'.format(len(RL), node_j, self.node_id))
+        # print('{} pkts {}->{}'.format(len(RL), node_j, self.node_id))
         assert self.tmp_ER[1] == node_j and self.tmp_ER[4] == runningtime
         self.tmp_ER[6].extend(RL)
         pass
@@ -80,10 +86,9 @@ class DTNNodeBuffer_Detect_SDBG(object):
         assert len(self.tmp_ER) == 0
         assert len(self.ER_List) <= self.w
         node_j = self.ER_List[-1][1]
-        num_snd = len(self.ER_List[5])
-        num_rcv = len(self.ER_List[6])
-        print('add new ER, {} pkts:{}->{} and {} pkts:{}->{}'.format(num_snd, self.node_id, node_j,
-                                                                     num_rcv, node_j, self.node_id))
+        num_snd = len(self.ER_List[-1][5])
+        num_rcv = len(self.ER_List[-1][6])
+        # print('add new ER, {} pkts:{}->{} and {} pkts:{}->{}'.format(num_snd, self.node_id, node_j, num_rcv, node_j, self.node_id))
         return
 
     def detect_node_j(self, j_node_id, ERW):
@@ -165,15 +170,20 @@ class DTNNodeBuffer_Detect_SDBG(object):
                 if pkt_id in tmpPktidList:
                     idx = tmpPktidList.index(pkt_id)
                     oldtimestamp = tmpPktList[idx][3]
-                    assert (oldtimestamp < timestamp)
-                    N_RS = N_RS + 1
-                    tmpPktidList.pop(idx)
-                    tmpPktList.pop(idx)
+                    if oldtimestamp < timestamp:
+                        # 如果之前接收 现在发送; 那么就属于已经转出的情况
+                        N_RS = N_RS + 1
+                        tmpPktidList.pop(idx)
+                        tmpPktList.pop(idx)
+                    else:
+                        # 否则 可能是 重复把报文放进来了
+                        print('send again!!! old_recv:{} now_snd:{}'.format(tmpPktList[idx], tmpSend))
             N_send = N_send + len(SL_j)
         assert (len(tmpPktList) == len(tmpPktidList))
         N_RNS = len(tmpPktList)
-        RR = N_RS / N_RNS
-        SFR = N_selfsend / N_send
+        # 为了解决除以0的问题
+        RR = N_RS / (N_RNS + 1)
+        SFR = N_selfsend / (N_send + 1)
         # return N_RS, N_RNS, N_selfsend, N_send, RR, SFR
         return RR, SFR
 

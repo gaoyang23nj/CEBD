@@ -144,7 +144,8 @@ class DTNScenario_Prophet_Blackhole(object):
 
         outstr = output_str_whole + output_str_pure
         res = (succ_ratio, avg_delay)
-        config = ()
+        percent_selfish = len(self.list_selfish) / self.num_of_nodes
+        config = (percent_selfish, 1)
         return outstr, res, config
 
     def print_res_whole(self, listgenpkt):

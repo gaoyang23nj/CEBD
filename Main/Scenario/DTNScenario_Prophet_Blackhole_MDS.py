@@ -45,8 +45,8 @@ class DTNNodeBuffer_Detect_MDS(object):
         self.ER_list = []
         # 临时ER 在传输报文过程前启用, 传输结束后加入到ER_list,并重置
         self.tmp_ER = {"partner_id":-1, "send_to_partner":0, "recv_from_partner":0, "gensend_to_partner":0, "running":0}
-        # 超时时间1个小时
-        self.expriation = 3600*10
+        # 超时时间4个小时
+        self.expriation = 3600*10*3
         self.LBL_list = []
         self.LBL_resume_time_list = []
 
