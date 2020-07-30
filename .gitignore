@@ -31,3 +31,5 @@ Main/ML_blackhole_time/*
 
 Main/collect_data_grayhole/*
 Main/collect_data_blackhole_time/*
+Main/Main_TrainNNModel/logs_black_time_direct/*
+Main/Main_TrainNNModel/logs_black_time_indirect/*
