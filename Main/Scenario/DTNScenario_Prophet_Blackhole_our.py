@@ -14,8 +14,8 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 NUM_of_DIMENSIONS = 10
-NUM_of_DIRECT_INPUTS = 7
-NUM_of_INDIRECT_INPUTS = 8
+NUM_of_DIRECT_INPUTS = 8
+NUM_of_INDIRECT_INPUTS = 9
 MAX_RUNNING_TIMES = 864000
 
 def extract_indirect_data(x, y, ll):
@@ -156,7 +156,7 @@ DectectandBan_time_q_output = multiprocessing.Queue()
 
 # 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
+class DTNScenario_Prophet_Blackhole_our(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime):
         # tf的调用次数
@@ -185,8 +185,8 @@ class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(object):
 
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
         dir = "..\\Main\\ML_blackhole_time"
-        direct_model_file_path = os.path.join(dir, 'direct_model.h5')
-        indirect_model_file_path = os.path.join(dir, 'indirect_model.h5')
+        direct_model_file_path = os.path.join(dir, 'our_direct_model.h5')
+        indirect_model_file_path = os.path.join(dir, 'our_indirect_model.h5')
         self.model_files_path = (direct_model_file_path, indirect_model_file_path)
 
         self.MAX_Ability = (10000, 'Max Process Ability', 'Continue')

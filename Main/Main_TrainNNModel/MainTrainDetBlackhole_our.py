@@ -297,7 +297,9 @@ def process_data_npz(file_path):
 def build_anno(eve_dir, annotation_path):
     # 把文件名 和 对应的数据源 洗出来
     npz_tunple_list = []
+    print(eve_dir, annotation_path)
     scenario_dirs = os.listdir(eve_dir)
+    print(eve_dir, annotation_path)
     for scenario_dir in scenario_dirs:
         scenario_path = os.path.join(eve_dir, scenario_dir)
         if not os.path.isdir(scenario_path):

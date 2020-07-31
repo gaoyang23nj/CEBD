@@ -37,7 +37,7 @@ class DTNScenario_Prophet_Grayhole_toDetect_time(object):
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
         # 实验所产生的证据 保存路径
-        self.eve_dir = "E://collect_data_garyhole_time//" + self.scenarioname
+        self.eve_dir = "E://collect_data_grayhole_time//" + self.scenarioname
         if os.path.exists(self.eve_dir):
             shutil.rmtree(self.eve_dir)
         os.makedirs(self.eve_dir)

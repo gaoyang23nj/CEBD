@@ -456,9 +456,9 @@ if __name__ == "__main__":
     # 由于我这里仅有一块GPU,multi-GPU需要for一下
     tf.config.experimental.set_memory_growth(gpus[0], True)
 
-    eve_dirs = ["..\\Main\\collect_data_blackhole_time", "E:\\collect_data_blackhole_time"]
+    eve_dirs = ["E:\\collect_data_blackhole_time", "E:\\collect_data_grayhole_time"]
 
-    annotation_dir = "..\\Main\\anno_blackhole_time"
+    annotation_dir = ".\\anno_blackhole_time"
     if not os.path.exists(annotation_dir):
         os.makedirs(annotation_dir)
         print('add dir ' + annotation_dir)
@@ -467,7 +467,7 @@ if __name__ == "__main__":
     anno_filepath = os.path.join(annotation_dir, "anno.txt")
     if os.path.exists(anno_filepath):
         os.remove(anno_filepath)
-    build_anno(eve_dirs, anno_filepath)
+    build_anno(eve_dirs[0], anno_filepath)
 
     # 0.7:0.1:0.2 train val test
     val_test_split = 0.2
@@ -483,7 +483,7 @@ if __name__ == "__main__":
 
     print("与之前的计算结果 略有差别~ 少了自己关于自己的结论。")
     print("\tMethod-1:\t(1)train combine_model.\t(2)use combine_model result as predict value.\n")
-    ml_dir = "..\\Main\\ML_blackhole_time"
+    ml_dir = ".\\ML_blackhole_time"
     if not os.path.exists(ml_dir):
         os.makedirs(ml_dir)
         print('add dir ' + ml_dir)
