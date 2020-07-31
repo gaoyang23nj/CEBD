@@ -1,5 +1,6 @@
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
+from Main.Scenario_Benchamark.DTNNodeBuffer_Detect_Li import DTNNodeBuffer_Detect_Li
 from Main.Scenario_Benchamark.DTNNodeBuffer_Detect_SDBG import DTNNodeBuffer_Detect_SDBG
 
 import copy
@@ -9,7 +10,7 @@ import math
 # SDBG方法
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
 
-class DTNScenario_Prophet_Blackhole_SDBG(object):
+class DTNScenario_Prophet_Blackhole_Li(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime):
         self.scenarioname = scenarioname
@@ -32,7 +33,8 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
             tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
             # 用于检测的buffer
-            tmpBuffer_Detect = DTNNodeBuffer_Detect_SDBG(node_id, num_of_nodes)
+            isbk = node_id in list_selfish
+            tmpBuffer_Detect = DTNNodeBuffer_Detect_Li(node_id, num_of_nodes, isbk)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
 
         # 保存真正使用的结果: self.DetectResult[0,1] False_Positive ; self.DetectResult[1,0] False_Negative
@@ -41,10 +43,10 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         self.tmp0_DetectResult = np.zeros((2, 2), dtype='int')
         self.tmp_DetectResult = np.zeros((2, 20), dtype='int')
 
-        bk_filename = ".\\" + self.scenarioname +  "_bk_rr_sfr.csv"
-        nm_filename = ".\\" + self.scenarioname +  "_nm_rr_sfr.csv"
-        self.bk_file = open(bk_filename, 'w+')
-        self.nm_file = open(nm_filename, 'w+')
+        # bk_filename = ".\\" + self.scenarioname +  "_bk_rr_sfr.csv"
+        # nm_filename = ".\\" + self.scenarioname +  "_nm_rr_sfr.csv"
+        # self.bk_file = open(bk_filename, 'w+')
+        # self.nm_file = open(nm_filename, 'w+')
 
         return
 
@@ -69,7 +71,9 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         self.__update_tmp_conf_matrix(gentime, False)
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPkt(pkt_id, src_id, dst_id, gentime, pkt_size)
-        self.listNodeBuffer[src_id].gennewpkt(newpkt)
+        isDel = self.listNodeBuffer[src_id].gennewpkt(newpkt)
+        if isDel:
+            self.listNodeBufferDetect[src_id].notify_del_pkt(gentime)
         return
 
     # routing接到指令aid和bid相遇，开始进行消息交换 a_id <-> b_id
@@ -78,14 +82,12 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         ER_list_i = self.listNodeBufferDetect[a_id].get_local_ER_list()
         ER_list_j = self.listNodeBufferDetect[a_id].get_local_ER_list()
 
-        bool_BH_a_wch_b = self.__detect_blackhole(a_id, b_id, ER_list_j, runningtime)
-        bool_BH_b_wch_a = self.__detect_blackhole(b_id, a_id, ER_list_i, runningtime)
-        # 如果有一方不同意 则停止
-        if bool_BH_a_wch_b or bool_BH_b_wch_a:
-            return
+        # 是否转发按照概率
+        gamma_a_to_b = self.__detect_blackhole(a_id, b_id, ER_list_j, runningtime)
+        gamma_b_to_a = self.__detect_blackhole(b_id, a_id, ER_list_i, runningtime)
 
-        sn_i, sig_i = self.listNodeBufferDetect[a_id].get_new_seq_for_ER()
-        sn_j, sig_j = self.listNodeBufferDetect[b_id].get_new_seq_for_ER()
+        sn_i = self.listNodeBufferDetect[a_id].get_new_seq_for_ER()
+        sn_j = self.listNodeBufferDetect[b_id].get_new_seq_for_ER()
         self.listNodeBufferDetect[a_id].begin_new_ER(b_id, sn_j, runningtime)
         self.listNodeBufferDetect[b_id].begin_new_ER(a_id, sn_i, runningtime)
         # ================== 控制信息 交换==========================
@@ -98,56 +100,73 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         self.listRouter[b_id].notifylinkup(runningtime, a_id, P_a_any)
         if isinstance(self.listRouter[a_id], RoutingBlackhole) and isinstance(self.listRouter[b_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是blackhole b_id是blackhole==========================
-            snd_list_a_to_b = self.__sendpkt_toblackhole(runningtime, a_id, b_id)
+            snd_list_a_to_b, isDel = self.__sendpkt_toblackhole(runningtime, a_id, b_id, gamma_a_to_b)
             # 更新 a->b 临时记录
             self.listNodeBufferDetect[a_id].add_SL_to_new_ER(b_id, runningtime, snd_list_a_to_b)
             self.listNodeBufferDetect[b_id].add_RL_to_new_ER(a_id, runningtime, snd_list_a_to_b)
+            if isDel:
+                self.listNodeBufferDetect[a_id].notify_del_pkt(runningtime)
 
-            snd_list_b_to_a = self.__sendpkt_toblackhole(runningtime, b_id, a_id)
+            snd_list_b_to_a, isDel = self.__sendpkt_toblackhole(runningtime, b_id, a_id, gamma_b_to_a)
             # 更新 b->a 临时记录
             self.listNodeBufferDetect[b_id].add_SL_to_new_ER(a_id, runningtime, snd_list_b_to_a)
             self.listNodeBufferDetect[a_id].add_RL_to_new_ER(b_id, runningtime, snd_list_b_to_a)
+            if isDel:
+                self.listNodeBufferDetect[b_id].notify_del_pkt(runningtime)
         elif isinstance(self.listRouter[a_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是blackhole b_id是正常prophet==========================
-            snd_list_a_to_b = self.__sendpkt(runningtime, a_id, b_id)
+            snd_list_a_to_b, isDel = self.__sendpkt(runningtime, a_id, b_id, gamma_a_to_b)
             # 更新 a->b 临时记录
             self.listNodeBufferDetect[a_id].add_SL_to_new_ER(b_id, runningtime, snd_list_a_to_b)
             self.listNodeBufferDetect[b_id].add_RL_to_new_ER(a_id, runningtime, snd_list_a_to_b)
+            if isDel:
+                self.listNodeBufferDetect[a_id].notify_del_pkt(runningtime)
 
-            snd_list_b_to_a = self.__sendpkt_toblackhole(runningtime, b_id, a_id)
+            snd_list_b_to_a, isDel = self.__sendpkt_toblackhole(runningtime, b_id, a_id, gamma_b_to_a)
             # 更新 b->a 临时记录
             self.listNodeBufferDetect[b_id].add_SL_to_new_ER(a_id, runningtime, snd_list_b_to_a)
             self.listNodeBufferDetect[a_id].add_RL_to_new_ER(b_id, runningtime, snd_list_b_to_a)
+            if isDel:
+                self.listNodeBufferDetect[b_id].notify_del_pkt(runningtime)
         elif isinstance(self.listRouter[b_id], RoutingBlackhole):
             # ================== 报文 交换; a_id是正常prophet b_id是blackhole==========================
-            snd_list_a_to_b = self.__sendpkt_toblackhole(runningtime, a_id, b_id)
+            snd_list_a_to_b, isDel = self.__sendpkt_toblackhole(runningtime, a_id, b_id, gamma_a_to_b)
             # 更新 a->b 临时记录
             self.listNodeBufferDetect[a_id].add_SL_to_new_ER(b_id, runningtime, snd_list_a_to_b)
             self.listNodeBufferDetect[b_id].add_RL_to_new_ER(a_id, runningtime, snd_list_a_to_b)
+            if isDel:
+                self.listNodeBufferDetect[a_id].notify_del_pkt(runningtime)
 
-            snd_list_b_to_a = self.__sendpkt(runningtime, b_id, a_id)
+            snd_list_b_to_a, isDel = self.__sendpkt(runningtime, b_id, a_id, gamma_b_to_a)
             # 更新 b->a 临时记录
             self.listNodeBufferDetect[b_id].add_SL_to_new_ER(a_id, runningtime, snd_list_b_to_a)
             self.listNodeBufferDetect[a_id].add_RL_to_new_ER(b_id, runningtime, snd_list_b_to_a)
+            if isDel:
+                self.listNodeBufferDetect[b_id].notify_del_pkt(runningtime)
 
         elif (not isinstance(self.listRouter[a_id], RoutingBlackhole)) and (not isinstance(self.listRouter[b_id], RoutingBlackhole)):
             # ================== 报文 交换==========================
-            snd_list_a_to_b = self.__sendpkt(runningtime, a_id, b_id)
+            snd_list_a_to_b, isDel = self.__sendpkt(runningtime, a_id, b_id, gamma_a_to_b)
             # 更新 a->b 临时记录
             self.listNodeBufferDetect[a_id].add_SL_to_new_ER(b_id, runningtime, snd_list_a_to_b)
             self.listNodeBufferDetect[b_id].add_RL_to_new_ER(a_id, runningtime, snd_list_a_to_b)
+            if isDel:
+                self.listNodeBufferDetect[a_id].notify_del_pkt(runningtime)
 
-            snd_list_b_to_a = self.__sendpkt(runningtime, b_id, a_id)
+            snd_list_b_to_a, isDel = self.__sendpkt(runningtime, b_id, a_id, gamma_b_to_a)
             # 更新 b->a 临时记录
             self.listNodeBufferDetect[b_id].add_SL_to_new_ER(a_id, runningtime, snd_list_b_to_a)
             self.listNodeBufferDetect[a_id].add_RL_to_new_ER(b_id, runningtime, snd_list_b_to_a)
+            if isDel:
+                self.listNodeBufferDetect[b_id].notify_del_pkt(runningtime)
 
         # a_id 和 b_id 根据本次报文的交换 把tmp_ER 更新到 ERw中
-        self.listNodeBufferDetect[a_id].end_new_ER(sig_j)
-        self.listNodeBufferDetect[b_id].end_new_ER(sig_i)
+        self.listNodeBufferDetect[a_id].end_new_ER()
+        self.listNodeBufferDetect[b_id].end_new_ER()
 
     # 报文发送 a_id -> b_id
-    def __sendpkt_toblackhole(self, runningtime, a_id, b_id):
+    def __sendpkt_toblackhole(self, runningtime, a_id, b_id, gamma):
+        isDel = False
         sndlist_a_to_b = []
         P_b_any = self.listRouter[b_id].get_values_before_up(runningtime)
         P_a_any = self.listRouter[a_id].get_values_before_up(runningtime)
@@ -181,21 +200,24 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         for tmp_pkt in totran_pktlist:
             # <是目的节点 OR P值更大> 才进行传输; 单播 只要传输就要删除原来的副本
             if tmp_pkt.dst_id == b_id:
-                self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                isReach, isDel = self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 # 进行报文记录
                 sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
-                self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
-                self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                # blackhole b_id立刻发动
-                self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                # 进行报文记录
-                sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
-        return sndlist_a_to_b
+                # 按照Li算法 由gamma概率决定
+                if np.random.random() > gamma:
+                    isReach, isDel = self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                    self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                    # blackhole b_id立刻发动
+                    self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                    # 进行报文记录
+                    sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
+        return sndlist_a_to_b, isDel
 
     # 报文发送 a_id -> b_id
-    def __sendpkt(self, runningtime, a_id, b_id):
+    def __sendpkt(self, runningtime, a_id, b_id, gamma):
+        isDel = False
         sndlist_a_to_b = []
         P_b_any = self.listRouter[b_id].get_values_before_up(runningtime)
         P_a_any = self.listRouter[a_id].get_values_before_up(runningtime)
@@ -229,16 +251,17 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         for tmp_pkt in totran_pktlist:
             # <是目的节点 OR P值更大> 才进行传输; 单播 只要传输就要删除原来的副本
             if tmp_pkt.dst_id == b_id:
-                self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                isReach, isDel = self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 # 进行报文记录
                 sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
-                self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
-                self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
-                # 进行报文记录
-                sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
-        return sndlist_a_to_b
+                if np.random.random()>gamma:
+                    isReach, isDel = self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
+                    self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                    # 进行报文记录
+                    sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
+        return sndlist_a_to_b, isDel
 
     def __detect_blackhole(self, a_id, b_id, ER_list_j, runningtime):
         bool_isSelfish = b_id in self.list_selfish
@@ -246,20 +269,12 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
 
         theBufferDetect = self.listNodeBufferDetect[a_id]
         # boolBlackhole, collusion_list = theBufferDetect.detect_node_j(b_id, ER_list_j)
-        boolBlackhole, collusion_list, i_isSelfish, (RR, SFR), do_not_record = \
-            theBufferDetect.detect_node_jv2(b_id, ER_list_j, i_isSelfish)
+        gamma = theBufferDetect.detect_contacted_node(b_id, ER_list_j)
 
-        if not do_not_record:
-            if i_isSelfish == 1:
-                self.bk_file.write("{},{}".format(RR, SFR))
-                self.bk_file.write('\n')
-            else:
-                self.nm_file.write("{},{}".format(RR, SFR))
-                self.nm_file.write('\n')
-
+        boolBlackhole = gamma > 0.5
         conf_matrix = self.__cal_conf_matrix(i_isSelfish, int(boolBlackhole), num_classes = 2)
         self.DetectResult = self.DetectResult + conf_matrix
-        return boolBlackhole
+        return gamma
 
     def __cal_conf_matrix(self, y_true, y_predict, num_classes):
         res = np.zeros((num_classes, num_classes), dtype='int')
@@ -353,9 +368,9 @@ class DTNScenario_Prophet_Blackhole_SDBG(object):
         return output_str, succ_ratio, avg_delay
 
     def __close_rr_sfr_file(self):
-        self.bk_file.close()
-        self.nm_file.close()
-
+        # self.bk_file.close()
+        # self.nm_file.close()
+        pass
 
 class RoutingProphet(object):
     def __init__(self, node_id, num_of_nodes, p_init=0.75, gamma=0.98, beta=0.25):

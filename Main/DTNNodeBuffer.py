@@ -19,10 +19,12 @@ class DTNNodeBuffer(object):
 
     # =========================== 核心接口 提供传输pkt的名录; 生成报文; 接收报文
     def gennewpkt(self, newpkt):
-        self.__mkroomaddpkt(newpkt, isgen=True)
+        isDelPkt_for_room = self.__mkroomaddpkt(newpkt, isgen=True)
+        return isDelPkt_for_room
 
     def receivepkt(self, runningtime, receivedpkt):
         # isReach 为 True 表示pkt已经投递到dest, 源节点不必再保留
+        isDelPkt_for_room = False
         isReach = False
         cppkt = copy.deepcopy(receivedpkt)
         if isinstance(cppkt, DTNPktTrack):
@@ -41,8 +43,8 @@ class DTNNodeBuffer(object):
                 self.listofsuccpkt.append(cppkt)
             isReach = True
         else:
-            self.__mkroomaddpkt(cppkt, False)
-        return isReach
+            isDelPkt_for_room = self.__mkroomaddpkt(cppkt, False)
+        return isReach, isDelPkt_for_room
 
     # 获取内存中的pkt list
     def getlistpkt(self):
@@ -76,6 +78,7 @@ class DTNNodeBuffer(object):
     # ==============================================================================================================
     # 保证内存空间足够 并把pkt放在内存里; isgen 是否是生成新pkt
     def __mkroomaddpkt(self, newpkt, isgen):
+        isDel = False
         self.listofpktid_hist.append(newpkt.pkt_id)
         self.__addpkt(newpkt)
         # 如果需要删除pkt以提供内存空间 按照drop old原则
@@ -83,7 +86,8 @@ class DTNNodeBuffer(object):
             # print('delete pkt! in node_{}'.format(self.node_id))
             self.occupied_size = self.occupied_size - self.listofpkt[0].pkt_size
             self.listofpkt.pop(0)
-        return
+            isDel = True
+        return isDel
 
     # 内存中增加pkt newpkt
     def __addpkt(self, newpkt):
