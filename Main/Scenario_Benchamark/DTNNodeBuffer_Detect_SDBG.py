@@ -234,6 +234,8 @@ class DTNNodeBuffer_Detect_SDBG(object):
                 # tmpPktSidList.append(pkt_id)
         N_RS = len(tmpPktRList)
         tmp = 0
+        if len(tmpPktRList)!=0 and len(tmpPktSList)!=0:
+            pass
         # 从所有接收的报文中 去除 已经发送出去的
         for pkt_R in tmpPktRList:
             (pkt_id, src_id, dst_id, timestamp, k_node_id) = pkt_R
@@ -241,6 +243,7 @@ class DTNNodeBuffer_Detect_SDBG(object):
                 (pkt_ids, src_ids, dst_ids, timestamps, k_node_ids) = pkt_S
                 if ((pkt_id == pkt_ids) and  (timestamps>=timestamp)):
                     tmp = tmp + 1
+                    break
         N_RNS = N_RS- tmp
         return N_RS, N_RNS
 
