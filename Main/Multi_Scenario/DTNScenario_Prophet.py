@@ -18,6 +18,7 @@ class DTNScenario_Prophet(object):
             self.listRouter.append(tmpRouter)
             tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
+        self.num_comm = 0
         return
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -76,6 +77,7 @@ class DTNScenario_Prophet(object):
             if tmp_pkt.dst_id == b_id or P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.num_comm = self.num_comm + 1
 
     def print_res(self, listgenpkt):
         output_str = '{}\n'.format(self.scenarioname)
@@ -95,14 +97,15 @@ class DTNScenario_Prophet(object):
         succ_ratio = total_succnum/len(listgenpkt)
         if total_succnum != 0:
             avg_delay = total_delay/total_succnum
-            output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
+            output_str += 'succ_ratio:{} avg_delay:{} '.format(succ_ratio, avg_delay)
         else:
             avg_delay = ()
-            output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
+            output_str += 'succ_ratio:{} avg_delay:null '.format(succ_ratio)
+        output_str += 'num_comm:{}\n'.format(self.num_comm)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, len(listgenpkt), total_succnum)
         print(output_str)
-        res = (succ_ratio, avg_delay)
-        config = ()
+        res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': self.num_comm}
+        config = {'ratio_bk_nodes': 0, 'drop_prob': 1}
         return output_str, res, config
 
 class RoutingProphet(object):

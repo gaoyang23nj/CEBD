@@ -19,6 +19,7 @@ class DTNNodeBuffer(object):
 
     # =========================== 核心接口 提供传输pkt的名录; 生成报文; 接收报文
     def gennewpkt(self, newpkt):
+        self.listofpktid_hist.append(newpkt.pkt_id)
         isDelPkt_for_room = self.__mkroomaddpkt(newpkt, isgen=True)
         return isDelPkt_for_room
 
@@ -43,6 +44,7 @@ class DTNNodeBuffer(object):
                 self.listofsuccpkt.append(cppkt)
             isReach = True
         else:
+            self.listofpktid_hist.append(cppkt.pkt_id)
             isDelPkt_for_room = self.__mkroomaddpkt(cppkt, False)
         return isReach, isDelPkt_for_room
 
@@ -79,7 +81,6 @@ class DTNNodeBuffer(object):
     # 保证内存空间足够 并把pkt放在内存里; isgen 是否是生成新pkt
     def __mkroomaddpkt(self, newpkt, isgen):
         isDel = False
-        self.listofpktid_hist.append(newpkt.pkt_id)
         self.__addpkt(newpkt)
         # 如果需要删除pkt以提供内存空间 按照drop old原则
         while self.occupied_size > self.maxsize:

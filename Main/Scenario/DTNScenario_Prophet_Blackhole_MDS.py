@@ -1,160 +1,12 @@
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
-from Main.DTNNodeBuffer_Detect import DTNNodeBuffer_Detect
-
-
 import copy
 import numpy as np
 import math
-import os
-import tensorflow as tf
-import multiprocessing
-import re
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
-
-NUM_of_DIMENSIONS = 10
-NUM_of_DIRECT_INPUTS = 7
-NUM_of_INDIRECT_INPUTS = 8
-MAX_RUNNING_TIMES = 864000
-
-# *** 未完成
-# 应该加入 黑名单LBL 等到时候超时才放出
-# 0值ER 可能会使TR虚高
-class DTNNodeBuffer_Detect_MDS(object):
-    def __init__(self, node_id, num_of_nodes):
-        self.node_id = node_id
-        self.w_max = 100
-        self.tr_init = 0.5
-        self.tr_reduced_init = 0.4
-        self.TR_list = np.ones(num_of_nodes, dtype='float')*self.tr_init
-        # 对于Prophet来说
-        # TR更新用的变化值
-        self.tr_gamma = 0.04
-        self.tr_rho = 0.09
-        self.tr_lambda = 0.06
-        # failstep 判断阈值
-        self.Nth_b = 0.8
-        self.Nth_a = 4
-        self.NRth = 0.7
-        # TR阈值
-        self.TRth_evil = 0.3
-        self.TRth_friend = 0.8
-        # 保存的信息, ER等
-        self.ER_list = []
-        # 临时ER 在传输报文过程前启用, 传输结束后加入到ER_list,并重置
-        self.tmp_ER = {"partner_id":-1, "send_to_partner":0, "recv_from_partner":0, "gensend_to_partner":0, "running":0}
-        # 超时时间4个小时
-        self.expriation = 3600*10*3
-        self.LBL_list = []
-        self.LBL_resume_time_list = []
-
-    def get_ER_list(self):
-        return self.ER_list.copy()
-
-    def detect_node_j(self, j_id, j_ER_list, runningtime):
-        j_is_blackhole = False
-        # 检查LBL
-        if j_id in self.LBL_list:
-            j_is_blackhole = True
-            # 如果j在黑名单LBL上 则查看j的恢复时刻
-            index_j_id = self.LBL_list.index(j_id)
-            # 规定的恢复时刻已经到了
-            if self.LBL_resume_time_list[index_j_id] <= runningtime:
-                j_is_blackhole = False
-                self.LBL_list.pop(index_j_id)
-                self.LBL_resume_time_list.pop(index_j_id)
-            return j_is_blackhole
-        # 开始检测
-        fail_step = 0
-        N_send = 0
-        N_recv = 0
-        N_jsend = 0
-        for one_ER in j_ER_list:
-            # N_send = N_send + one_ER["send_to_partner"]
-            # N_recv = N_recv + one_ER["recv_from_partner"]
-            # N_jsend = N_jsend + one_ER["gensend_to_partner"]
-            N_send = N_send + one_ER[1]
-            N_recv = N_recv + one_ER[2]
-            N_jsend = N_jsend + one_ER[3]
-        # 第5步
-        # 计算 theta
-        if N_recv == 0:
-            N_recv = 1
-        theta = (N_send + 0.0) / N_recv
-        Nth = self.__get_Nth(len(j_ER_list))
-        if theta < Nth:
-            fail_step = fail_step + 1
-        # 第6步
-        if N_send == 0:
-            N_send = 1
-        psi = (N_jsend + 0.0) / N_send
-        if psi >= self.NRth:
-            fail_step = fail_step + 1
-        # 更新 TR值
-        if fail_step == 0:
-            self.TR_list[j_id] = self.TR_list[j_id] + self.tr_lambda
-        elif fail_step == 1:
-            self.TR_list[j_id] = self.TR_list[j_id] - self.tr_gamma
-        elif fail_step == 2:
-            self.TR_list[j_id] = self.TR_list[j_id] - self.tr_rho
-        else:
-            assert 0 == 0
-        # 返回判断结果
-        if self.TR_list[j_id] < self.TRth_evil:
-            # 应该加入 黑名单LBL 等到时候超时才放出
-            j_is_blackhole = True
-            # 不可有重复
-            assert not j_id in self.LBL_list
-            self.LBL_list.append(j_id)
-            self.LBL_resume_time_list.append(runningtime + self.expriation)
-            self.TR_list[j_id] = self.tr_reduced_init
-        elif self.TR_list[j_id] < self.TRth_evil:
-            j_is_blackhole = False
-
-        return j_is_blackhole
-
-    def __get_Nth(self, len_ER_list):
-        w = len_ER_list
-        if w == 0:
-            w = 1
-        Nth = self.Nth_b - (self.Nth_a / w)
-        return Nth
-
-    # begin a new encounter with a node; input the encountered node's id
-    def begin_new_encounter(self, partner_id):
-        self.tmp_ER["partner_id"] = partner_id
-        self.tmp_ER["running"] = 1
-
-    # 结束目前的encounter
-    def end_new_encounter(self, partner_id):
-        assert self.tmp_ER["partner_id"] == partner_id
-        new_ER = (self.tmp_ER["partner_id"], self.tmp_ER["send_to_partner"], self.tmp_ER["recv_from_partner"], self.tmp_ER["gensend_to_partner"])
-        # 窗口大小限制
-        if len(self.ER_list) <= self.w_max:
-            self.ER_list.append(new_ER)
-        else:
-            self.ER_list.pop(0)
-            self.ER_list.append(new_ER)
-        self.tmp_ER["partner_id"] = -1
-        self.tmp_ER["send_to_partner"] = 0
-        self.tmp_ER["recv_from_partner"] = 0
-        self.tmp_ER["gensend_to_partner"] = 0
-        self.tmp_ER["running"] = 0
-
-    def send_one_pkt_to_partner(self, partner_id, pkt_src):
-        assert self.tmp_ER["partner_id"] == partner_id
-        self.tmp_ER["send_to_partner"] = self.tmp_ER["send_to_partner"] + 1
-        if pkt_src == self.node_id:
-            self.tmp_ER["gensend_to_partner"] = self.tmp_ER["gensend_to_partner"] + 1
-
-    def receive_one_pkt_from_partner(self, partner_id):
-        assert self.tmp_ER["partner_id"] == partner_id
-        self.tmp_ER["recv_from_partner"] = self.tmp_ER["recv_from_partner"] + 1
-
-
+from Main.Scenario_Benchamark.DTNNodeBuffer_Detect_MDS import DTNNodeBuffer_Detect_MDS
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
+
+
 class DTNScenario_Prophet_Blackhole_MDS(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, num_of_nodes, buffer_size, total_runningtime):
@@ -188,8 +40,9 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
         # tmp 临时结果
         self.tmp0_DetectResult = np.zeros((2, 2), dtype='int')
         self.tmp_DetectResult = np.zeros((2, 20), dtype='int')
-        # 矩阵属性可以考虑更改
-        self.num_of_att = 10
+
+        # 总的传输次数
+        self.num_comm = 0
         return
 
     # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
@@ -213,7 +66,7 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
 
     def print_res(self, listgenpkt):
         output_str_whole = self.__print_res_whole(listgenpkt)
-        output_str_pure, succ_ratio, avg_delay = self.__print_res_pure(listgenpkt)
+        output_str_pure, succ_ratio, avg_delay, num_comm = self.__print_res_pure(listgenpkt)
         # 打印混淆矩阵
         output_str_state = self.__print_conf_matrix()
         output_str_tmp_state = self.__print_tmp_conf_matrix()
@@ -221,9 +74,11 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
         # 不必进行标签值 和 属性值 的保存
         # self.print_eve_res()
         outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
-        percent_selfish = len(self.list_selfish) / self.num_of_nodes
-        res = (succ_ratio, avg_delay, self.DetectResult, self.tmp_DetectResult)
-        config = (percent_selfish, 1)
+
+        res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
+               'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
+        ratio_bk_nodes = len(self.list_selfish) / self.num_of_nodes
+        config = {'ratio_bk_nodes': ratio_bk_nodes, 'drop_prob': 1}
         return outstr, res, config
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -322,6 +177,7 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.num_comm = self.num_comm + 1
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 利用model进行判定 b_id是否是blackhole
                 # bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
@@ -332,6 +188,7 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
                 # blackhole b_id立刻发动
                 self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.num_comm = self.num_comm + 1
 
     # 报文发送 a_id -> b_id
     def __sendpkt(self, runningtime, a_id, b_id):
@@ -370,6 +227,7 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.num_comm = self.num_comm + 1
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 利用model进行判定 b_id是否是blackhole
                 # bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
@@ -378,6 +236,7 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
                 #     self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.num_comm = self.num_comm + 1
 
     # a节点检测b节点
     def __detect_blackhole(self, a_id, b_id, runningtime):
@@ -393,10 +252,15 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
         i_isSelfish = int(b_id in self.list_selfish)
         y_final = np.zeros((1), dtype='int')
         y_final[0] = i_isSelfish
-        conf_matrix = np.array(tf.math.confusion_matrix(y_final, y_predict, num_classes=2))
 
+        conf_matrix = self.__cal_conf_matrix(i_isSelfish, int(bool_BH), num_classes=2)
         self.DetectResult = self.DetectResult + conf_matrix
         return bool_BH
+
+    def __cal_conf_matrix(self, y_true, y_predict, num_classes):
+        res = np.zeros((num_classes, num_classes), dtype='int')
+        res[y_true][y_predict] = 1
+        return res
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, pkt_src_id, pkt_dst_id):
@@ -466,12 +330,13 @@ class DTNScenario_Prophet_Blackhole_MDS(object):
         succ_ratio = total_succnum/num_purepkt
         if total_succnum != 0:
             avg_delay = total_delay/total_succnum
-            output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
+            output_str += 'succ_ratio:{} avg_delay:{} '.format(succ_ratio, avg_delay)
         else:
             avg_delay = ()
-            output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
+            output_str += 'succ_ratio:{} avg_delay:null '.format(succ_ratio)
+        output_str += 'num_comm:{}\n'.format(self.num_comm)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        return output_str, succ_ratio, avg_delay
+        return output_str, succ_ratio, avg_delay, self.num_comm
 
 class RoutingProphet(object):
     def __init__(self, node_id, num_of_nodes, p_init=0.75, gamma=0.98, beta=0.25):

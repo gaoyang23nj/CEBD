@@ -8,7 +8,6 @@ from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
 from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
 from Main.Multi_Scenario.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
-from Main.Scenario.DTNScenario_Prophet_Blackhole_Eric import DTNScenario_Prophet_Blackhole_Eric
 
 from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_combine import \
     DTNScenario_Prophet_Blackhole_DectectandBan_combine
@@ -184,12 +183,6 @@ class Simulator(object):
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_Eric_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_Eric(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-            index += 1
             tmp_senario_name = 'scenario' + str(index) + '_blackhole_Li_0_' + str(tmp)
             tmpscenario = DTNScenario_Prophet_Blackhole_Li(
                 tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
@@ -335,14 +328,14 @@ class Simulator(object):
 
             res_file_object.write(str(self.THR_PKT_GEN_CNT)+',')
             # 3个res 是 res = {'succ_ratio':succ_ratio, 'avg_delay':avg_delay, 'num_comm':num_comm}
-            # 5个res res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
-            #                'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
-            # config = {'ratio_bk_nodes': ratio_bk_nodes, 'drop_prob': 1}
-            assert((len(res) == 3) or (len(res)==5))
-            res_file_object.write(str(res['succ_ratio'])+','+str(res['avg_delay'])+','+str(res['num_comm']))
-            res_file_object.write(str(config['ratio_bk_nodes']) + ',' +str(config['drop_prob']))
+            # 5个res 是 res = {'succ_ratio':succ_ratio, 'avg_delay':avg_delay, 'num_comm':num_comm}
+            assert((len(res)==3) or (len(res)==5))
+            for i in range(3):
+                res_file_object.write(str(res[i])+',')
+            for i_config in config:
+                res_file_object.write(str(i_config) + ',')
             if len(res) == 5:
-                res_file_object.write('\n' + str(res['DetectResult']) + '\n' + str(res['tmp_DetectResult']) + ',')
+                res_file_object.write('\n' + str(res[2]) + '\n' + str(res[3]) + ',')
             res_file_object.write('\n')
 
         file_object.close()

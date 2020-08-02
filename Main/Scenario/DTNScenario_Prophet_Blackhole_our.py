@@ -206,6 +206,8 @@ class DTNScenario_Prophet_Blackhole_our(object):
         self.tmp_DetectResult = np.zeros((2, 20), dtype='int')
         # 矩阵属性可以考虑更改
         self.num_of_att = 10
+
+        self.num_comm = 0
         return
 
     # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
@@ -229,7 +231,7 @@ class DTNScenario_Prophet_Blackhole_our(object):
 
     def print_res(self, listgenpkt):
         output_str_whole = self.__print_res_whole(listgenpkt)
-        output_str_pure, succ_ratio, avg_delay = self.__print_res_pure(listgenpkt)
+        output_str_pure, succ_ratio, avg_delay, num_comm = self.__print_res_pure(listgenpkt)
         # 打印混淆矩阵
         output_str_state = self.__print_conf_matrix()
         output_str_tmp_state = self.__print_tmp_conf_matrix()
@@ -243,9 +245,10 @@ class DTNScenario_Prophet_Blackhole_our(object):
             DectectandBan_time_q_input.put(None)
             ProcessCtl_dict_time["running_label"] = False
         outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
-        percent_selfish = len(self.list_selfish) / self.num_of_nodes
-        res = (succ_ratio, avg_delay, self.DetectResult, self.tmp_DetectResult)
-        config = (percent_selfish, 1)
+        res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
+               'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
+        ratio_bk_nodes = len(self.list_selfish) / self.num_of_nodes
+        config = {'ratio_bk_nodes': ratio_bk_nodes, 'drop_prob': 1}
         return outstr, res, config
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -289,8 +292,6 @@ class DTNScenario_Prophet_Blackhole_our(object):
         # 如果有一方不同意 则停止
         if bool_BH_a_wch_b or bool_BH_b_wch_a:
             return
-
-
 
         # ================== 控制信息 交换==========================
         # 对称操作!!!
@@ -354,6 +355,7 @@ class DTNScenario_Prophet_Blackhole_our(object):
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.num_comm = self.num_comm + 1
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # # 利用model进行判定 b_id是否是blackhole
                 # bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
@@ -363,6 +365,7 @@ class DTNScenario_Prophet_Blackhole_our(object):
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
                 # blackhole b_id立刻发动
                 self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.num_comm = self.num_comm + 1
 
     # 报文发送 a_id -> b_id
     def __sendpkt(self, runningtime, a_id, b_id):
@@ -401,6 +404,7 @@ class DTNScenario_Prophet_Blackhole_our(object):
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.num_comm = self.num_comm + 1
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # # 利用model进行判定 b_id是否是blackhole
                 # bool_BH = self.__detect_blackhole(a_id, b_id, runningtime)
@@ -408,6 +412,7 @@ class DTNScenario_Prophet_Blackhole_our(object):
 
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 self.__updatedectbuf_sendpkt(a_id, b_id, tmp_pkt.src_id, tmp_pkt.dst_id)
+                self.num_comm = self.num_comm + 1
 
     def __detect_blackhole(self, a_id, b_id, runningtime):
         theBufferDetect = self.listNodeBufferDetect[a_id]
@@ -555,12 +560,13 @@ class DTNScenario_Prophet_Blackhole_our(object):
         succ_ratio = total_succnum/num_purepkt
         if total_succnum != 0:
             avg_delay = total_delay/total_succnum
-            output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
+            output_str += 'succ_ratio:{} avg_delay:{} '.format(succ_ratio, avg_delay)
         else:
             avg_delay = ()
-            output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
+            output_str += 'succ_ratio:{} avg_delay:null '.format(succ_ratio)
+        output_str += 'num_comm:{}\n'.format(self.num_comm)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        return output_str, succ_ratio, avg_delay
+        return output_str, succ_ratio, avg_delay, self.num_comm
 
 class RoutingProphet(object):
     def __init__(self, node_id, num_of_nodes, p_init=0.75, gamma=0.98, beta=0.25):

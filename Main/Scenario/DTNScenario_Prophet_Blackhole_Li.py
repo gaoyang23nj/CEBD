@@ -1,7 +1,6 @@
 from Main.DTNNodeBuffer import DTNNodeBuffer
 from Main.DTNPkt import DTNPkt
 from Main.Scenario_Benchamark.DTNNodeBuffer_Detect_Li import DTNNodeBuffer_Detect_Li
-from Main.Scenario_Benchamark.DTNNodeBuffer_Detect_SDBG import DTNNodeBuffer_Detect_SDBG
 
 import copy
 import numpy as np
@@ -48,12 +47,13 @@ class DTNScenario_Prophet_Blackhole_Li(object):
         # self.bk_file = open(bk_filename, 'w+')
         # self.nm_file = open(nm_filename, 'w+')
 
+        self.num_comm = 0
         return
 
     def print_res(self, listgenpkt):
         self.__close_rr_sfr_file()
         output_str_whole = self.__print_res_whole(listgenpkt)
-        output_str_pure, succ_ratio, avg_delay = self.__print_res_pure(listgenpkt)
+        output_str_pure, succ_ratio, avg_delay, num_comm = self.__print_res_pure(listgenpkt)
         # 打印混淆矩阵
         output_str_state = self.__print_conf_matrix()
         output_str_tmp_state = self.__print_tmp_conf_matrix()
@@ -62,9 +62,11 @@ class DTNScenario_Prophet_Blackhole_Li(object):
         # self.print_eve_res()
 
         outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state
-        percent_selfish = len(self.list_selfish) / self.num_of_nodes
-        res = (succ_ratio, avg_delay, self.DetectResult, self.tmp_DetectResult)
-        config = (percent_selfish, 1)
+
+        res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
+               'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
+        ratio_bk_nodes = len(self.list_selfish) / self.num_of_nodes
+        config = {'ratio_bk_nodes': ratio_bk_nodes, 'drop_prob': 1}
         return outstr, res, config
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -204,6 +206,7 @@ class DTNScenario_Prophet_Blackhole_Li(object):
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 # 进行报文记录
                 sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
+                self.num_comm = self.num_comm + 1
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 # 按照Li算法 由gamma概率决定
                 if np.random.random() > gamma:
@@ -213,6 +216,7 @@ class DTNScenario_Prophet_Blackhole_Li(object):
                     self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                     # 进行报文记录
                     sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
+                    self.num_comm = self.num_comm + 1
         return sndlist_a_to_b, isDel
 
     # 报文发送 a_id -> b_id
@@ -255,12 +259,14 @@ class DTNScenario_Prophet_Blackhole_Li(object):
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                 # 进行报文记录
                 sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
+                self.num_comm = self.num_comm + 1
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 if np.random.random()>gamma:
                     isReach, isDel = self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                     self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
                     # 进行报文记录
                     sndlist_a_to_b.append((tmp_pkt.pkt_id, tmp_pkt.src_id, tmp_pkt.dst_id))
+                    self.num_comm = self.num_comm + 1
         return sndlist_a_to_b, isDel
 
     def __detect_blackhole(self, a_id, b_id, ER_list_j, runningtime):
@@ -360,12 +366,13 @@ class DTNScenario_Prophet_Blackhole_Li(object):
         succ_ratio = total_succnum/num_purepkt
         if total_succnum != 0:
             avg_delay = total_delay/total_succnum
-            output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
+            output_str += 'succ_ratio:{} avg_delay:{} '.format(succ_ratio, avg_delay)
         else:
             avg_delay = ()
-            output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
+            output_str += 'succ_ratio:{} avg_delay:null '.format(succ_ratio)
+        output_str += 'num_comm:{}\n'.format(self.num_comm)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        return output_str, succ_ratio, avg_delay
+        return output_str, succ_ratio, avg_delay, self.num_comm
 
     def __close_rr_sfr_file(self):
         # self.bk_file.close()
