@@ -1,29 +1,28 @@
 import numpy as np
 import datetime
+import time
 import sys
 import winsound
 import os
 
 from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
 from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
-from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_combine import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_combine
-from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_refuseall
-from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_time import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_time
 
 from Main.Multi_Scenario.DTNScenario_Prophet import DTNScenario_Prophet
+
+from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_time import \
+    DTNScenario_Prophet_Blackhole_DectectandBan_time
+from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_combine import \
+    DTNScenario_Prophet_Blackhole_DectectandBan_combine
 # 简化处理流程 传输速率无限
 
 # 事件驱动
-from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
-from Main.Scenario.DTNScenario_Prophet_Blackhole_our import DTNScenario_Prophet_Blackhole_our
-from Main.Scenario.DTNScenario_Prophet_Blackhole_Eric import DTNScenario_Prophet_Blackhole_Eric
-from Main.Scenario.DTNScenario_Prophet_Blackhole_Li import DTNScenario_Prophet_Blackhole_Li
 from Main.Scenario.DTNScenario_Prophet_Blackhole_SDBG import DTNScenario_Prophet_Blackhole_SDBG
+from Main.Scenario.DTNScenario_Prophet_Blackhole_our import DTNScenario_Prophet_Blackhole_our
+from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
+from Main.Scenario.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall import \
+    DTNScenario_Prophet_Blackhole_DectectandBan_refuseall
 from Main.Scenario.DTNScenario_Prophet_Blackhole_MDS import DTNScenario_Prophet_Blackhole_MDS
-
 
 class Simulator(object):
     def __init__(self, enco_file, pktgen_freq, result_file_path):
@@ -161,7 +160,7 @@ class Simulator(object):
             dst_index = dst_index + 1
         return (src_index, dst_index)
 
-    def init_scenario_testv3(self):
+    def init_scenario_test_v3(self):
         index = -1
         # ===============================场景2 Prophet ===================================
         index += 1
@@ -179,25 +178,19 @@ class Simulator(object):
             normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
 
             index += 1
-            tmp_senario_name = 'scenario' + str(index)+'_blackhole_0_' + str(tmp)
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_0_' + str(tmp)
             tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            # index += 1
+            # tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_refuseall_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(
+            #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
             tmp_senario_name = 'scenario' + str(index) + '_blackhole_our_0_' + str(tmp)
             tmpscenario = DTNScenario_Prophet_Blackhole_our(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-            index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_Eric_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_Eric(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
-
-            index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_Li_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_Li(
                 tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
@@ -217,9 +210,109 @@ class Simulator(object):
         list_scena = list(self.scenaDict.keys())
         return list_scena
 
+    def init_scenario_test_refusev2(self):
+        index = -1
+        # ===============================场景2 Prophet ===================================
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)+'_Prophet'
+        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # 0.1 0.2 0.3 0.4 0.5
+        for j in range(5):
+            # ===============================场景3 Prophet + Blackhole 0.1 ===================================
+            # # 随机生成序列
+            tmp = j + 1
+            percent_selfish = 0.1*tmp
+            indices = np.random.permutation(self.MAX_NODE_NUM)
+            malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+            normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index)+'_blackhole_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_time_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_time(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_refuseall_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_refuseall(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_MDS_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_MDS(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+        # ===============================场景单个单个的实验吧===================================
+        list_scena = list(self.scenaDict.keys())
+        return list_scena
+
+    # blackhole场景下 detect ban 检测抑制方法 的效果实验
+    def init_scenario_blackholev1(self):
+        index = 0
+        # ===============================场景0 Epidemic ===================================
+        tmp_senario_name = 'scenario' + str(index)+'_Epidemic'
+        tmpscenario = DTNScenario_EP(tmp_senario_name, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景1 Spary and Wait ===================================
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)+'_SparyWait'
+        tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # ===============================场景2 Prophet ===================================
+        index += 1
+        tmp_senario_name = 'scenario' + str(index)+'_Prophet'
+        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # 0.1 0.2 0.3 0.4 0.5
+        for j in range(5):
+            # ===============================场景3 Prophet + Blackhole 0.1 ===================================
+            # # 随机生成序列
+            tmp = j + 1
+            percent_selfish = 0.1*tmp
+            indices = np.random.permutation(self.MAX_NODE_NUM)
+            malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+            normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index)+'_blackhole_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_time_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_time(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_detectban_combine_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_combine(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_MDS_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_MDS(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+        # ===============================场景单个单个的实验吧===================================
+        list_scena = list(self.scenaDict.keys())
+        return list_scena
+
     def init_scenario(self):
         self.scenaDict = {}
-        list_scena = self.init_scenario_testv3()
+        # list_scena = self.init_scenario_blackhole()
+        # list_scena = self.init_scenario_test_refuse()
+        list_scena = self.init_scenario_test_v3()
         return list_scena
 
     # 打印出结果
@@ -240,15 +333,13 @@ class Simulator(object):
             file_object.write(outstr+'\n')
 
             res_file_object.write(str(self.THR_PKT_GEN_CNT)+',')
-            # 3个res 是 res = {'succ_ratio':succ_ratio, 'avg_delay':avg_delay, 'num_comm':num_comm}
-            # 5个res res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
-            #                'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
-            # config = {'ratio_bk_nodes': ratio_bk_nodes, 'drop_prob': 1}
-            assert((len(res) == 3) or (len(res)==5))
-            res_file_object.write(str(res['succ_ratio'])+','+str(res['avg_delay'])+','+str(res['num_comm']))
-            res_file_object.write(str(config['ratio_bk_nodes']) + ',' +str(config['drop_prob']))
-            if len(res) == 5:
-                res_file_object.write('\n' + str(res['DetectResult']) + '\n' + str(res['tmp_DetectResult']) + ',')
+            assert((len(res)==2) or (len(res)==4))
+            for i in range(2):
+                res_file_object.write(str(res[i])+',')
+            for i_config in config:
+                res_file_object.write(str(i_config) + ',')
+            if len(res) == 4:
+                res_file_object.write('\n' + str(res[2]) + '\n' + str(res[3]) + ',')
             res_file_object.write('\n')
 
         file_object.close()
@@ -273,15 +364,17 @@ if __name__ == "__main__":
 
     # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
     # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
-    # for filename in filelist:
-    #     filepath = os.path.join(encohistdir, filename)
-    #     for genpkt_freq in genpkt_freqlist:
-    #         print(filepath, genpkt_freq)
-    #         t_start = time.time()
-    #         theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
-    #         t_end = time.time()
-    #         print('running time:{}'.format(t_end - t_start))
-    #         simdurationlist.append(t_end - t_start)
+    # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
+    # # for filename in filelist:
+    # #     filepath = os.path.join(encohistdir, filename)
+    # filepath = os.path.join(encohistdir, filelist[0])
+    # for genpkt_freq in genpkt_freqlist:
+    #     print(filepath, genpkt_freq)
+    #     t_start = time.time()
+    #     theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
+    #     t_end = time.time()
+    #     print('running time:{}'.format(t_end - t_start))
+    #     simdurationlist.append(t_end - t_start)
 
     # or 2.简单测试的流程
     genpkt_freqlist = 10 * 30
