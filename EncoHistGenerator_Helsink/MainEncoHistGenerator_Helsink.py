@@ -8,8 +8,8 @@ import numpy as np
 import datetime
 # import _thread
 
-from EnCoHistGenerator_Helsink.DTNNode import DTNNode
-from EnCoHistGenerator_Helsink.WKTPathReader import WKTPathReader
+from EncoHistGenerator_Helsink.DTNNode import DTNNode
+from EncoHistGenerator_Helsink.WKTPathReader import WKTPathReader
 
 # np.random.seed(1)
 np.random.seed()
