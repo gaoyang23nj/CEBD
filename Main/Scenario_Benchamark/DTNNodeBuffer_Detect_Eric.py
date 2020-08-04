@@ -77,70 +77,68 @@ class DTNNodeBuffer_Detect_Eric(object):
         self.final_threshhold = 0.55
 
 
-    def get_2_ack_(self):
+    def __get_2_ack(self):
         return self.two_hop_ack_list.copy(), self.final_ack_list.copy()
-
-    def record_ack(self, tmp_two_hop_ack, tmp_final_ack):
-        for ele in tmp_two_hop_ack:
-            # 过滤 是否 已经记录过
-            if ele[1] in self.two_hop_ack_list:
-                continue
-            self.two_hop_ack_list.append(ele[1])
-            tmp_partner_id = ele[0]
-            self.n_ack[tmp_partner_id] = self.n_ack[tmp_partner_id] + 1
-        for ele in tmp_final_ack:
-            # 过滤 是否 已经记录过
-            # 过滤 是否 已经记录过
-            if ele[1] in self.final_ack_list:
-                continue
-            self.final_ack_list.append(ele[1])
-            for tmp_partner_id in ele[0]:
-                self.n_Fack[tmp_partner_id] = self.n_Fack[tmp_partner_id] + 1
 
     # begin a new encounter with a node; input the encountered node's id
     def begin_new_encounter(self, partner_id, runningtime):
         self.n_meet[partner_id] = self.n_meet[partner_id] + 1
         self.last_d_time[partner_id] = runningtime
+        two_hop_ack, final_ack = self.__get_2_ack()
+        return two_hop_ack, final_ack
 
     # 结束目前的encounter
     def end_new_encounter(self, partner_id):
-        assert self.tmp_ER["partner_id"] == partner_id
-        new_ER = (self.tmp_ER["partner_id"], self.tmp_ER["send_to_partner"], self.tmp_ER["recv_from_partner"], self.tmp_ER["gensend_to_partner"])
-        # 窗口大小限制
-        if len(self.ER_list) <= self.w_max:
-            self.ER_list.append(new_ER)
-        else:
-            self.ER_list.pop(0)
-            self.ER_list.append(new_ER)
-        self.tmp_ER["partner_id"] = -1
-        self.tmp_ER["send_to_partner"] = 0
-        self.tmp_ER["recv_from_partner"] = 0
-        self.tmp_ER["gensend_to_partner"] = 0
-        self.tmp_ER["running"] = 0
+        pass
 
     def send_one_pkt_to_partner(self, partner_id, pkt):
         # 记录对端接收的报文数
         self.n_rec[partner_id] = self.n_rec[partner_id] + 1
 
+    def record_ack(self, tmp_two_hop_ack, tmp_final_ack):
+        for ele in tmp_two_hop_ack:
+            # 过滤 是否 是发送给我的
+            if ele[0] == self.node_id:
+                continue
+            # 过滤 是否 已经记录过id
+            if ele[2] in self.two_hop_ack_list:
+                continue
+            self.two_hop_ack_list.append(ele[2])
+            tmp_partner_id = ele[1]
+            self.n_ack[tmp_partner_id] = self.n_ack[tmp_partner_id] + 1
+
+        for ele in tmp_final_ack:
+            # 过滤 是否 是发送给我的
+            if ele[0] == self.node_id:
+                continue
+            # 过滤 是否 已经记录过 id
+            if ele[1] in self.final_ack_list:
+                continue
+            self.final_ack_list.append(ele[2])
+            for tmp_partner_id in ele[1]:
+                self.n_Fack[tmp_partner_id] = self.n_Fack[tmp_partner_id] + 1
+
     def receive_one_pkt_from_partner(self, partner_id, pkt, runningtime):
+        # ack的格式 发送给谁\关于谁\ack的唯一标识id
         # 记录对端发送的报文数
         if pkt.src_id != partner_id:
             self.n_fwd[partner_id] = self.n_fwd[partner_id] + 1
             # 准备ack
             if pkt.dst_id == self.node_id:
+                assert pkt.src_id == pkt.track[0]
                 # final ack
                 assert pkt.track[-1] == partner_id
                 # 唯一标识
                 final_ack_id = 'final_ackid_{}_nodeid_{}'.format(self.ack_id, self.node_id)
                 self.ack_id = self.ack_id + 1
-                self.final_ack_list.append((tuple(pkt.track), final_ack_id, pkt.pkt_id, self.node_id))
+                self.final_ack_list.append((pkt.src_id, tuple(pkt.track), final_ack_id, pkt.pkt_id, self.node_id))
             else:
                 # two-hop ack
                 assert pkt.track[-1] == partner_id
                 # ack谁/ 是哪个报文/ 我是谁
                 two_hop_ack_id = 'twohop_ackid_{}_nodeid_{}'.format(self.ack_id, self.node_id)
                 self.ack_id = self.ack_id + 1
-                self.two_hop_ack_list.append((partner_id, two_hop_ack_id, pkt.pkt_id, self.node_id))
+                self.two_hop_ack_list.append((pkt.track[-2], partner_id, two_hop_ack_id, pkt.pkt_id, self.node_id))
         else:
             self.n_src[partner_id] = self.n_src[partner_id] + 1
 

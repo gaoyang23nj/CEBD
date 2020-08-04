@@ -102,9 +102,12 @@ class DTNScenario_Prophet_Blackhole_Eric(object):
     def swappkt(self, runningtime, a_id, b_id):
         # 通知 DTNNodeBuffer_Detect_MDS, 建立新的ER; a和b各自单独执行
         theBufferDetect_a = self.listNodeBufferDetect_Eric[a_id]
-        theBufferDetect_a.begin_new_encounter(b_id, runningtime)
+        two_hop_ack_from_a, final_ack_from_a = theBufferDetect_a.begin_new_encounter(b_id, runningtime)
         theBufferDetect_b = self.listNodeBufferDetect_Eric[b_id]
-        theBufferDetect_b.begin_new_encounter(a_id, runningtime)
+        two_hop_ack_from_b, final_ack_from_b = theBufferDetect_b.begin_new_encounter(a_id, runningtime)
+
+        theBufferDetect_a.record_ack(two_hop_ack_from_b, final_ack_from_b)
+        theBufferDetect_b.record_ack(two_hop_ack_from_a, final_ack_from_a)
 
         # 交换直接评价信息，更新间接评价
         bool_BH_a_to_b = self.__detect_blackhole(a_id, b_id, runningtime)

@@ -13,7 +13,7 @@ class DTNNodeBuffer_Detect_Li(object):
 
         self.gamma_init = 0.6
         # ttl:1 hour; 临到ttl blackhole节点才报告自己刚刚丢弃了报文; 遇到任何节点都称呼自己是最好的
-        self.ttl = 1*3600
+        self.ttl = 1*360
         self.Gamma_list = [ self.gamma_init ] * self.numofnodes
 
         # 快速下降
