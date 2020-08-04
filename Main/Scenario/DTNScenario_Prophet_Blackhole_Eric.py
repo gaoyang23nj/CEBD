@@ -42,6 +42,12 @@ class DTNScenario_Prophet_Blackhole_Eric(object):
 
         # 总的传输次数
         self.num_comm = 0
+
+        bk_filename = ".\\" + self.scenarioname +  "_bk_rr_sfr.csv"
+        nm_filename = ".\\" + self.scenarioname +  "_nm_rr_sfr.csv"
+        self.bk_file = open(bk_filename, 'w+')
+        self.nm_file = open(nm_filename, 'w+')
+
         return
 
     # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
@@ -63,7 +69,12 @@ class DTNScenario_Prophet_Blackhole_Eric(object):
         output_str += 'self.tmp_DetectResult:\n{}\n'.format(self.tmp_DetectResult)
         return output_str
 
+    def __close_rr_sfr_file(self):
+        self.bk_file.close()
+        self.nm_file.close()
+
     def print_res(self, listgenpkt):
+        self.__close_rr_sfr_file()
         output_str_whole = self.__print_res_whole(listgenpkt)
         output_str_pure, succ_ratio, avg_delay, num_comm = self.__print_res_pure(listgenpkt)
         # 打印混淆矩阵
@@ -238,7 +249,15 @@ class DTNScenario_Prophet_Blackhole_Eric(object):
         theBufferDetect_b = self.listNodeBufferDetect_Eric[b_id]
         Tc, Th, Ts, Tagg = theBufferDetect_b.get_c_h_s_agg()
 
-        bool_BH = theBufferDetect_a.detect_node_j(b_id, Tc, Th, Ts, Tagg, runningtime)
+        bool_BH, T_value, newTc, newTh, newTs = theBufferDetect_a.detect_node_j(b_id, Tc, Th, Ts, Tagg, runningtime)
+
+        bSelfish = b_id in self.list_selfish
+        if bSelfish:
+            self.bk_file.write("{},{},{},{}".format(T_value, newTc, newTh, newTs))
+            self.bk_file.write('\n')
+        else:
+            self.nm_file.write("{},{},{},{}".format(T_value, newTc, newTh, newTs))
+            self.nm_file.write('\n')
 
         y_predict = np.zeros((1), dtype='int')
         y_predict[0] = int(bool_BH)

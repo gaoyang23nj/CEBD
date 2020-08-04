@@ -40,8 +40,8 @@ class DTNNodeBuffer_Detect_Eric(object):
         self.update_time = np.zeros(self.num_of_nodes)
         self.last_d_time = np.zeros(self.num_of_nodes)
         # 直接证据老化更新参数
-        self.decay_alpha = 0.5
-        self.decay_lambda = 0.00001
+        self.decay_alpha = 0.3
+        self.decay_lambda = 0.0000001
 
         # database 关于其他节点的直接评价
         self.database_c = np.zeros((self.num_of_nodes, self.num_of_nodes))
@@ -58,22 +58,23 @@ class DTNNodeBuffer_Detect_Eric(object):
         self.indir_T_d_h = np.ones(self.num_of_nodes)*self.init
         # Satisfaction
         self.indir_T_d_s = np.ones(self.num_of_nodes)*self.init
-        self.indir_tao = 0.6
-        self.decay_beta = 0.5
-        self.decay_delta = 0.00001
+        self.indir_tao = 0.3
+        self.decay_beta = 0.3
+        self.decay_delta = 0.0000001
 
         # 综合直接和间接评价
         self.agg_T_c = np.zeros(self.num_of_nodes)
         self.agg_T_h = np.zeros(self.num_of_nodes)
         self.agg_T_s = np.zeros(self.num_of_nodes)
-        self.agg_gamma = 0.5
+        # 直接证据 和 间接证据 的 平衡
+        self.agg_gamma = 0.3
 
         # 最终评价
         self.w1 = 0.3
         self.w2 = 0.3
         self.w3 = 0.4
         self.T_value = np.zeros(self.num_of_nodes)
-        self.final_threshhold = 0.5
+        self.final_threshhold = 0.55
 
 
     def get_2_ack_(self):
@@ -164,6 +165,7 @@ class DTNNodeBuffer_Detect_Eric(object):
         oldtime = self.update_time[partner_id]
         newtime = runningtime
         delta_t = runningtime - self.update_time[partner_id]
+        assert delta_t >= 0
         # 时间老化公式
         # 在这之间交互过  (2)0 更新 交互 // (1)0 交互 更新
         if self.last_d_time[partner_id] > self.update_time[partner_id]:
@@ -196,11 +198,12 @@ class DTNNodeBuffer_Detect_Eric(object):
         for m in range(self.num_of_nodes):
             if m == self.num_of_nodes or m == partner_id:
                 continue
-            if agg_T[m] > self.indir_tao:
-                # 对m的推荐
-                # self.last_recommend_time[m] = runningtime
-                # 任何推荐
-                self.any_recommend = runningtime
+            self.any_recommend = runningtime
+            # if agg_T[m] > self.indir_tao:
+            #     # 对m的推荐
+            #     # self.last_recommend_time[m] = runningtime
+            #     # 任何推荐
+            #     self.any_recommend = runningtime
 
         if self.agg_T_c[partner_id] > self.indir_tao:
             # 准备更新这些地方的间接
@@ -314,7 +317,7 @@ class DTNNodeBuffer_Detect_Eric(object):
         self.__cal_agg_T(j_id)
         boolgood = self.T_value[j_id] > self.final_threshhold
         isbk = not boolgood
-        return isbk
+        return isbk, self.T_value[j_id], self.agg_T_c[j_id], self.agg_T_h[j_id], self.agg_T_s[j_id]
 
     def get_c_h_s_agg(self):
         Tc = self.dir_T_d_c.copy()
