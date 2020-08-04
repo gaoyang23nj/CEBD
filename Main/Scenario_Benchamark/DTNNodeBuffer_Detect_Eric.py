@@ -315,7 +315,31 @@ class DTNNodeBuffer_Detect_Eric(object):
         self.__cal_agg_T(j_id)
         boolgood = self.T_value[j_id] > self.final_threshhold
         isbk = not boolgood
-        return isbk, self.T_value[j_id], self.agg_T_c[j_id], self.agg_T_h[j_id], self.agg_T_s[j_id]
+
+        # 打印一下看看
+        partner_id = j_id
+        tmp_fwd = self.n_fwd[partner_id]
+        tmp_meet = self.n_meet[partner_id]
+        tmp_rec = self.n_rec[partner_id]
+        tmp_src = self.n_src[partner_id]
+        # Connectivity
+        T_d_c = (2* tmp_fwd + tmp_meet)/(2*tmp_fwd + tmp_meet + self.num_of_nodes)
+        # Fitness
+        T_d_h = (tmp_fwd + tmp_rec + 1)/(tmp_src + tmp_fwd + tmp_rec + 0 + 2)
+
+        # Satisfaction
+        tmp_Fack = self.n_Fack[partner_id]
+        tmp_ack = self.n_ack[partner_id]
+
+        T_d_s1 = tmp_ack / (tmp_rec + 1)
+        T_d_s2 = (tmp_Fack + tmp_ack) / (tmp_Fack + tmp_rec + 1)
+        # if tmp_Fack == 0:
+        #     T_d_s1 = tmp_ack / (tmp_rec + 1)
+        # else:
+        #     T_d_s2 = (tmp_Fack + tmp_ack) / (tmp_Fack + tmp_rec + 1)
+
+        # return isbk, self.T_value[j_id], self.agg_T_c[j_id], self.agg_T_h[j_id], self.agg_T_s[j_id]
+        return isbk, T_d_c, T_d_h, T_d_s1, T_d_s2
 
     def get_c_h_s_agg(self):
         Tc = self.dir_T_d_c.copy()
