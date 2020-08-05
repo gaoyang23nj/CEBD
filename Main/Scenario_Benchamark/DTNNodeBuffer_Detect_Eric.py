@@ -1,5 +1,7 @@
 import numpy as np
 import math
+import copy
+
 # *** 未完成
 # 应该加入 黑名单LBL 等到时候超时才放出
 # 0值ER 可能会使TR虚高
@@ -74,17 +76,16 @@ class DTNNodeBuffer_Detect_Eric(object):
         self.w2 = 0.3
         self.w3 = 0.4
         self.T_value = np.zeros(self.num_of_nodes)
-        self.final_threshhold = 0.55
+        self.final_threshhold = 0
 
-
-    def __get_2_ack(self):
-        return self.two_hop_ack_list.copy(), self.final_ack_list.copy()
+        self.rec_ack_id_list = []
 
     # begin a new encounter with a node; input the encountered node's id
     def begin_new_encounter(self, partner_id, runningtime):
         self.n_meet[partner_id] = self.n_meet[partner_id] + 1
         self.last_d_time[partner_id] = runningtime
-        two_hop_ack, final_ack = self.__get_2_ack()
+        two_hop_ack = copy.deepcopy(self.two_hop_ack_list)
+        final_ack = copy.deepcopy(self.final_ack_list)
         return two_hop_ack, final_ack
 
     # 结束目前的encounter
@@ -98,25 +99,33 @@ class DTNNodeBuffer_Detect_Eric(object):
     def record_ack(self, tmp_two_hop_ack, tmp_final_ack):
         for ele in tmp_two_hop_ack:
             # 过滤 是否 是发送给我的
-            if ele[0] == self.node_id:
+            if ele[0] != self.node_id:
                 continue
+                # 通过EP方式把ack传递出去
+                # self.two_hop_ack_list.append(copy.deepcopy(ele))
+            # else:
             # 过滤 是否 已经记录过id
-            if ele[2] in self.two_hop_ack_list:
+            if ele[2] in self.rec_ack_id_list:
                 continue
-            self.two_hop_ack_list.append(ele[2])
+            self.rec_ack_id_list.append(ele[2])
             tmp_partner_id = ele[1]
             self.n_ack[tmp_partner_id] = self.n_ack[tmp_partner_id] + 1
 
         for ele in tmp_final_ack:
             # 过滤 是否 是发送给我的
-            if ele[0] == self.node_id:
+            if ele[0] != self.node_id:
                 continue
+                # 通过EP方式把ack传递出去
+                # self.final_ack_list.append(copy.deepcopy(ele))
+            # else:
             # 过滤 是否 已经记录过 id
-            if ele[1] in self.final_ack_list:
+            if ele[2] in self.rec_ack_id_list:
                 continue
-            self.final_ack_list.append(ele[2])
+            self.rec_ack_id_list.append(ele[2])
             for tmp_partner_id in ele[1]:
                 self.n_Fack[tmp_partner_id] = self.n_Fack[tmp_partner_id] + 1
+
+
 
     def receive_one_pkt_from_partner(self, partner_id, pkt, runningtime):
         # ack的格式 发送给谁\关于谁\ack的唯一标识id
@@ -132,6 +141,7 @@ class DTNNodeBuffer_Detect_Eric(object):
                 final_ack_id = 'final_ackid_{}_nodeid_{}'.format(self.ack_id, self.node_id)
                 self.ack_id = self.ack_id + 1
                 self.final_ack_list.append((pkt.src_id, tuple(pkt.track), final_ack_id, pkt.pkt_id, self.node_id))
+                print('New Ack {}'.format(final_ack_id))
             else:
                 # two-hop ack
                 assert pkt.track[-1] == partner_id
@@ -139,6 +149,7 @@ class DTNNodeBuffer_Detect_Eric(object):
                 two_hop_ack_id = 'twohop_ackid_{}_nodeid_{}'.format(self.ack_id, self.node_id)
                 self.ack_id = self.ack_id + 1
                 self.two_hop_ack_list.append((pkt.track[-2], partner_id, two_hop_ack_id, pkt.pkt_id, self.node_id))
+                print('New Ack {}'.format(two_hop_ack_id))
         else:
             self.n_src[partner_id] = self.n_src[partner_id] + 1
 
