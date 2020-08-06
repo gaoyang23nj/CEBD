@@ -28,8 +28,8 @@ class DTNNodeBuffer(object):
         isDelPkt_for_room = False
         isReach = False
         cppkt = copy.deepcopy(receivedpkt)
-        if isinstance(cppkt, DTNPktTrack):
-            cppkt.track.append(self.node_id)
+        # if isinstance(cppkt, DTNPktTrack):
+        #     cppkt.track.append(self.node_id)
         # 抵达目的节点
         if cppkt.dst_id == self.node_id:
             # 确定之前没有接收过这个pkt

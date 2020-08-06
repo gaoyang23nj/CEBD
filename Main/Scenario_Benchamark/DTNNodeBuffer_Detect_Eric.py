@@ -125,9 +125,8 @@ class DTNNodeBuffer_Detect_Eric(object):
             for tmp_partner_id in ele[1]:
                 self.n_Fack[tmp_partner_id] = self.n_Fack[tmp_partner_id] + 1
 
-
-
     def receive_one_pkt_from_partner(self, partner_id, pkt, runningtime):
+        print('receive_one_pkt_from_partner..... pkt track:{}'.format(pkt.track))
         # ack的格式 发送给谁\关于谁\ack的唯一标识id
         # 记录对端发送的报文数
         if pkt.src_id != partner_id:
@@ -138,7 +137,7 @@ class DTNNodeBuffer_Detect_Eric(object):
                 # final ack
                 assert pkt.track[-1] == partner_id
                 # 唯一标识
-                final_ack_id = 'final_ackid_{}_nodeid_{}'.format(self.ack_id, self.node_id)
+                final_ack_id = 'final_ackid_{}_{}_to_{}'.format(self.ack_id, self.node_id, pkt.src_id)
                 self.ack_id = self.ack_id + 1
                 self.final_ack_list.append((pkt.src_id, tuple(pkt.track), final_ack_id, pkt.pkt_id, self.node_id))
                 print('New Ack {}'.format(final_ack_id))
@@ -146,7 +145,7 @@ class DTNNodeBuffer_Detect_Eric(object):
                 # two-hop ack
                 assert pkt.track[-1] == partner_id
                 # ack谁/ 是哪个报文/ 我是谁
-                two_hop_ack_id = 'twohop_ackid_{}_nodeid_{}'.format(self.ack_id, self.node_id)
+                two_hop_ack_id = 'twohop_ackid_{}_{}_to_{}'.format(self.ack_id, self.node_id, pkt.track[-2])
                 self.ack_id = self.ack_id + 1
                 self.two_hop_ack_list.append((pkt.track[-2], partner_id, two_hop_ack_id, pkt.pkt_id, self.node_id))
                 print('New Ack {}'.format(two_hop_ack_id))

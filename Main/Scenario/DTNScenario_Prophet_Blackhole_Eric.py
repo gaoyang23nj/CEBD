@@ -96,10 +96,12 @@ class DTNScenario_Prophet_Blackhole_Eric(object):
         # print('senario:{} time:{} pkt_id:{} src:{} dst:{}'.format(self.scenarioname, gentime, pkt_id, src_id, dst_id))
         newpkt = DTNPktTrack(pkt_id, src_id, dst_id, gentime, pkt_size)
         self.listNodeBuffer[src_id].gennewpkt(newpkt)
+        print('[{}] gen pkt track:{}'.format(self.scenarioname, self.listNodeBuffer[src_id].listofpkt[-1].track))
         return
 
     # routing接到指令aid和bid相遇，开始进行消息交换 a_id <-> b_id
     def swappkt(self, runningtime, a_id, b_id):
+        # print('swap {}_{}'.format(a_id, b_id))
         # 通知 DTNNodeBuffer_Detect_MDS, 建立新的ER; a和b各自单独执行
         theBufferDetect_a = self.listNodeBufferDetect_Eric[a_id]
         two_hop_ack_from_a, final_ack_from_a = theBufferDetect_a.begin_new_encounter(b_id, runningtime)

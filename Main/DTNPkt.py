@@ -18,7 +18,8 @@ class DTNPktSandW(DTNPkt):
 class DTNPktTrack(DTNPkt):
     def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size):
         super(DTNPktTrack, self).__init__(pkt_id, src_id, dst_id, gentime, pkt_size)
-        self.track = [src_id]
+        # self.track = [src_id]
+        self.track = []
 
 class DTNPktPri(DTNPkt):
     def __init__(self, pkt_id, src_id, dst_id, gentime, pkt_size, pri):
