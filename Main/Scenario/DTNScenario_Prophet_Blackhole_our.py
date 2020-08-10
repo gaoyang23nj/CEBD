@@ -130,7 +130,8 @@ def process_predict_blackhole_d_ind_direct(files_path, max_ability, q_input, q_o
         tmp_d = d_predict_y[:, 1].reshape(-1, 1)
         tmp_res = np.hstack((tmp_d, tmp_ind))
         final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
-        isB_predict = final_res > 0.5
+        # isB_predict = final_res > 0.5
+        isB_predict = final_res > 0.35
 
         y_predict = np.zeros((1), dtype='int')
         y_predict[0] = int(isB_predict)
@@ -153,6 +154,9 @@ ProcessCtl_dict_time["running_label"] = False
 ProcessCtl_dict_time["key"] = 0
 DectectandBan_time_q_input = multiprocessing.Queue()
 DectectandBan_time_q_output = multiprocessing.Queue()
+
+isRWPModel = False
+isShanghaiDataset = True
 
 # 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
@@ -185,8 +189,14 @@ class DTNScenario_Prophet_Blackhole_our(object):
 
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
         dir = "..\\Main\\ML_blackhole_time"
-        direct_model_file_path = os.path.join(dir, 'our_direct_model.h5')
-        indirect_model_file_path = os.path.join(dir, 'our_indirect_model.h5')
+
+        if isRWPModel:
+            direct_model_file_path = os.path.join(dir, 'our_direct_model.h5')
+            indirect_model_file_path = os.path.join(dir, 'our_indirect_model.h5')
+        if isShanghaiDataset:
+            direct_model_file_path = os.path.join(dir, 'our_direct_model_shanghai.h5')
+            indirect_model_file_path = os.path.join(dir, 'our_indirect_model_shanghai.h5')
+
         self.model_files_path = (direct_model_file_path, indirect_model_file_path)
 
         self.MAX_Ability = (10000, 'Max Process Ability', 'Continue')

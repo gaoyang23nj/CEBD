@@ -237,9 +237,10 @@ def direct_and_indirect_test(lines_test,  h5_direct_filepath, h5_indirect_filepa
     matrix_conf = np.zeros(shape=(2,2), dtype='int')
     d_model = tf.keras.models.load_model(h5_direct_filepath)
     ind_model = tf.keras.models.load_model(h5_indirect_filepath)
-    num_testlines = len(lines_test)
+    # num_testlines = len(lines_test)
+    num_testlines = 100
     i = 0
-    batch_size = 8
+    batch_size = 1
 
     # y_final = np.zeros(shape=(NUM_LINES_In_One_File * batch_size, 1))
     # x_final = np.zeros(shape=(NUM_LINES_In_One_File * batch_size, NUM_of_DIRECT_INPUTS))
@@ -250,9 +251,11 @@ def direct_and_indirect_test(lines_test,  h5_direct_filepath, h5_indirect_filepa
     # d_input = np.zeros((NUM_LINES_In_One_File * batch_size, NUM_of_DIRECT_INPUTS))
     # output = np.zeros((NUM_LINES_In_One_File * batch_size, 1))
 
-    print('test:{} (100)\t actually:{}'.format(num_testlines, int(num_testlines / batch_size) * batch_size))
-    while i < int(num_testlines/batch_size)*batch_size:
+    print('test:{} (100)\t actually:{}'.format(num_testlines, int(num_testlines)))
+    while i < int(num_testlines):
         y, x, ll = process_data_npz(lines_test[i])
+
+        print("No. i:{} ll:{} \t {}".format(i, ll, datetime.datetime.now()))
 
         ind_x, ind_y, ind_ll = extract_indirect_data(x, y, ll)
         d_x = extract_direct_data(x, ll)
@@ -265,7 +268,7 @@ def direct_and_indirect_test(lines_test,  h5_direct_filepath, h5_indirect_filepa
         tmp_d = d_predict_y[:, 1].reshape(-1, 1)
         tmp_res = np.hstack((tmp_d, tmp_ind))
         final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
-        y_predict = (final_res > 0.5).astype(int)
+        y_predict = (final_res > 0.35).astype(int)
         tmp_conf_matrix = tf.math.confusion_matrix(y, y_predict, num_classes=2)
         matrix_conf = matrix_conf + tmp_conf_matrix
         if i % 10000 == 0:
@@ -294,14 +297,20 @@ def process_data_npz(file_path):
     return y, x, ll
 
 # 从文件中收集数据
-def build_anno(eve_dir, annotation_path):
+def build_anno(eve_dirs, annotation_path):
+    scenario_dirs = []
     # 把文件名 和 对应的数据源 洗出来
     npz_tunple_list = []
-    print(eve_dir, annotation_path)
-    scenario_dirs = os.listdir(eve_dir)
-    print(eve_dir, annotation_path)
+    print(eve_dirs, annotation_path)
+    for eve_dir in eve_dirs:
+        tmps = os.listdir(eve_dir)
+        for tmp in tmps:
+            tmp_scenario = os.path.join(eve_dir, tmp)
+            scenario_dirs.append(tmp_scenario)
+    print(scenario_dirs)
     for scenario_dir in scenario_dirs:
-        scenario_path = os.path.join(eve_dir, scenario_dir)
+        # scenario_path = os.path.join(eve_dir, scenario_dir)
+        scenario_path = scenario_dir
         if not os.path.isdir(scenario_path):
             continue
         files = os.listdir(scenario_path)
@@ -357,7 +366,6 @@ def train_combine(lines_train, lines_val, h5_combine_filepath):
                                 initial_epoch=0,
                                 callbacks=[logging, checkpoint, early_stopping])
     combine_model.save(h5_combine_filepath)
-
 
 def extract_combine_data(x, ll):
     assert x.shape[0] == ll
@@ -441,7 +449,7 @@ def combine_test(lines_test, h5_combine_filepath):
         x = extract_combine_data(x, ll)
 
         combine_predict_y = combine_model.predict(x)
-        y_predict = (combine_predict_y[:,1] > 0.5).astype(int)
+        y_predict = (combine_predict_y[:,1] > 0.6).astype(int)
         tmp_conf_matrix = tf.math.confusion_matrix(y, y_predict, num_classes=2)
         matrix_conf = matrix_conf + tmp_conf_matrix
         if i % 10000 == 0:
@@ -471,7 +479,8 @@ if __name__ == "__main__":
         # 由于我这里仅有一块GPU,multi-GPU需要for一下
         tf.config.experimental.set_memory_growth(gpus[0], True)
 
-    eve_dirs = ["E:\\collect_data_blackhole_time", "E:\\collect_data_grayhole_time"]
+    # eve_dirs = ["E:\\collect_data_blackhole_time_shanghai", "E:\\collect_data_blackhole_time_shanghai1"]
+    eve_dirs = ["E:\\collect_data_blackhole_time_shanghai", "E:\\collect_data_blackhole_time_shanghai1"]
 
     annotation_dir = ".\\anno_blackhole_grayhole_time"
     if not os.path.exists(annotation_dir):
@@ -479,17 +488,17 @@ if __name__ == "__main__":
         print('add dir ' + annotation_dir)
     else:
         print(annotation_dir + ' exist')
-    anno_bk_filepath = os.path.join(annotation_dir, "anno_blackhole.txt")
+    anno_bk_filepath = os.path.join(annotation_dir, "anno_blackhole_shanghai.txt")
     if os.path.exists(anno_bk_filepath):
         os.remove(anno_bk_filepath)
-    print(eve_dirs[0], anno_bk_filepath)
-    build_anno(eve_dirs[0], anno_bk_filepath)
+    # print(eve_dirs, anno_bk_filepath)
+    build_anno(eve_dirs, anno_bk_filepath)
 
-    anno_gk_filepath = os.path.join(annotation_dir, "anno_grayhole.txt")
-    if os.path.exists(anno_gk_filepath):
-        os.remove(anno_gk_filepath)
-    print(eve_dirs[1], anno_gk_filepath)
-    build_anno(eve_dirs[1], anno_gk_filepath)
+    # anno_gk_filepath = os.path.join(annotation_dir, "anno_grayhole_shanghai.txt")
+    # if os.path.exists(anno_gk_filepath):
+    #     os.remove(anno_gk_filepath)
+    # print(eve_dirs[1], anno_gk_filepath)
+    # build_anno(eve_dirs[1], anno_gk_filepath)
 
     anno_filepath = anno_bk_filepath
 
@@ -531,16 +540,18 @@ if __name__ == "__main__":
         print('add dir ' + ml_dir)
     else:
         print(ml_dir + ' exist')
-    h5_direct_filepath = os.path.join(ml_dir, "our_direct_model.h5")
-    h5_indirect_filepath = os.path.join(ml_dir, "our_indirect_model.h5")
+    # h5_direct_filepath = os.path.join(ml_dir, "our_direct_model.h5")
+    # h5_indirect_filepath = os.path.join(ml_dir, "our_indirect_model.h5")
+    h5_direct_filepath = os.path.join(ml_dir, "our_direct_model_shanghai.h5")
+    h5_indirect_filepath = os.path.join(ml_dir, "our_indirect_model_shanghai.h5")
 
-    # 下面开始训练direct_model 和 indirect model
-    if os.path.exists(h5_direct_filepath):
-        os.remove(h5_direct_filepath)
-    if os.path.exists(h5_indirect_filepath):
-        os.remove(h5_indirect_filepath)
-    train_indirect(lines[: num_train], lines[num_train : num_train + num_val], h5_indirect_filepath)
-    train_direct(lines[: num_train], lines[num_train : num_train + num_val], h5_direct_filepath)
+    # # 下面开始训练direct_model 和 indirect model
+    # if os.path.exists(h5_direct_filepath):
+    #     os.remove(h5_direct_filepath)
+    # if os.path.exists(h5_indirect_filepath):
+    #     os.remove(h5_indirect_filepath)
+    # train_indirect(lines[: num_train], lines[num_train : num_train + num_val], h5_indirect_filepath)
+    # train_direct(lines[: num_train], lines[num_train : num_train + num_val], h5_direct_filepath)
 
     direct_and_indirect_test(lines[num_train + num_val:], h5_direct_filepath, h5_indirect_filepath)
 

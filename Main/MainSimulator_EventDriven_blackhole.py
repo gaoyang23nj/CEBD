@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import datetime
 import sys
@@ -161,6 +163,76 @@ class Simulator(object):
             dst_index = dst_index + 1
         return (src_index, dst_index)
 
+    def init_scenario_testOur(self):
+        index = -1
+        # ===============================场景2 Prophet ===================================
+        index += 1
+        tmp_senario_name = 'scenario' + str(index) + '_Prophet'
+        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # 0.1 0.2 0.3 0.4 0.5
+        for j in range(5):
+            # ===============================场景3 Prophet + Blackhole 0.1 ===================================
+            # # 随机生成序列
+            tmp = j + 1
+            percent_selfish = 0.1 * tmp
+            indices = np.random.permutation(self.MAX_NODE_NUM)
+            malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+            normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index)+'_blackhole_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_our_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_our(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+        # ===============================场景单个单个的实验吧===================================
+        list_scena = list(self.scenaDict.keys())
+        return list_scena
+
+    def init_scenario_testEric(self):
+        index = -1
+        # ===============================场景2 Prophet ===================================
+        index += 1
+        tmp_senario_name = 'scenario' + str(index) + '_Prophet'
+        tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
+        self.scenaDict.update({tmp_senario_name: tmpscenario})
+        # 0.1 0.2 0.3 0.4 0.5
+        for j in range(5):
+            # ===============================场景3 Prophet + Blackhole 0.1 ===================================
+            # # 随机生成序列
+            tmp = j + 1
+            percent_selfish = 0.1 * tmp
+            indices = np.random.permutation(self.MAX_NODE_NUM)
+            malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
+            normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_Eric_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_Eric(
+                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            # index += 1
+            # tmp_senario_name = 'scenario' + str(index) + '_blackhole_Li_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_Li(
+            #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+        # ===============================场景单个单个的实验吧===================================
+        list_scena = list(self.scenaDict.keys())
+        return list_scena
+
     def init_scenario_testv3(self):
         index = -1
         # ===============================场景2 Prophet ===================================
@@ -190,10 +262,10 @@ class Simulator(object):
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_Eric_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_Eric(
-                tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
+            # tmp_senario_name = 'scenario' + str(index) + '_blackhole_Eric_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_Eric(
+            #     tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
             tmp_senario_name = 'scenario' + str(index) + '_blackhole_Li_0_' + str(tmp)
@@ -219,7 +291,9 @@ class Simulator(object):
 
     def init_scenario(self):
         self.scenaDict = {}
-        list_scena = self.init_scenario_testv3()
+        # list_scena = self.init_scenario_testEric()
+        # list_scena = self.init_scenario_testv3()
+        list_scena = self.init_scenario_testOur()
         return list_scena
 
     # 打印出结果
@@ -256,6 +330,10 @@ class Simulator(object):
         res_file_object.close()
 
 
+isRWPModel = False
+isShanghaiDataset = True
+
+
 if __name__ == "__main__":
     t1 = datetime.datetime.now()
     print(datetime.datetime.now())
@@ -268,28 +346,42 @@ if __name__ == "__main__":
     short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     result_file_path = "res_blackhole_" + short_time + ".csv"
 
-    # 1.真正的流程
-    # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
+    if isRWPModel:
+        # 1.真正的流程
+        # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
 
-    # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
-    # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
-    # for filename in filelist:
-    #     filepath = os.path.join(encohistdir, filename)
-    #     for genpkt_freq in genpkt_freqlist:
-    #         print(filepath, genpkt_freq)
-    #         t_start = time.time()
-    #         theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
-    #         t_end = time.time()
-    #         print('running time:{}'.format(t_end - t_start))
-    #         simdurationlist.append(t_end - t_start)
+        # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
+        # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
+        genpkt_freqlist = [10 * 90]
+        for filename in filelist:
+            filepath = os.path.join(encohistdir, filename)
+            for genpkt_freq in genpkt_freqlist:
+                print(filepath, genpkt_freq)
+                t_start = time.time()
+                theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
+                t_end = time.time()
+                print('running time:{}'.format(t_end - t_start))
+                simdurationlist.append(t_end - t_start)
 
-    # or 2.简单测试的流程
-    genpkt_freqlist = 10 * 30
-    filepath = os.path.join(encohistdir, filelist[0])
-    theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
+        # or 2.简单测试的流程
+        # genpkt_freqlist = 10 * 30
+        # filepath = os.path.join(encohistdir, filelist[0])
+        # theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
 
+    shanghaihist = 'D:\\Simulation_ONE\\EncoHistData_Shanghai\\encohist_shanghai_20200808182956.tmp'
+    if isShanghaiDataset:
+        # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+        genpkt_freqlist = [10 * 30]
+        for genpkt_freq in genpkt_freqlist:
+            print(shanghaihist, genpkt_freq)
+            t_start = time.time()
+            theSimulator = Simulator(shanghaihist, genpkt_freq, result_file_path)
+            t_end = time.time()
+            print('running time:{}'.format(t_end - t_start))
+            simdurationlist.append(t_end - t_start)
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())
+
     winsound.Beep(500, 2000)
     print(t1)
     print(t2)

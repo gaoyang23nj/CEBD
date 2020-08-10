@@ -204,6 +204,9 @@ class Simulator(object):
             file_object.write(outstr + '\n')
         file_object.close()
 
+isRWPModel = False
+isShanghaiDataset = True
+
 if __name__ == "__main__":
     t1 = datetime.datetime.now()
     print(datetime.datetime.now())
@@ -212,25 +215,38 @@ if __name__ == "__main__":
     encohistdir = '..\\EncoHistData\\train'
     filelist = os.listdir(encohistdir)
 
+    shanghaihist = 'D:\\Simulation_ONE\\EncoHistData_Shanghai\\encohist_shanghai_20200808182956.tmp'
+
     # 1.真正的流程
     # 针对5个相遇记录 和 6个生成速率 分别进行实验（生成blackhole证据的实验）
+    if isRWPModel:
+        # genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
+        genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+        # for i_filename in range(len(filelist)):
+        # 从指定为位置开始保存
+        # i_filename = 0
+        i_filename = 3
+        while i_filename < len(filelist):
+            filepath = os.path.join(encohistdir, filelist[i_filename])
+            for genpkt_freq in genpkt_freqlist:
+                print(filepath, genpkt_freq)
+                t_start = time.time()
+                theSimulator = Simulator(filepath, genpkt_freq)
+                t_end = time.time()
+                print('running time:{}'.format(t_end - t_start))
+                simdurationlist.append(t_end - t_start)
+            i_filename = i_filename + 1
 
-    # genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
-    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
-    # for i_filename in range(len(filelist)):
-    # 从指定为位置开始保存
-    # i_filename = 0
-    i_filename = 3
-    while i_filename < len(filelist):
-        filepath = os.path.join(encohistdir, filelist[i_filename])
+    if isShanghaiDataset:
+        # genpkt_freqlist = [10*30, 10*60, 10 * 90, 10 * 120, 10 * 150, 10 * 180, 10 * 210]
+        genpkt_freqlist = [10*30, 10*60, 10 * 90, 10 * 120, 10 * 150]
         for genpkt_freq in genpkt_freqlist:
-            print(filepath, genpkt_freq)
+            print(shanghaihist, genpkt_freq)
             t_start = time.time()
-            theSimulator = Simulator(filepath, genpkt_freq)
+            theSimulator = Simulator(shanghaihist, genpkt_freq)
             t_end = time.time()
             print('running time:{}'.format(t_end - t_start))
             simdurationlist.append(t_end - t_start)
-        i_filename = i_filename + 1
 
     # or 2.简单测试的流程
 

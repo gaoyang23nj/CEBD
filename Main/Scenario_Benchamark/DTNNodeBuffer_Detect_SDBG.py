@@ -81,9 +81,9 @@ class DTNNodeBuffer_Detect_SDBG(object):
             self.tmp_ER["RL"].append((pkt_id, src_id, dst_id))
 
     def end_new_ER(self, sig_j):
-        if len(self.tmp_ER["SL"]) + len(self.tmp_ER["RL"]) > 0:
-            print('{}-> <-{} pkts id_{}<->id_{}'.format(len(self.tmp_ER["SL"]), len(self.tmp_ER["RL"]),
-                                                        self.node_id, self.tmp_ER["partner_id"]))
+        # if len(self.tmp_ER["SL"]) + len(self.tmp_ER["RL"]) > 0:
+        #     print('{}-> <-{} pkts id_{}<->id_{}'.format(len(self.tmp_ER["SL"]), len(self.tmp_ER["RL"]),
+        #                                                 self.node_id, self.tmp_ER["partner_id"]))
         new_ER = (self.tmp_ER["self_id"], self.tmp_ER["partner_id"], self.tmp_ER["self_sn"],
                   self.tmp_ER["partner_sn"], self.tmp_ER["running_time"],
                   self.tmp_ER["SL"].copy(), self.tmp_ER["RL"].copy())
@@ -99,9 +99,9 @@ class DTNNodeBuffer_Detect_SDBG(object):
         self.tmp_ER["running_time"] = -1
         self.tmp_ER["SL"].clear()
         self.tmp_ER["RL"].clear()
-        if len(self.ER_List[-1][5]) + len(self.ER_List[-1][6]) > 0:
-            print('{}-> <-{} pkts id_{}<->id_{}'.format(len(self.ER_List[-1][5]), len(self.ER_List[-1][6]),
-                                                        self.ER_List[-1][0], self.ER_List[-1][1]))
+        # if len(self.ER_List[-1][5]) + len(self.ER_List[-1][6]) > 0:
+        #     print('{}-> <-{} pkts id_{}<->id_{}'.format(len(self.ER_List[-1][5]), len(self.ER_List[-1][6]),
+        #                                                 self.ER_List[-1][0], self.ER_List[-1][1]))
         return
 
     def detect_node_j(self, j_node_id, ERW):
@@ -190,15 +190,13 @@ class DTNNodeBuffer_Detect_SDBG(object):
             is_blackhole = True
 
         # 有没有降低阈值的必要
-        # if (i_isSelfish == 1) and (is_blackhole == False) and (self.MS[j_node_id, 3] < self.Th_mal + 0.5):
-        #     print('RR:{} SFR:{} value:{} isSelfish:{} is_Bk:{} ERW_len:{}'.format(RR, SFR, self.MS[j_node_id, 3], i_isSelfish, is_blackhole, len(ERW)))
-        if i_isSelfish != is_blackhole:
-            if i_isSelfish == 0:
-                print('\033[31m RR:{} SFR:{} value:{} isSelfish:{} is_Bk:{} ERW_len:{} \033[0m'.format(RR, SFR, self.MS[j_node_id, 3],
-                                                                                  i_isSelfish, is_blackhole, len(ERW)))
-            elif i_isSelfish == 1:
-                print('\033[34m RR:{} SFR:{} value:{} isSelfish:{} is_Bk:{} ERW_len:{} \033[0m'.format(RR, SFR, self.MS[j_node_id, 3],
-                                                                                  i_isSelfish, is_blackhole, len(ERW)))
+        # if i_isSelfish != is_blackhole:
+        #     if i_isSelfish == 0:
+        #         print('\033[31m RR:{} SFR:{} value:{} isSelfish:{} is_Bk:{} ERW_len:{} \033[0m'.format(RR, SFR, self.MS[j_node_id, 3],
+        #                                                                           i_isSelfish, is_blackhole, len(ERW)))
+        #     elif i_isSelfish == 1:
+        #         print('\033[34m RR:{} SFR:{} value:{} isSelfish:{} is_Bk:{} ERW_len:{} \033[0m'.format(RR, SFR, self.MS[j_node_id, 3],
+        #                                                                           i_isSelfish, is_blackhole, len(ERW)))
 
         return is_blackhole, [], i_isSelfish, (RR, SFR), do_not_record
 

@@ -171,7 +171,7 @@ class Simulator(object):
             malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
             normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
 
-            tmplist = [1, 3, 5]
+            tmplist = [3, 5, 7, 9]
             for dropratio_i in tmplist:
                 dropratio = 0.1 * dropratio_i
                 index += 1
@@ -216,24 +216,34 @@ if __name__ == "__main__":
     # 针对5个相遇记录 和 6个生成速率 分别进行实验（生成blackhole证据的实验）
 
     # genpkt_freqlist = [10*30, 10*60, 10*90, 10*120, 10*150, 10*180]
-    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
-    # for i_filename in range(len(filelist)):
-    # 从指定为位置开始保存
-    # i_filename = 0
-    i_filename = 3
-    while i_filename < len(filelist):
-        filepath = os.path.join(encohistdir, filelist[i_filename])
-        for genpkt_freq in genpkt_freqlist:
-            print(filepath, genpkt_freq)
-            t_start = time.time()
-            theSimulator = Simulator(filepath, genpkt_freq)
-            t_end = time.time()
-            print('running time:{}'.format(t_end - t_start))
-            simdurationlist.append(t_end - t_start)
-        i_filename = i_filename + 1
+    # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+    # # for i_filename in range(len(filelist)):
+    # # 从指定为位置开始保存
+    # # i_filename = 0
+    # i_filename = 3
+    # while i_filename < len(filelist):
+    #     filepath = os.path.join(encohistdir, filelist[i_filename])
+    #     for genpkt_freq in genpkt_freqlist:
+    #         print(filepath, genpkt_freq)
+    #         t_start = time.time()
+    #         theSimulator = Simulator(filepath, genpkt_freq)
+    #         t_end = time.time()
+    #         print('running time:{}'.format(t_end - t_start))
+    #         simdurationlist.append(t_end - t_start)
+    #     i_filename = i_filename + 1
 
-    # or 2.简单测试的流程
+    # or 2.
+    genpkt_freqlist = [10*30, 10 * 90, 10 * 150]
+    filepath = os.path.join(encohistdir, filelist[3])
+    for genpkt_freq in genpkt_freqlist:
+        print(filepath, genpkt_freq)
+        t_start = time.time()
+        theSimulator = Simulator(filepath, genpkt_freq)
+        t_end = time.time()
+        print('running time:{}'.format(t_end - t_start))
+        simdurationlist.append(t_end - t_start)
 
+    # or 3.简单测试的流程
     # genpkt_freqlist = 10 * 30
     # filepath = os.path.join(encohistdir, filelist[0])
     # theSimulator = Simulator(filepath, genpkt_freqlist)
