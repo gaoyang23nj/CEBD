@@ -3,20 +3,19 @@ import datetime
 import sys
 import winsound
 import os
+import time
 
 from Main.Multi_Scenario.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blackhole
 
-from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall_collusionF import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF
-from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall_collusionF_without import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without
 
 
 # 简化处理流程 传输速率无限
 
 # 事件驱动
-
+from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_our_coll import DTNScenario_Prophet_Blackhole_our_coll
+from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_our_coll_without import \
+    DTNScenario_Prophet_Blackhole_our_coll_without
 
 
 class Simulator(object):
@@ -174,7 +173,7 @@ class Simulator(object):
             malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
             normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
 
-            # 获取 5对 10对collusion 的id
+            # 获取 5对 10collusion 的id
             coll_pairs = []
             num_pairs = 5
             # 记录colluded 节点
@@ -195,13 +194,13 @@ class Simulator(object):
 
             index += 1
             tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF(
+            tmpscenario = DTNScenario_Prophet_Blackhole_our_coll(
                 tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
             tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_without_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without(
+            tmpscenario = DTNScenario_Prophet_Blackhole_our_coll_without(
                 tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
@@ -246,6 +245,8 @@ class Simulator(object):
         res_file_object.write('\n')
         res_file_object.close()
 
+isRWPModel = True
+isShanghaiDataset = False
 
 if __name__ == "__main__":
     t1 = datetime.datetime.now()
@@ -259,29 +260,42 @@ if __name__ == "__main__":
     short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     result_file_path = "res_blackhole_" + short_time + ".csv"
 
-    # 1.真正的流程
-    # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
 
-    # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
-    # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
-    # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
-    # for filename in filelist:
-    #     filepath = os.path.join(encohistdir, filename)
-    #     for genpkt_freq in genpkt_freqlist:
-    #         print(filepath, genpkt_freq)
-    #         t_start = time.time()
-    #         theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
-    #         t_end = time.time()
-    #         print('running time:{}'.format(t_end - t_start))
-    #         simdurationlist.append(t_end - t_start)
+    if isRWPModel:
+        # 1.真正的流程
+        # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
+        # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
+        # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
+        genpkt_freqlist = [10 * 90]
+        for filename in filelist:
+            filepath = os.path.join(encohistdir, filename)
+            for genpkt_freq in genpkt_freqlist:
+                print(filepath, genpkt_freq)
+                t_start = time.time()
+                theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
+                t_end = time.time()
+                print('running time:{}'.format(t_end - t_start))
+                simdurationlist.append(t_end - t_start)
 
-    # or 2.简单测试的流程
-    genpkt_freqlist = 10 * 30
-    filepath = os.path.join(encohistdir, filelist[0])
-    theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
+        # or 2.简单测试的流程
+        # genpkt_freqlist = 10 * 30
+        # filepath = os.path.join(encohistdir, filelist[0])
+        # theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
 
+    shanghaihist = '..\\EncoHistData_Shanghai\\encohist_shanghai_20200808182956.tmp'
+    if isShanghaiDataset:
+        # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+        genpkt_freqlist = [10 * 30]
+        for genpkt_freq in genpkt_freqlist:
+            print(shanghaihist, genpkt_freq)
+            t_start = time.time()
+            theSimulator = Simulator(shanghaihist, genpkt_freq, result_file_path)
+            t_end = time.time()
+            print('running time:{}'.format(t_end - t_start))
+            simdurationlist.append(t_end - t_start)
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())
+
     winsound.Beep(500, 2000)
     print(t1)
     print(t2)

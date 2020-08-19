@@ -151,7 +151,7 @@ DectectandBan_time_q_output = multiprocessing.Queue()
 
 # 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_DectectandBan_refuseall_collusionF_without(object):
+class DTNScenario_Prophet_Blackhole_our_coll_without(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, new_normal_indices, new_coll_indices, coll_pairs, num_of_nodes, buffer_size, total_runningtime):
         # tf的调用次数
