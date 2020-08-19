@@ -232,13 +232,15 @@ class Simulator(object):
             file_object.write(outstr+'\n')
 
             res_file_object.write(str(self.THR_PKT_GEN_CNT)+',')
-            assert((len(res)==2) or (len(res)==4))
-            for i in range(2):
-                res_file_object.write(str(res[i])+',')
-            for i_config in config:
-                res_file_object.write(str(i_config) + ',')
-            if len(res) == 4:
-                res_file_object.write('\n' + str(res[2]) + '\n' + str(res[3]) + ',')
+            # 3个res 是 res = {'succ_ratio':succ_ratio, 'avg_delay':avg_delay, 'num_comm':num_comm}
+            # 5个res res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
+            #                'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
+            # config = {'ratio_bk_nodes': ratio_bk_nodes, 'drop_prob': 1}
+            assert((len(res) == 3) or (len(res)==5))
+            res_file_object.write(str(res['succ_ratio'])+','+str(res['avg_delay'])+','+str(res['num_comm']))
+            res_file_object.write(str(config['ratio_bk_nodes']) + ',' +str(config['drop_prob']))
+            if len(res) == 5:
+                res_file_object.write('\n' + str(res['DetectResult']) + '\n' + str(res['tmp_DetectResult']) + ',')
             res_file_object.write('\n')
 
         file_object.close()

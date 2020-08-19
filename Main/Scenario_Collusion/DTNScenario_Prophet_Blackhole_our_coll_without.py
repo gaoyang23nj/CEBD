@@ -541,20 +541,35 @@ class DTNScenario_Prophet_Blackhole_our_coll_without(object):
                 self.model_files_path, self.MAX_Ability, DectectandBan_time_q_input, DectectandBan_time_q_output))
             j.daemon = True
             j.start()
-			
+
+        # 如果一切正常 应该取得的值
+        tmp_res = np.hstack((d_predict, ind_predict))
+        before_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
+        threshold = 0.5
+
         # without collusion detect
         # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
         # res_coll_id, res_coll_filtering = self.__detect_collusion(ind_predict, to_collusion_index)
         tmp_res = np.hstack((d_predict, ind_predict))
         final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
-        boolBlackhole = final_res > 0.5
+        bool_black_hole = final_res > 0.5
 
+        # 显示/统计 collusion detection的效果
+        self.evaluate_coll_detection(a_id, b_id, bool_black_hole, final_res, runningtime)
+
+        conf_matrix = cal_conf_matrix(i_isSelfish, int(bool_black_hole), num_classes=2)
+
+        self.DetectResult = self.DetectResult + conf_matrix
+        return bool_black_hole
+
+    def evaluate_coll_detection(self, a_id, b_id, final_res, runningtime):
+        # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole
         # 只从正常节点的角度观察
         if a_id in self.list_normal:
             if b_id in self.list_coll_corres_bk:
                 # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
                 self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + final_res
-                self.coll_corr_bk_num_evalu =  self.coll_corr_bk_num_evalu + 1
+                self.coll_corr_bk_num_evalu = self.coll_corr_bk_num_evalu + 1
                 self.coll_corr_bk_recd_list.append((final_res, runningtime))
             elif b_id in self.list_selfish:
                 # b_id是普通的bk节点 (没有colluded节点与b_id合作)
@@ -571,13 +586,6 @@ class DTNScenario_Prophet_Blackhole_our_coll_without(object):
                 self.normal_recd_list.append((final_res, runningtime))
             else:
                 print('Internal Err! CollusionF calculate res!')
-
-
-        conf_matrix = cal_conf_matrix(i_isSelfish, int(boolBlackhole), num_classes=2)
-
-        self.DetectResult = self.DetectResult + conf_matrix
-        return boolBlackhole
-
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, pkt_src_id, pkt_dst_id):

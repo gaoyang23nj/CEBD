@@ -163,7 +163,7 @@ DectectandBan_time_q_output = multiprocessing.Queue()
 
 # 使用训练好的model 在消息投递时候 增加对对端节点的判定
 # Scenario 要响应 genpkt swappkt事件 和 最后的结果查询事件
-class DTNScenario_Prophet_Blackhole_our_coll(object):
+class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
     # node_id的list routingname的list
     def __init__(self, scenarioname, list_selfish, new_normal_indices, new_coll_indices, coll_pairs, num_of_nodes, buffer_size, total_runningtime):
         # tf的调用次数
@@ -230,6 +230,8 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         # 矩阵属性可以考虑更改
         self.num_of_att = 10
 
+        self.num_comm = 0
+        
         # 记录不平衡的个数
         self.count_unb = 0
         self.forge_value = 0.1
@@ -572,16 +574,23 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         # 进行collusion
         true_collude_id, ind_predict = self.__collusion(a_id, b_id, to_collusion_index, ind_predict)
 
-        # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
-        res_coll_id, res_coll_filtering, one_collu_list, outdiff = \
-            self.__detect_collusion(ind_predict, to_collusion_index, threshold)
-        tmp_res = np.hstack((d_predict, res_coll_filtering))
-        final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
-        bool_black_hole = final_res > threshold
+        # 默认不足以撼动结果
+        tmp_res = np.hstack((d_predict, ind_predict))
+        coll_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
+        bool_black_hole = coll_res > threshold
 
-        # 显示/统计 collusion detection的效果
-        self.evaluate_coll_detection(a_id, b_id, bool_black_hole, true_collude_id, res_coll_id, before_res,
-                                     final_res, runningtime, one_collu_list, outdiff)
+        if bool_black_hole:
+            # LOF方法
+            possible_coll_id, new_ind_predict, LOF_list = self.__detect_collusion_LOF(
+                ind_predict, to_collusion_index, threshold)
+            tmp_res = np.hstack((d_predict, new_ind_predict))
+            final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
+            bool_black_hole = final_res > threshold
+
+            # 显示/统计 collusion detection的效果
+            self.evaluate_coll_detection(a_id, b_id, bool_black_hole, true_collude_id, possible_coll_id,
+                                         before_res, coll_res, final_res, runningtime,
+                                         LOF_list)
 
         conf_matrix = cal_conf_matrix(i_isSelfish, int(bool_black_hole), num_classes=2)
         if i_isSelfish != int(bool_black_hole):
@@ -591,34 +600,34 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         self.DetectResult = self.DetectResult + conf_matrix
         return bool_black_hole
 
-    def evaluate_coll_detection(self, a_id, b_id, bool_black_hole, true_collude_id, res_coll_id, before_res,
-                                final_res, runningtime, one_collu_list, outdiff):
-        # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole
-        if a_id in self.list_normal:
-            if b_id in self.list_coll_corres_bk:
-                # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
-                self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + final_res
-                self.coll_corr_bk_num_evalu = self.coll_corr_bk_num_evalu + 1
-                self.coll_corr_bk_recd_list.append((final_res, runningtime))
-            elif b_id in self.list_selfish:
-                # b_id是普通的bk节点 (没有colluded节点与b_id合作)
-                self.bk_sum_evalu = self.bk_sum_evalu + final_res
-                self.bk_num_evalu = self.bk_num_evalu + 1
-                self.bk_recd_list.append((final_res, runningtime))
-            elif b_id in self.list_coll:
-                self.coll_sum_evalu = self.coll_sum_evalu + final_res
-                self.coll_num_evalu = self.coll_num_evalu + 1
-                self.coll_recd_list.append((final_res, runningtime))
-            elif b_id in self.list_normal:
-                self.normal_sum_evalu = self.normal_sum_evalu + final_res
-                self.normal_num_evalu = self.normal_num_evalu + 1
-                self.normal_recd_list.append((final_res, runningtime))
-            else:
-                print('Internal Err! CollusionF calculate res!')
+    def evaluate_coll_detection(self, a_id, b_id, bool_black_hole, true_collude_id, possible_coll_id,
+                                before_res, coll_res, final_res, runningtime, LOF_list):
+        # # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole
+        # if a_id in self.list_normal:
+        #     if b_id in self.list_coll_corres_bk:
+        #         # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
+        #         self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + coll_res
+        #         self.coll_corr_bk_num_evalu = self.coll_corr_bk_num_evalu + 1
+        #         self.coll_corr_bk_recd_list.append((coll_res, runningtime))
+        #     elif b_id in self.list_selfish:
+        #         # b_id是普通的bk节点 (没有colluded节点与b_id合作)
+        #         self.bk_sum_evalu = self.bk_sum_evalu + coll_res
+        #         self.bk_num_evalu = self.bk_num_evalu + 1
+        #         self.bk_recd_list.append((coll_res, runningtime))
+        #     elif b_id in self.list_coll:
+        #         self.coll_sum_evalu = self.coll_sum_evalu + coll_res
+        #         self.coll_num_evalu = self.coll_num_evalu + 1
+        #         self.coll_recd_list.append((coll_res, runningtime))
+        #     elif b_id in self.list_normal:
+        #         self.normal_sum_evalu = self.normal_sum_evalu + coll_res
+        #         self.normal_num_evalu = self.normal_num_evalu + 1
+        #         self.normal_recd_list.append((coll_res, runningtime))
+        #     else:
+        #         print('Internal Err! CollusionF calculate res!')
 
         if a_id in self.list_normal:
             if b_id in self.list_coll_corres_bk:
-                print('{}to{} before_res:{} after_res:{}'.format(a_id, b_id, before_res, final_res))
+                print('{}to{} before_res:{} coll_res:{} final_res:{}'.format(a_id, b_id, before_res, coll_res, final_res))
 
         # b: 1)selfish(coll_bk) 2)normal 3)coll
         # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole; 没检查出来 就先不打印了
@@ -631,27 +640,27 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
             elif (b_id in self.list_selfish) and bool_black_hole:
                 # 看看检测出来的准不准
                 tmp = np.zeros((2, 2), dtype='int')
-                if (res_coll_id, b_id) in self.list_coll_pairs:
-                    assert true_collude_id == res_coll_id
+                if (possible_coll_id, b_id) in self.list_coll_pairs:
+                    assert true_collude_id == possible_coll_id
                     tmp[0][0] = 1
                     print("\033[42m",
-                          "value:{} b_id(id_{})找到了collude(id_{}) diff:{}".format(final_res, b_id, true_collude_id,
-                                                                                 outdiff),
-                          "\033[0m", one_collu_list)
+                          "value:{} b_id(id_{})找到了collude(id_{}) LOF_0:{}".format(final_res, b_id, true_collude_id,
+                                                                                 LOF_list[0]),
+                          "\033[0m", runningtime)
                 elif b_id in self.list_coll_corres_bk:
                     # b_id是coll_corres_bk 存在的对应的colluded节点; 发生漏检
                     # assert res_coll_id !=
                     tmp[0][1] = 1
                     print("\033[41m",
-                          "value:{} a_id(id_{}) to b_id(id_{})有collude(id_{})但没被找到, 以为是id_{} diff:{}".format(
-                              final_res, a_id, b_id, true_collude_id, res_coll_id, outdiff), "\033[0m", one_collu_list)
-                elif res_coll_id != -1:
+                          "value:{} a_id(id_{}) to b_id(id_{})有collude(id_{})但没被找到, 以为是id_{} LOF_0:{}".format(
+                              final_res, a_id, b_id, true_collude_id, possible_coll_id, LOF_list[0]), "\033[0m", runningtime)
+                elif possible_coll_id != -1:
                     # b_id也不是coll_bk; 也没有正确发现; 但还是以为有coll_id
                     # 误报 真实为‘1’误以为‘0’
                     assert b_id not in self.list_coll_corres_bk
                     tmp[1][0] = 1
-                    print("\033[44m", "value:{} a_id(id_{}) to b_id(id_{})没有collude但给出了，以为是id_{} diff:{}".format(
-                        final_res, a_id, b_id, res_coll_id, outdiff), "\033[0m", one_collu_list)
+                    print("\033[44m", "value:{} a_id(id_{}) to b_id(id_{})没有collude但给出了，以为是id_{} LOF_0:{}".format(
+                        final_res, a_id, b_id, possible_coll_id, LOF_list[0]), "\033[0m", runningtime)
                 else:
                     tmp[1][1] = 1
                 self.coll_DetectRes = self.coll_DetectRes + tmp
@@ -691,68 +700,103 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         return true_collude_id, ind_predict
 
     # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
-    def __detect_collusion(self, ind_predict, to_collusion_index, threshold):
-        assert ind_predict.shape[1] == to_collusion_index.shape[1]
-        assert ind_predict.shape[0] == to_collusion_index.shape[0]
-        # assert ind_predict.shape[1] == self.num_of_nodes - 2
-        # assert ind_predict.shape[0] == 1
-        dim = ind_predict.shape[1]
+    def __detect_collusion_LOF(self, ind_predict, to_collusion_index, threshold):
+        # 预定义参数 最小的本地邻居个数 k=ng-1  k=(n-1)/2
+        k = 5
+        # o_i
         ind_predict_all = np.squeeze(ind_predict, axis=0)
+        # 对应的id
         to_index_all = np.squeeze(to_collusion_index, axis=0)
 
-        # 根据threshold 分别断定 哪些是有可能出现collusion的位置 // 本文 只考虑 good-mouth
-        mask_0 = ind_predict_all <= threshold
-        ind_predict_0 = ind_predict_all[mask_0]
-        to_index_0 = to_index_all[mask_0]
-        mask_1 = ind_predict_all > threshold
-        ind_predict_1 = ind_predict_all[mask_1]
-        to_index_1 = to_index_all[mask_1]
+        # for 每一个节点oi
+        # 1.寻找最近的k个邻居 k邻距离d_k(oi) 邻居集合N_k(oi)
+        # 2.Rd_k(oi <- ol) <- max(dk(ol),d(oi,ol),epison)
+        # 3.LRD 本地可达密度 lrd_k(oi) <- |N_k(oi)| / sum( Rd_k(oj <- oi) )  //i邻域内的各个j
+        # 4.LOF LOF_k(oi) <- sum( lrd_k(oj)/lrd_k(oi) ) / |N_k(oi)|        //i邻域内的各个j
 
-        # self.__detect_once_list(ind_predict_all, to_index_all)
-        # 长度不均匀 总计计算就可以了 我们认为到了后期
-        coll_node_id_all = -1
-        if len(ind_predict_0) < 3:
-            self.count_unb = self.count_unb + 1
-            print('unblanced list')
-            coll_node_id_all, good_indirect_predict_res_all, tunple_list_all, divison_all = self.__detect_once_list(
-                ind_predict_all, to_index_all, self.collusion_alpha_outer)
-            return coll_node_id_all, good_indirect_predict_res_all, tunple_list_all, divison_all
-        else:
-            coll_node_id_0, good_indirect_predict_res_0, tunple_list_0, divison_0 = self.__detect_once_list(
-                ind_predict_0, to_index_0, self.collusion_alpha_inner)
-            coll_node_id_all = coll_node_id_0
-            good_indirect_predict_res_1 = ind_predict_1.reshape(1, -1)
-            good_indirect_predict_res_all = np.hstack((good_indirect_predict_res_0, good_indirect_predict_res_1))
-            return coll_node_id_all, good_indirect_predict_res_all, tunple_list_0, divison_0
+        # rd(*) // p1,o // p2,o
+        # rd(p) = |N(p)| / sum(rd(p,o)) //o是p邻域内各点
+        # LOF(p) = sum(rd(o)/rd(p)) / |N(p)|
+        assert ind_predict_all.shape == to_index_all.shape
+        num_data = ind_predict_all.shape[0]
 
-    def __detect_once_list(self, to_predict_value, to_index, threshold):
-        dim = to_predict_value.shape[0]
-        # leave-one std
-        mask_matrix = np.logical_xor(True, np.eye(dim, dim, dtype='bool'))
-        tmp_to_predict_value = to_predict_value.reshape((1, dim))
-        value_matrix = tmp_to_predict_value.repeat(dim, axis=0)
-        # 实现leave one; 准备计算std
-        new_value_matrix = value_matrix[mask_matrix].reshape(dim, dim - 1)
-        leave_one_std = np.std(new_value_matrix, axis=1)
-        # form new list
-        tunple_list = []
-        for i in range(dim):
-            # leave-std, coll_node_id, index_in_this_list, predict_value
-            tmp_tunple = (leave_one_std[i], to_index[i], i, to_predict_value[i])
-            tunple_list.append(tmp_tunple)
-        tunple_list.sort()
-        divison = math.fabs(tunple_list[0][0] - tunple_list[1][0])
-        if divison > threshold:
-            coll_node_id = tunple_list[0][1]
-            mask = [True] * dim
+        # 所有的 index nodeid valueP Nk dk; Nk是邻域 里面包含(邻域距离,index,nodeid,value)
+        list_oiNkdk = []
+        # 1.寻找邻域d_k 和 N_k
+        for oi in range(num_data):
+            # oi对应的Nk和dk
+            oi_ng_list_Nk = []
+            oi_ng_tmp_dk = 0.
+            tmp_list = []
+            for tmp_oj in range(num_data):
+                if tmp_oj == oi:
+                    continue
+                # d, index, 真正的id, 值
+                ele = (math.fabs(ind_predict_all[oi] - ind_predict_all[tmp_oj]), tmp_oj,
+                       to_index_all[tmp_oj], ind_predict_all[tmp_oj])
+                tmp_list.append(ele)
+            tmp_list.sort()
+            oi_ng_tmp_dk = tmp_list[k-1][0]
+            for ele in tmp_list:
+                (dist, index, node_id, nodeValueP) = ele
+                if dist <= oi_ng_tmp_dk:
+                    oi_ng_list_Nk.append(dist, index, node_id, nodeValueP)
+                else:
+                    break
+            oi_ele = (oi, to_index_all[oi], ind_predict_all[oi], oi_ng_list_Nk, oi_ng_tmp_dk)
+            list_oiNkdk.append(oi_ele)
+        # 2.rd矩阵 ol到oi的可达距离 Rd[oi, ol]
+        Rd = np.ones((num_data, num_data), dtype='float')*-1
+        for ol in range(num_data):
+            for oi in range(num_data):
+                assert list_oiNkdk[ol][0] == ol
+                tmp_max_value = list_oiNkdk[ol][4]
+                tmp_dist = math.fabs(ind_predict_all[ol] - ind_predict_all[oi])
+                if tmp_dist > tmp_max_value:
+                    tmp_max_value = tmp_dist
+                if 0.000001 > tmp_max_value:
+                    tmp_max_value = 0.000001
+                # ol的dk   ol与oi距离  中间比较大的
+                Rd[oi, ol] = tmp_max_value
+        # 3.lrd // index lrd node_id
+        lrd_list = []
+        for p in range(num_data):
+            assert list_oiNkdk[p][0] == p
+            numerator = len(list_oiNkdk[p][3])
+            denominator = 0.
+            # 枚举p的邻域
+            for o_ele in list_oiNkdk[p][3]:
+                (dist_po, index_o, node_id_o, value_o) = o_ele
+                denominator = denominator + Rd[p, index_o]
+            lrd_list.append((p, numerator/denominator, to_index_all[p]))
+        # 4.LOF
+        LOF_list = []
+        for p in range(num_data):
+            assert list_oiNkdk[p][0] == p
+            numerator = 0.
+            denominator = len(list_oiNkdk[p][3])
+            for o_ele in list_oiNkdk[p][3]:
+                (dist_po, index_o, node_id_o, value_o) = o_ele
+                assert lrd_list[index_o][0] == index_o
+                assert lrd_list[p][0] == p
+                numerator = numerator + lrd_list[index_o][1] / lrd_list[p][1]
+            LOF_list.append((numerator/denominator, p, to_index_all[p]))
+        # LOF值 描述了 节点多大可能是outlier
+        LOF_list.sort(reverse=True)
+        print(LOF_list[0], LOF_list[1])
+        possible_coll_id = LOF_list[0][2]
+        possible_coll_index = LOF_list[0][1]
+
+        if ind_predict_all[possible_coll_index] < threshold:
+            mask = [True] * num_data
             # coll_node_id的位置 为false
-            mask[tunple_list[0][2]] = False
-            good_indirect_predict_res = to_predict_value[mask]
-            good_indirect_predict_res = good_indirect_predict_res.reshape(1,-1)
-            return coll_node_id, good_indirect_predict_res, tunple_list, divison
+            mask[possible_coll_index] = False
+            new_ind_predict = ind_predict_all[mask].reshape(-1, 1)
         else:
-            out_predict_value = to_predict_value.reshape(1,-1)
-            return -1, out_predict_value, tunple_list, divison
+            possible_coll_id = -1
+            new_ind_predict = to_collusion_index
+        return possible_coll_id, new_ind_predict, LOF_list
+
 
     # 改变检测buffer的值
     def __updatedectbuf_sendpkt(self, a_id, b_id, pkt_src_id, pkt_dst_id):
