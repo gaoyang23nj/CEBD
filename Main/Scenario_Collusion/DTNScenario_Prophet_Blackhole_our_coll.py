@@ -511,7 +511,7 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         d_attrs[0][8] = theBufferDetect.get_receive_all().copy()
         d_attrs[0][9] = ((theBufferDetect.get_receive_from_and_pktsrc())[b_id]).copy()
 
-        mask = [True] * (self.num_of_nodes)
+        mask = [True] * self.num_of_nodes
         mask[a_id] = False
         mask[b_id] = False
         n = self.num_of_nodes - 2

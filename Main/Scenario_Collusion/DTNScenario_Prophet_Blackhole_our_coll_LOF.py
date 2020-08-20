@@ -355,7 +355,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
         d_attrs[0][8] = theBufferDetect.get_receive_all().copy()
         d_attrs[0][9] = ((theBufferDetect.get_receive_from_and_pktsrc())[b_id]).copy()
 
-        mask = [True] * (self.num_of_nodes)
+        mask = [True] * self.num_of_nodes
         mask[a_id] = False
         mask[b_id] = False
         n = self.num_of_nodes - 2
@@ -618,7 +618,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
                 assert lrd_list[index_o][0] == index_o
                 assert lrd_list[p][0] == p
                 numerator = numerator + lrd_list[index_o][1] / lrd_list[p][1]
-            LOF_list.append((numerator/denominator, p, to_index_all[p]))
+            LOF_list.append((numerator/denominator, p, to_index_all[p], ind_predict_all[p]))
         # LOF值 描述了 节点多大可能是outlier
         LOF_list.sort(reverse=True)
         print(LOF_list[0], LOF_list[1])
@@ -629,7 +629,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
             mask = [True] * num_data
             # coll_node_id的位置 为false
             mask[possible_coll_index] = False
-            new_ind_predict = ind_predict_all[mask].reshape(-1, 1)
+            new_ind_predict = ind_predict_all[mask].reshape(1, -1)
         else:
             possible_coll_id = -1
             new_ind_predict = to_collusion_index
