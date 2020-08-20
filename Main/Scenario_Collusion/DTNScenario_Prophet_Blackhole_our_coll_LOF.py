@@ -208,8 +208,8 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
 
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
         dir = "..\\Main\\ML_blackhole_time"
-        direct_model_file_path = os.path.join(dir, 'direct_model.h5')
-        indirect_model_file_path = os.path.join(dir, 'indirect_model.h5')
+        direct_model_file_path = os.path.join(dir, 'our_direct_model.h5')
+        indirect_model_file_path = os.path.join(dir, 'our_indirect_model.h5')
         self.model_files_path = (direct_model_file_path, indirect_model_file_path)
 
         self.MAX_Ability = (10000, 'Max Process Ability', 'Continue')
@@ -752,7 +752,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
             for ele in tmp_list:
                 (dist, index, node_id, nodeValueP) = ele
                 if dist <= oi_ng_tmp_dk:
-                    oi_ng_list_Nk.append(dist, index, node_id, nodeValueP)
+                    oi_ng_list_Nk.append((dist, index, node_id, nodeValueP))
                 else:
                     break
             oi_ele = (oi, to_index_all[oi], ind_predict_all[oi], oi_ng_list_Nk, oi_ng_tmp_dk)

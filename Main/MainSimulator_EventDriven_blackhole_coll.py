@@ -14,6 +14,8 @@ from Main.Scenario.DTNScenario_Prophet_Blackhole import DTNScenario_Prophet_Blac
 
 # 事件驱动
 from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_our_coll import DTNScenario_Prophet_Blackhole_our_coll
+from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_our_coll_LOF import \
+    DTNScenario_Prophet_Blackhole_our_coll_LOF
 from Main.Scenario_Collusion.DTNScenario_Prophet_Blackhole_our_coll_without import \
     DTNScenario_Prophet_Blackhole_our_coll_without
 
@@ -195,6 +197,12 @@ class Simulator(object):
             index += 1
             tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_0_' + str(tmp)
             tmpscenario = DTNScenario_Prophet_Blackhole_our_coll(
+                tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+            index += 1
+            tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_LOF_0_' + str(tmp)
+            tmpscenario = DTNScenario_Prophet_Blackhole_our_coll_LOF(
                 tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 

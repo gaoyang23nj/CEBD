@@ -208,8 +208,8 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
 
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
         dir = "..\\Main\\ML_blackhole_time"
-        direct_model_file_path = os.path.join(dir, 'direct_model.h5')
-        indirect_model_file_path = os.path.join(dir, 'indirect_model.h5')
+        direct_model_file_path = os.path.join(dir, 'our_direct_model.h5')
+        indirect_model_file_path = os.path.join(dir, 'our_indirect_model.h5')
         self.model_files_path = (direct_model_file_path, indirect_model_file_path)
 
         self.MAX_Ability = (10000, 'Max Process Ability', 'Continue')
@@ -230,9 +230,17 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         # 矩阵属性可以考虑更改
         self.num_of_att = 10
 
+        self.num_comm = 0
+
         # 记录不平衡的个数
         self.count_unb = 0
         self.forge_value = 0.1
+        # collusion 检查的阈值; 需要经验确定
+        # list内阈值 内阈值 要小
+        # self.collusion_alpha_inner = 0.0015
+        self.collusion_alpha_inner = 0.01
+        # list外阈值 总阈值 要高
+        self.collusion_alpha_outer = 0.0004
         # 记录collusion检测的评价结果 并 用list记录下来/带上时间；
         # 合作的bk
         self.coll_corr_bk_sum_evalu = 0.0

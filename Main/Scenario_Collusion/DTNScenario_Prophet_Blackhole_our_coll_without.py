@@ -17,14 +17,15 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 NUM_of_DIMENSIONS = 10
-NUM_of_DIRECT_INPUTS = 7
-NUM_of_INDIRECT_INPUTS = 8
+NUM_of_DIRECT_INPUTS = 8
+NUM_of_INDIRECT_INPUTS = 9
 MAX_RUNNING_TIMES = 864000
 
 def cal_conf_matrix(y_true, y_predict, num_classes):
     res = np.zeros((num_classes,num_classes), dtype = 'int')
     res[y_true][y_predict] = 1
     return res
+
 
 def extract_indirect_data(x, y, ll):
     assert y.shape[0] == ll
@@ -49,18 +50,28 @@ def extract_indirect_data(x, y, ll):
 
     # (1000, 98) / (1000, 98)
     # ind_data[:, 1* num_of_views: 2* num_of_views]
-    input[:,2] = np.true_divide(ind_data[:, 1* num_of_views: 2* num_of_views], ind_data[:, 7* num_of_views: 8* num_of_views]+1).reshape(-1,1).squeeze()
+    input[:,2] = np.true_divide(ind_data[:, 1* num_of_views: 2* num_of_views],
+                                ind_data[:, 7* num_of_views: 8* num_of_views]+1).reshape(-1,1).squeeze()
     # ind_data[:, 5 * num_of_views: 6 * num_of_views]
-    input[:,3] = np.true_divide(ind_data[:, 5 * num_of_views: 6 * num_of_views], ind_data[:, 7* num_of_views: 8* num_of_views]+1).reshape(-1,1).squeeze()
+    input[:,3] = np.true_divide(ind_data[:, 5 * num_of_views: 6 * num_of_views],
+                                ind_data[:, 7* num_of_views: 8* num_of_views]+1).reshape(-1,1).squeeze()
     # ind_data[:, 6 * num_of_views: 7 * num_of_views]
-    input[:,4] = np.true_divide(ind_data[:, 6 * num_of_views: 7 * num_of_views], ind_data[:, 7 * num_of_views: 8 * num_of_views]+1).reshape(-1,1).squeeze()
+    input[:,4] = np.true_divide(ind_data[:, 6 * num_of_views: 7 * num_of_views],
+                                ind_data[:, 7 * num_of_views: 8 * num_of_views]+1).reshape(-1,1).squeeze()
 
     # ind_data[:, 2* num_of_views: 3* num_of_views]
-    input[:,5] = np.true_divide(ind_data[:, 2* num_of_views: 3* num_of_views], ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
+    input[:,5] = np.true_divide(ind_data[:, 2* num_of_views: 3* num_of_views],
+                                ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
     # ind_data[:, 3* num_of_views: 4* num_of_views]
-    input[:,6] = np.true_divide(ind_data[:, 3* num_of_views: 4* num_of_views], ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
+    input[:,6] = np.true_divide(ind_data[:, 3* num_of_views: 4* num_of_views],
+                                ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
     # ind_data[:, 4* num_of_views: 5* num_of_views]
-    input[:,7] = np.true_divide(ind_data[:, 4* num_of_views: 5* num_of_views], ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
+    input[:,7] = np.true_divide(ind_data[:, 4* num_of_views: 5* num_of_views],
+                                ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
+
+    # N_{rcv}^{ss}(i)/(N_{rcv}^{all} + 1)
+    input[:,8] = np.true_divide(ind_data[:, 9 * num_of_views: 10 * num_of_views],
+                                 ind_data[:, 8 * num_of_views: 9 * num_of_views] + 1).reshape(-1, 1).squeeze()
 
     # add get_receive_from_and_pktsrc()对应的值[]
 
@@ -74,24 +85,28 @@ def extract_direct_data(x, ll):
     ind_data = x[:, NUM_of_DIMENSIONS:]
 
     input = np.zeros((ll, NUM_of_DIRECT_INPUTS), dtype='float64')
-    # d_data[:, 1] / d_data[:, 7]
-    input[:, 0] = np.divide(d_data[:, 1], d_data[:, 7] + 1)
-    # d_data[:, 5] / d_data[:, 7]
-    input[:, 1] = np.divide(d_data[:, 5], d_data[:, 7] + 1)
-    # d_data[:, 6] / d_data[:, 7]
-    input[:, 2] = np.divide(d_data[:, 6], d_data[:, 7] + 1)
 
-    # d_data[:, 2] / d_data[:, 8]
-    input[:, 3] = np.divide(d_data[:, 2], d_data[:, 8] + 1)
-    # d_data[:, 3] / d_data[:, 8]
-    input[:, 4] = np.divide(d_data[:, 3], d_data[:, 8] + 1)
-    # d_data[:, 4] / d_data[:, 8]
-    input[:, 5] = np.divide(d_data[:, 4], d_data[:, 8] + 1)
+    # time                                      t_{c} / t_{w}
+    # input[:, 6] = np.divide(d_data[:, 0], MAX_RUNNING_TIMES)
+    input[:, 0] = np.divide(d_data[:, 0], MAX_RUNNING_TIMES)
 
-    # add get_receive_from_and_pktsrc()对应的值
+    # d_data[:, 1] / d_data[:, 7]                N_{snd}^{snd}(i)/(N_{snd}^{all} + 1)
+    input[:, 1] = np.divide(d_data[:, 1], d_data[:, 7] + 1)
+    # d_data[:, 5] / d_data[:, 7]                N_{snd}^{src}(i)/(N_{snd}^{all} + 1)
+    input[:, 2] = np.divide(d_data[:, 5], d_data[:, 7] + 1)
+    # d_data[:, 6] / d_data[:, 7]                N_{snd}^{dst}(i)/(N_{snd}^{all} + 1)
+    input[:, 3] = np.divide(d_data[:, 6], d_data[:, 7] + 1)
 
-    # time
-    input[:, 6] = np.divide(d_data[:, 0], MAX_RUNNING_TIMES)
+    # d_data[:, 2] / d_data[:, 8]               N_{rcv}^{rcv}(i)/(N_{rcv}^{all} + 1)
+    input[:, 4] = np.divide(d_data[:, 2], d_data[:, 8] + 1)
+    # d_data[:, 3] / d_data[:, 8]               N_{rcv}^{src}(i)/(N_{rcv}^{all} + 1)
+    input[:, 5] = np.divide(d_data[:, 3], d_data[:, 8] + 1)
+    # d_data[:, 4] / d_data[:, 8]               N_{rcv}^{dst}(i)/(N_{rcv}^{all} + 1)
+    input[:, 6] = np.divide(d_data[:, 4], d_data[:, 8] + 1)
+
+    # add get_receive_from_and_pktsrc()对应的值 N_{rcv}^{ss}(i)/(N_{snd}^{all} + 1)
+    input[:, 7] = np.divide(d_data[:, 9], d_data[:, 8] + 1)
+
     return input
 
 def process_predict_blackhole_d_ind_direct_coll(files_path, max_ability, q_input, q_output):
@@ -203,8 +218,8 @@ class DTNScenario_Prophet_Blackhole_our_coll_without(object):
 
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
         dir = "..\\Main\\ML_blackhole_time"
-        direct_model_file_path = os.path.join(dir, 'direct_model.h5')
-        indirect_model_file_path = os.path.join(dir, 'indirect_model.h5')
+        direct_model_file_path = os.path.join(dir, 'our_direct_model.h5')
+        indirect_model_file_path = os.path.join(dir, 'our_indirect_model.h5')
         self.model_files_path = (direct_model_file_path, indirect_model_file_path)
 
         self.MAX_Ability = (10000, 'Max Process Ability', 'Continue')
@@ -224,6 +239,8 @@ class DTNScenario_Prophet_Blackhole_our_coll_without(object):
         self.tmp_DetectResult = np.zeros((2, 20), dtype='int')
         # 矩阵属性可以考虑更改
         self.num_of_att = 10
+
+        self.num_comm = 0
 
         # 记录collusion检测的评价结果 并 用list记录下来/带上时间；
         # 合作的bk
@@ -562,7 +579,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_without(object):
         self.DetectResult = self.DetectResult + conf_matrix
         return bool_black_hole
 
-    def evaluate_coll_detection(self, a_id, b_id, final_res, runningtime):
+    def evaluate_coll_detection(self, a_id, b_id, bool_black_hole, final_res, runningtime):
         # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole
         # 只从正常节点的角度观察
         if a_id in self.list_normal:
