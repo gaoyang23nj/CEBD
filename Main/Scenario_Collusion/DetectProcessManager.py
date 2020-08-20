@@ -15,15 +15,6 @@ Detect_and_ban_time_q_input = multiprocessing.Queue()
 Detect_and_ban_time_q_output = multiprocessing.Queue()
 
 
-def closeprocess():
-    global ProcessCtl_dict_time
-    global Detect_and_ban_time_q_input
-    global Detect_and_ban_time_q_output
-
-    Detect_and_ban_time_q_input.put(None)
-    ProcessCtl_dict_time["running_label"] = False
-
-
 class DetectProcessManager(object):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_the_instance'):
@@ -63,6 +54,15 @@ class DetectProcessManager(object):
             j.daemon = True
             j.start()
         return result_element
+
+    @staticmethod
+    def close_process():
+        global ProcessCtl_dict_time
+        global Detect_and_ban_time_q_input
+
+        if ProcessCtl_dict_time["running_label"]:
+            Detect_and_ban_time_q_input.put(None)
+            ProcessCtl_dict_time["running_label"] = False
 
     @staticmethod
     def cal_conf_matrix(y_true, y_predict, num_classes):

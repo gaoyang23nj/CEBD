@@ -322,7 +322,7 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         # self.print_eve_res()
 
         # 使得预测进程终止
-        closeprocess()
+        self.pm.close_process()
 
         outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state + output_str_coll
         res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
