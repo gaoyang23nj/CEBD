@@ -194,11 +194,11 @@ class Simulator(object):
             tmpscenario = DTNScenario_Prophet_Blackhole(tmp_senario_name, malicious_indices, self.MAX_NODE_NUM, 20000)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
-            index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_our_coll(
-                tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
+            # index += 1
+            # tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_our_coll(
+            #     tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
             index += 1
             tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_LOF_0_' + str(tmp)

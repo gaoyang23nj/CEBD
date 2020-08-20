@@ -14,145 +14,147 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
+from Main.Scenario_Collusion.DetectProcessManager import DetectProcessManager
+
 NUM_of_DIMENSIONS = 10
 NUM_of_DIRECT_INPUTS = 8
 NUM_of_INDIRECT_INPUTS = 9
 MAX_RUNNING_TIMES = 864000
 
-def cal_conf_matrix(y_true, y_predict, num_classes):
-    res = np.zeros((num_classes,num_classes), dtype = 'int')
-    res[y_true][y_predict] = 1
-    return res
-
-def extract_indirect_data(x, y, ll):
-    assert y.shape[0] == ll
-    assert 0 == x.shape[1] % NUM_of_DIMENSIONS
-    # 6个x数值
-    runtime_data = x[:, 0]
-    ind_data = x[:, NUM_of_DIMENSIONS:]
-
-    num_of_views = int(ind_data.shape[1] / NUM_of_DIMENSIONS)
-    y = np.expand_dims(y,0)
-    output = np.repeat(y, num_of_views, axis=1).reshape(-1,1)
-
-    ll = ll * num_of_views
-    input = np.zeros((ll, NUM_of_INDIRECT_INPUTS), dtype='float64')
-    # delta time (1000, 98) / (1000,1)
-    runtime_data = np.expand_dims(runtime_data, axis=1)
-    tmp = np.repeat(runtime_data, num_of_views, axis=1)
-
-    input[:,0] = np.true_divide(tmp - ind_data[:, 0: num_of_views], tmp+1).reshape(-1,1).squeeze()
-    # (1000, 98) / 1
-    input[:,1] = np.true_divide(ind_data[:, 0: num_of_views], MAX_RUNNING_TIMES).reshape(-1,1).squeeze()
-
-    # (1000, 98) / (1000, 98)
-    # ind_data[:, 1* num_of_views: 2* num_of_views]
-    input[:,2] = np.true_divide(ind_data[:, 1* num_of_views: 2* num_of_views],
-                                ind_data[:, 7* num_of_views: 8* num_of_views]+1).reshape(-1,1).squeeze()
-    # ind_data[:, 5 * num_of_views: 6 * num_of_views]
-    input[:,3] = np.true_divide(ind_data[:, 5 * num_of_views: 6 * num_of_views],
-                                ind_data[:, 7* num_of_views: 8* num_of_views]+1).reshape(-1,1).squeeze()
-    # ind_data[:, 6 * num_of_views: 7 * num_of_views]
-    input[:,4] = np.true_divide(ind_data[:, 6 * num_of_views: 7 * num_of_views],
-                                ind_data[:, 7 * num_of_views: 8 * num_of_views]+1).reshape(-1,1).squeeze()
-
-    # ind_data[:, 2* num_of_views: 3* num_of_views]
-    input[:,5] = np.true_divide(ind_data[:, 2* num_of_views: 3* num_of_views],
-                                ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
-    # ind_data[:, 3* num_of_views: 4* num_of_views]
-    input[:,6] = np.true_divide(ind_data[:, 3* num_of_views: 4* num_of_views],
-                                ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
-    # ind_data[:, 4* num_of_views: 5* num_of_views]
-    input[:,7] = np.true_divide(ind_data[:, 4* num_of_views: 5* num_of_views],
-                                ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
-
-    # N_{rcv}^{ss}(i)/(N_{rcv}^{all} + 1)
-    input[:,8] = np.true_divide(ind_data[:, 9 * num_of_views: 10 * num_of_views],
-                                 ind_data[:, 8 * num_of_views: 9 * num_of_views] + 1).reshape(-1, 1).squeeze()
-
-    # add get_receive_from_and_pktsrc()对应的值[]
-
-    return input, output, ll
-
-def extract_direct_data(x, ll):
-    assert x.shape[0] == ll
-    # 6个x数值
-    runtime_data = x[:, 0]
-    d_data = x[:, 0:NUM_of_DIMENSIONS]
-    ind_data = x[:, NUM_of_DIMENSIONS:]
-
-    input = np.zeros((ll, NUM_of_DIRECT_INPUTS), dtype='float64')
-
-    # time                                      t_{c} / t_{w}
-    # input[:, 6] = np.divide(d_data[:, 0], MAX_RUNNING_TIMES)
-    input[:, 0] = np.divide(d_data[:, 0], MAX_RUNNING_TIMES)
-
-    # d_data[:, 1] / d_data[:, 7]                N_{snd}^{snd}(i)/(N_{snd}^{all} + 1)
-    input[:, 1] = np.divide(d_data[:, 1], d_data[:, 7] + 1)
-    # d_data[:, 5] / d_data[:, 7]                N_{snd}^{src}(i)/(N_{snd}^{all} + 1)
-    input[:, 2] = np.divide(d_data[:, 5], d_data[:, 7] + 1)
-    # d_data[:, 6] / d_data[:, 7]                N_{snd}^{dst}(i)/(N_{snd}^{all} + 1)
-    input[:, 3] = np.divide(d_data[:, 6], d_data[:, 7] + 1)
-
-    # d_data[:, 2] / d_data[:, 8]               N_{rcv}^{rcv}(i)/(N_{rcv}^{all} + 1)
-    input[:, 4] = np.divide(d_data[:, 2], d_data[:, 8] + 1)
-    # d_data[:, 3] / d_data[:, 8]               N_{rcv}^{src}(i)/(N_{rcv}^{all} + 1)
-    input[:, 5] = np.divide(d_data[:, 3], d_data[:, 8] + 1)
-    # d_data[:, 4] / d_data[:, 8]               N_{rcv}^{dst}(i)/(N_{rcv}^{all} + 1)
-    input[:, 6] = np.divide(d_data[:, 4], d_data[:, 8] + 1)
-
-    # add get_receive_from_and_pktsrc()对应的值 N_{rcv}^{ss}(i)/(N_{snd}^{all} + 1)
-    input[:, 7] = np.divide(d_data[:, 9], d_data[:, 8] + 1)
-
-    return input
-
-def process_predict_blackhole_d_ind_direct_coll(files_path, max_ability, q_input, q_output):
-    physical_devices = tf.config.experimental.list_physical_devices('GPU')
-    assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-
-    num_to_process = 0
-    print('.........Process Running...pid[{}]'.format(os.getpid()))
-    d_model = tf.keras.models.load_model(files_path[0])
-    ind_model = tf.keras.models.load_model(files_path[1])
-    while True:
-        em = q_input.get(True)
-        if em is None:
-            break
-        x = em[1]
-        i_isSelfish = em[2]
-        y_final = np.zeros((1), dtype='int')
-        y_final[0] = i_isSelfish
-
-        ll = 1
-        ind_x, ind_y, ind_ll = extract_indirect_data(x, y_final, 1)
-        d_x = extract_direct_data(x, 1)
-
-        num_of_views = int(ind_x.shape[0] / 1)
-
-        ind_predict_y = ind_model.predict(ind_x)
-        # 转化为行向量
-        tmp_ind = ind_predict_y[:,1].reshape(-1, num_of_views)
-        d_predict_y = d_model.predict(d_x)
-        tmp_d = d_predict_y[:, 1].reshape(-1, 1)
-        # tmp_res = np.hstack((tmp_d, tmp_ind))
-        # final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
-        # isB_predict = final_res > 0.5
-
-        # y_predict = np.zeros((1), dtype='int')
-        # y_predict[0] = int(isB_predict)
-        # conf_matrix = np.array(tf.math.confusion_matrix(y_final, y_predict, num_classes=2))
-        num_to_process = num_to_process + 1
-        # print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
-        if num_to_process >= max_ability[0]:
-            # 到达 最大可执行数目
-            res = (em[0], tmp_d, tmp_ind, max_ability[1])
-            q_output.put(res)
-            break
-        else:
-            # 仍然可以执行
-            res = (em[0], tmp_d, tmp_ind, max_ability[2])
-            q_output.put(res)
+# def cal_conf_matrix(y_true, y_predict, num_classes):
+#     res = np.zeros((num_classes,num_classes), dtype = 'int')
+#     res[y_true][y_predict] = 1
+#     return res
+#
+# def extract_indirect_data(x, y, ll):
+#     assert y.shape[0] == ll
+#     assert 0 == x.shape[1] % NUM_of_DIMENSIONS
+#     # 6个x数值
+#     runtime_data = x[:, 0]
+#     ind_data = x[:, NUM_of_DIMENSIONS:]
+#
+#     num_of_views = int(ind_data.shape[1] / NUM_of_DIMENSIONS)
+#     y = np.expand_dims(y,0)
+#     output = np.repeat(y, num_of_views, axis=1).reshape(-1,1)
+#
+#     ll = ll * num_of_views
+#     input = np.zeros((ll, NUM_of_INDIRECT_INPUTS), dtype='float64')
+#     # delta time (1000, 98) / (1000,1)
+#     runtime_data = np.expand_dims(runtime_data, axis=1)
+#     tmp = np.repeat(runtime_data, num_of_views, axis=1)
+#
+#     input[:,0] = np.true_divide(tmp - ind_data[:, 0: num_of_views], tmp+1).reshape(-1,1).squeeze()
+#     # (1000, 98) / 1
+#     input[:,1] = np.true_divide(ind_data[:, 0: num_of_views], MAX_RUNNING_TIMES).reshape(-1,1).squeeze()
+#
+#     # (1000, 98) / (1000, 98)
+#     # ind_data[:, 1* num_of_views: 2* num_of_views]
+#     input[:,2] = np.true_divide(ind_data[:, 1* num_of_views: 2* num_of_views],
+#                                 ind_data[:, 7* num_of_views: 8* num_of_views]+1).reshape(-1,1).squeeze()
+#     # ind_data[:, 5 * num_of_views: 6 * num_of_views]
+#     input[:,3] = np.true_divide(ind_data[:, 5 * num_of_views: 6 * num_of_views],
+#                                 ind_data[:, 7* num_of_views: 8* num_of_views]+1).reshape(-1,1).squeeze()
+#     # ind_data[:, 6 * num_of_views: 7 * num_of_views]
+#     input[:,4] = np.true_divide(ind_data[:, 6 * num_of_views: 7 * num_of_views],
+#                                 ind_data[:, 7 * num_of_views: 8 * num_of_views]+1).reshape(-1,1).squeeze()
+#
+#     # ind_data[:, 2* num_of_views: 3* num_of_views]
+#     input[:,5] = np.true_divide(ind_data[:, 2* num_of_views: 3* num_of_views],
+#                                 ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
+#     # ind_data[:, 3* num_of_views: 4* num_of_views]
+#     input[:,6] = np.true_divide(ind_data[:, 3* num_of_views: 4* num_of_views],
+#                                 ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
+#     # ind_data[:, 4* num_of_views: 5* num_of_views]
+#     input[:,7] = np.true_divide(ind_data[:, 4* num_of_views: 5* num_of_views],
+#                                 ind_data[:, 8* num_of_views: 9* num_of_views]+1).reshape(-1,1).squeeze()
+#
+#     # N_{rcv}^{ss}(i)/(N_{rcv}^{all} + 1)
+#     input[:,8] = np.true_divide(ind_data[:, 9 * num_of_views: 10 * num_of_views],
+#                                  ind_data[:, 8 * num_of_views: 9 * num_of_views] + 1).reshape(-1, 1).squeeze()
+#
+#     # add get_receive_from_and_pktsrc()对应的值[]
+#
+#     return input, output, ll
+#
+# def extract_direct_data(x, ll):
+#     assert x.shape[0] == ll
+#     # 6个x数值
+#     runtime_data = x[:, 0]
+#     d_data = x[:, 0:NUM_of_DIMENSIONS]
+#     ind_data = x[:, NUM_of_DIMENSIONS:]
+#
+#     input = np.zeros((ll, NUM_of_DIRECT_INPUTS), dtype='float64')
+#
+#     # time                                      t_{c} / t_{w}
+#     # input[:, 6] = np.divide(d_data[:, 0], MAX_RUNNING_TIMES)
+#     input[:, 0] = np.divide(d_data[:, 0], MAX_RUNNING_TIMES)
+#
+#     # d_data[:, 1] / d_data[:, 7]                N_{snd}^{snd}(i)/(N_{snd}^{all} + 1)
+#     input[:, 1] = np.divide(d_data[:, 1], d_data[:, 7] + 1)
+#     # d_data[:, 5] / d_data[:, 7]                N_{snd}^{src}(i)/(N_{snd}^{all} + 1)
+#     input[:, 2] = np.divide(d_data[:, 5], d_data[:, 7] + 1)
+#     # d_data[:, 6] / d_data[:, 7]                N_{snd}^{dst}(i)/(N_{snd}^{all} + 1)
+#     input[:, 3] = np.divide(d_data[:, 6], d_data[:, 7] + 1)
+#
+#     # d_data[:, 2] / d_data[:, 8]               N_{rcv}^{rcv}(i)/(N_{rcv}^{all} + 1)
+#     input[:, 4] = np.divide(d_data[:, 2], d_data[:, 8] + 1)
+#     # d_data[:, 3] / d_data[:, 8]               N_{rcv}^{src}(i)/(N_{rcv}^{all} + 1)
+#     input[:, 5] = np.divide(d_data[:, 3], d_data[:, 8] + 1)
+#     # d_data[:, 4] / d_data[:, 8]               N_{rcv}^{dst}(i)/(N_{rcv}^{all} + 1)
+#     input[:, 6] = np.divide(d_data[:, 4], d_data[:, 8] + 1)
+#
+#     # add get_receive_from_and_pktsrc()对应的值 N_{rcv}^{ss}(i)/(N_{snd}^{all} + 1)
+#     input[:, 7] = np.divide(d_data[:, 9], d_data[:, 8] + 1)
+#
+#     return input
+#
+# def process_predict_blackhole_d_ind_direct_coll(files_path, max_ability, q_input, q_output):
+#     physical_devices = tf.config.experimental.list_physical_devices('GPU')
+#     assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
+#     tf.config.experimental.set_memory_growth(physical_devices[0], True)
+#
+#     num_to_process = 0
+#     print('.........Process Running...pid[{}]'.format(os.getpid()))
+#     d_model = tf.keras.models.load_model(files_path[0])
+#     ind_model = tf.keras.models.load_model(files_path[1])
+#     while True:
+#         em = q_input.get(True)
+#         if em is None:
+#             break
+#         x = em[1]
+#         i_isSelfish = em[2]
+#         y_final = np.zeros((1), dtype='int')
+#         y_final[0] = i_isSelfish
+#
+#         ll = 1
+#         ind_x, ind_y, ind_ll = extract_indirect_data(x, y_final, 1)
+#         d_x = extract_direct_data(x, 1)
+#
+#         num_of_views = int(ind_x.shape[0] / 1)
+#
+#         ind_predict_y = ind_model.predict(ind_x)
+#         # 转化为行向量
+#         tmp_ind = ind_predict_y[:,1].reshape(-1, num_of_views)
+#         d_predict_y = d_model.predict(d_x)
+#         tmp_d = d_predict_y[:, 1].reshape(-1, 1)
+#         # tmp_res = np.hstack((tmp_d, tmp_ind))
+#         # final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
+#         # isB_predict = final_res > 0.5
+#
+#         # y_predict = np.zeros((1), dtype='int')
+#         # y_predict[0] = int(isB_predict)
+#         # conf_matrix = np.array(tf.math.confusion_matrix(y_final, y_predict, num_classes=2))
+#         num_to_process = num_to_process + 1
+#         # print('.........Process Running...pid[{}],no.{}'.format(os.getpid(), num_to_process))
+#         if num_to_process >= max_ability[0]:
+#             # 到达 最大可执行数目
+#             res = (em[0], tmp_d, tmp_ind, max_ability[1])
+#             q_output.put(res)
+#             break
+#         else:
+#             # 仍然可以执行
+#             res = (em[0], tmp_d, tmp_ind, max_ability[2])
+#             q_output.put(res)
 
 
 ProcessCtl_dict_time = dict()
@@ -205,23 +207,9 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
             tmpBuffer_Detect = DTNNodeBuffer_Detect(node_id, num_of_nodes)
             self.listNodeBufferDetect.append(tmpBuffer_Detect)
 
-
         # 加载训练好的模型 load the trained model (d_eve and ind_eve as input)
-        dir = "..\\Main\\ML_blackhole_time"
-        direct_model_file_path = os.path.join(dir, 'our_direct_model.h5')
-        indirect_model_file_path = os.path.join(dir, 'our_indirect_model.h5')
-        self.model_files_path = (direct_model_file_path, indirect_model_file_path)
+        self.pm = DetectProcessManager()
 
-        self.MAX_Ability = (10000, 'Max Process Ability', 'Continue')
-        global ProcessCtl_dict_time
-        global DectectandBan_time_q_input
-        global DectectandBan_time_q_output
-        if not ProcessCtl_dict_time["running_label"]:
-            ProcessCtl_dict_time["running_label"] = True
-            j = multiprocessing.Process(target=process_predict_blackhole_d_ind_direct_coll, args=(
-                self.model_files_path, self.MAX_Ability, DectectandBan_time_q_input, DectectandBan_time_q_output))
-            j.daemon = True
-            j.start()
         # 保存真正使用的结果: self.DetectResult[0,1] False_Positive ; self.DetectResult[1,0] False_Negative
         self.DetectResult = np.zeros((2,2),dtype='int')
         # tmp 临时结果
@@ -332,12 +320,10 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         print(output_str_whole + output_str_pure + output_str_state + output_str_tmp_state + output_str_coll)
         # 不必进行标签值 和 属性值 的保存
         # self.print_eve_res()
+
         # 使得预测进程终止
-        global ProcessCtl_dict_time
-        global DectectandBan_time_q_input
-        if ProcessCtl_dict_time["running_label"] == True:
-            DectectandBan_time_q_input.put(None)
-            ProcessCtl_dict_time["running_label"] = False
+        closeprocess()
+
         outstr = output_str_whole + output_str_pure + output_str_state + output_str_tmp_state + output_str_coll
         res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
                'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
@@ -567,23 +553,12 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         # to_collusion_index.reshape((-1, len(to_collusion_index)))
 
         # 加载模型；进行预测
-        global ProcessCtl_dict_time
-        global DectectandBan_time_q_input
-        global DectectandBan_time_q_output
-        request_element = (ProcessCtl_dict_time["key"], new_x.copy(), i_isSelfish)
-        ProcessCtl_dict_time["key"] = ProcessCtl_dict_time["key"] + 1
-        DectectandBan_time_q_input.put(request_element)
+        result_element = self.pm.request(new_x.copy(), i_isSelfish)
 
-        result_element = DectectandBan_time_q_output.get(True)
         # boolBlackhole = result_element[1]
         # conf_matrix = result_element[2]
         d_predict = result_element[1]
         ind_predict = result_element[2]
-        if result_element[3] == self.MAX_Ability[1]:
-            j = multiprocessing.Process(target=process_predict_blackhole_d_ind_direct_coll, args=(
-                self.model_files_path, self.MAX_Ability, DectectandBan_time_q_input, DectectandBan_time_q_output))
-            j.daemon = True
-            j.start()
 
         # 如果一切正常 应该取得的值
         tmp_res = np.hstack((d_predict, ind_predict))
@@ -604,7 +579,7 @@ class DTNScenario_Prophet_Blackhole_our_coll(object):
         self.evaluate_coll_detection(a_id, b_id, bool_black_hole, true_collude_id, res_coll_id, before_res,
                                      final_res, runningtime, one_collu_list, outdiff)
 
-        conf_matrix = cal_conf_matrix(i_isSelfish, int(bool_black_hole), num_classes=2)
+        conf_matrix = self.pm.cal_conf_matrix(i_isSelfish, int(bool_black_hole), num_classes=2)
         if i_isSelfish != int(bool_black_hole):
             # print("\033[42m", "a_id(id_{}) to b_id(id_{}) real:{} predict:{} value:{}".format(
             # a_id, b_id, i_isSelfish, boolBlackhole, final_res), "\033[0m")
