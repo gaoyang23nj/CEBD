@@ -440,28 +440,28 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
 
     def evaluate_coll_detection(self, a_id, b_id, bool_black_hole, true_collude_id, possible_coll_id,
                                 before_res, coll_res, final_res, runningtime, LOF_list):
-        # # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole
-        # if a_id in self.list_normal:
-        #     if b_id in self.list_coll_corres_bk:
-        #         # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
-        #         self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + coll_res
-        #         self.coll_corr_bk_num_evalu = self.coll_corr_bk_num_evalu + 1
-        #         self.coll_corr_bk_recd_list.append((coll_res, runningtime))
-        #     elif b_id in self.list_selfish:
-        #         # b_id是普通的bk节点 (没有colluded节点与b_id合作)
-        #         self.bk_sum_evalu = self.bk_sum_evalu + coll_res
-        #         self.bk_num_evalu = self.bk_num_evalu + 1
-        #         self.bk_recd_list.append((coll_res, runningtime))
-        #     elif b_id in self.list_coll:
-        #         self.coll_sum_evalu = self.coll_sum_evalu + coll_res
-        #         self.coll_num_evalu = self.coll_num_evalu + 1
-        #         self.coll_recd_list.append((coll_res, runningtime))
-        #     elif b_id in self.list_normal:
-        #         self.normal_sum_evalu = self.normal_sum_evalu + coll_res
-        #         self.normal_num_evalu = self.normal_num_evalu + 1
-        #         self.normal_recd_list.append((coll_res, runningtime))
-        #     else:
-        #         print('Internal Err! CollusionF calculate res!')
+        # 只从正常节点的角度观察;  a_id是正常节点 且 b_id被检测为blackhole
+        if a_id in self.list_normal:
+            if b_id in self.list_coll_corres_bk:
+                # b_id是合作的bk节点 记录下评价; coll以后评价有没有提高
+                self.coll_corr_bk_sum_evalu = self.coll_corr_bk_sum_evalu + coll_res
+                self.coll_corr_bk_num_evalu = self.coll_corr_bk_num_evalu + 1
+                self.coll_corr_bk_recd_list.append((coll_res, runningtime))
+            elif b_id in self.list_selfish:
+                # b_id是普通的bk节点 (没有colluded节点与b_id合作)
+                self.bk_sum_evalu = self.bk_sum_evalu + coll_res
+                self.bk_num_evalu = self.bk_num_evalu + 1
+                self.bk_recd_list.append((coll_res, runningtime))
+            elif b_id in self.list_coll:
+                self.coll_sum_evalu = self.coll_sum_evalu + coll_res
+                self.coll_num_evalu = self.coll_num_evalu + 1
+                self.coll_recd_list.append((coll_res, runningtime))
+            elif b_id in self.list_normal:
+                self.normal_sum_evalu = self.normal_sum_evalu + coll_res
+                self.normal_num_evalu = self.normal_num_evalu + 1
+                self.normal_recd_list.append((coll_res, runningtime))
+            else:
+                print('Internal Err! CollusionF calculate res!')
 
         if a_id in self.list_normal:
             if b_id in self.list_coll_corres_bk:
@@ -540,7 +540,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
     # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
     def __detect_collusion_LOF(self, ind_predict, to_collusion_index, threshold):
         # 预定义参数 最小的本地邻居个数 k=ng-1  k=(n-1)/2
-        k = 5
+        k = 40
         # o_i
         ind_predict_all = np.squeeze(ind_predict, axis=0)
         # 对应的id
