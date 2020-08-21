@@ -425,10 +425,10 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
             final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
             bool_black_hole = final_res > threshold
 
-            # 显示/统计 collusion detection的效果
-            self.evaluate_coll_detection(a_id, b_id, bool_black_hole, true_collude_id, possible_coll_id,
-                                         before_res, coll_res, final_res, runningtime,
-                                         LOF_list)
+        # 显示/统计 collusion detection的效果
+        self.evaluate_coll_detection(a_id, b_id, bool_black_hole, true_collude_id, possible_coll_id,
+                                     before_res, coll_res, final_res, runningtime,
+                                     LOF_list)
 
         conf_matrix = self.pm.cal_conf_matrix(i_isSelfish, int(bool_black_hole), num_classes=2)
         if i_isSelfish != int(bool_black_hole):
@@ -483,7 +483,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
                     tmp[0][0] = 1
                     print("\033[42m",
                           "value:{} b_id(id_{})找到了collude(id_{}) LOF_0:{}".format(final_res, b_id, true_collude_id,
-                                                                                 LOF_list[0]),
+                                                                                 LOF_list[0][0]),
                           "\033[0m", runningtime)
                 elif b_id in self.list_coll_corres_bk:
                     # b_id是coll_corres_bk 存在的对应的colluded节点; 发生漏检
@@ -491,14 +491,14 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
                     tmp[0][1] = 1
                     print("\033[41m",
                           "value:{} a_id(id_{}) to b_id(id_{})有collude(id_{})但没被找到, 以为是id_{} LOF_0:{}".format(
-                              final_res, a_id, b_id, true_collude_id, possible_coll_id, LOF_list[0]), "\033[0m", runningtime)
+                              final_res, a_id, b_id, true_collude_id, possible_coll_id, LOF_list[0][0]), "\033[0m", runningtime)
                 elif possible_coll_id != -1:
                     # b_id也不是coll_bk; 也没有正确发现; 但还是以为有coll_id
                     # 误报 真实为‘1’误以为‘0’
                     assert b_id not in self.list_coll_corres_bk
                     tmp[1][0] = 1
                     print("\033[44m", "value:{} a_id(id_{}) to b_id(id_{})没有collude但给出了，以为是id_{} LOF_0:{}".format(
-                        final_res, a_id, b_id, possible_coll_id, LOF_list[0]), "\033[0m", runningtime)
+                        final_res, a_id, b_id, possible_coll_id, LOF_list[0][0]), "\033[0m", runningtime)
                 else:
                     tmp[1][1] = 1
                 self.coll_DetectRes = self.coll_DetectRes + tmp
@@ -621,7 +621,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
             LOF_list.append((numerator/denominator, p, to_index_all[p], ind_predict_all[p]))
         # LOF值 描述了 节点多大可能是outlier
         LOF_list.sort(reverse=True)
-        print(LOF_list[0], LOF_list[1])
+        print(LOF_list[0], LOF_list[1], LOF_list[2], LOF_list[3])
         possible_coll_id = LOF_list[0][2]
         possible_coll_index = LOF_list[0][1]
 
