@@ -99,6 +99,10 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
         # tmp 临时结果
         self.tmp0_coll_DetectResult = np.zeros((2, 2), dtype='int')
         self.tmp_coll_DetectResult = np.zeros((2, 20), dtype='int')
+
+        #
+        self.bk_no_detect = 0
+        self.sel_no_detect = 0
         return
 
     # tmp_ 保存时间线上状态; 事态的发展会保证，self.index_time_block 必然不会大于10
@@ -147,6 +151,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
         output_str = '{}_collusion_state\n'.format(self.scenarioname)
         output_str += 'coll_corr_bk_eva:{}\nbk_eva:{}\ncoll_eva:{}\nnormal_eva:{}\n'.format(coll_corr_bk_eva, bk_eva, coll_eva, normal_eva)
         output_str += 'coll_DetectRes:\n{}\n'.format(self.coll_DetectRes)
+        output_str += 'no detect count: coll_bk:{} sel:{}\n'.format(self.bk_no_detect, self.sel_no_detect)
         output_str += '{}_tmp_coll_state\n'.format(self.scenarioname)
         output_str += 'self.tmp_coll_DetectResult:\n{}\n'.format(self.tmp_coll_DetectResult)
         return output_str
@@ -417,13 +422,14 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
         coll_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
         bool_black_hole = coll_res > threshold
 
-        if bool_black_hole:
-            # LOF方法
-            possible_coll_id, new_ind_predict, LOF_list = self.__detect_collusion_LOF(
-                ind_predict, to_collusion_index, threshold)
-            tmp_res = np.hstack((d_predict, new_ind_predict))
-            final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
-            bool_black_hole = final_res > threshold
+        # if bool_black_hole:
+        # LOF方法
+        possible_coll_id, new_ind_predict, LOF_list, target = self.__detect_collusion_LOF(
+            ind_predict, to_collusion_index, threshold)
+        tmp_res = np.hstack((d_predict, new_ind_predict))
+        final_res = np.sum(tmp_res, axis=1) / tmp_res.shape[1]
+        # print(tmp_res, final_res, tmp_res.shape[0], tmp_res.shape[1])
+        bool_black_hole = final_res > threshold
 
         # 显示/统计 collusion detection的效果
         self.evaluate_coll_detection(a_id, b_id, bool_black_hole, true_collude_id, possible_coll_id,
@@ -472,9 +478,11 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
         if a_id in self.list_normal:
             if (b_id in self.list_selfish) and (not bool_black_hole):
                 if b_id in self.list_coll_corres_bk:
-                    print('hindden successfully')
+                    print('LOF hindden successfully')
+                    self.bk_no_detect += 1
                 else:
-                    print('no detect successfully')
+                    print('LOF no detect successfully')
+                    self.sel_no_detect += 1
             elif (b_id in self.list_selfish) and bool_black_hole:
                 # 看看检测出来的准不准
                 tmp = np.zeros((2, 2), dtype='int')
@@ -482,7 +490,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
                     assert true_collude_id == possible_coll_id
                     tmp[0][0] = 1
                     print("\033[42m",
-                          "value:{} b_id(id_{})找到了collude(id_{}) LOF_0:{}".format(final_res, b_id, true_collude_id,
+                          "LOF value:{} b_id(id_{})找到了collude(id_{}) LOF_0:{}".format(final_res, b_id, true_collude_id,
                                                                                  LOF_list[0][0]),
                           "\033[0m", runningtime)
                 elif b_id in self.list_coll_corres_bk:
@@ -490,15 +498,15 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
                     # assert res_coll_id !=
                     tmp[0][1] = 1
                     print("\033[41m",
-                          "value:{} a_id(id_{}) to b_id(id_{})有collude(id_{})但没被找到, 以为是id_{} LOF_0:{}".format(
-                              final_res, a_id, b_id, true_collude_id, possible_coll_id, LOF_list[0][0]), "\033[0m", runningtime)
+                          "LOF value:{} a_id(id_{}) to b_id(id_{})有collude(id_{})但没被找到, 以为是id_{} LOF_0:{}".format(
+                              final_res, a_id, b_id, true_collude_id, possible_coll_id, LOF_list[0][0]), "\033[0m time:", runningtime, LOF_list)
                 elif possible_coll_id != -1:
                     # b_id也不是coll_bk; 也没有正确发现; 但还是以为有coll_id
                     # 误报 真实为‘1’误以为‘0’
                     assert b_id not in self.list_coll_corres_bk
                     tmp[1][0] = 1
-                    print("\033[44m", "value:{} a_id(id_{}) to b_id(id_{})没有collude但给出了，以为是id_{} LOF_0:{}".format(
-                        final_res, a_id, b_id, possible_coll_id, LOF_list[0][0]), "\033[0m", runningtime)
+                    print("\033[44m", "LOF value:{} a_id(id_{}) to b_id(id_{})没有collude但给出了，以为是id_{} LOF_0:{}".format(
+                        final_res, a_id, b_id, possible_coll_id, LOF_list[0][0]), "\033[0m time:", runningtime, LOF_list)
                 else:
                     tmp[1][1] = 1
                 self.coll_DetectRes = self.coll_DetectRes + tmp
@@ -540,7 +548,7 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
     # collusion filtering; 返回 corrupted node对应的id 和 filtering后的ind_predict
     def __detect_collusion_LOF(self, ind_predict, to_collusion_index, threshold):
         # 预定义参数 最小的本地邻居个数 k=ng-1  k=(n-1)/2
-        k = 40
+        k = 20
         # o_i
         ind_predict_all = np.squeeze(ind_predict, axis=0)
         # 对应的id
@@ -621,19 +629,43 @@ class DTNScenario_Prophet_Blackhole_our_coll_LOF(object):
             LOF_list.append((numerator/denominator, p, to_index_all[p], ind_predict_all[p]))
         # LOF值 描述了 节点多大可能是outlier
         LOF_list.sort(reverse=True)
-        print(LOF_list[0], LOF_list[1], LOF_list[2], LOF_list[3])
-        possible_coll_id = LOF_list[0][2]
-        possible_coll_index = LOF_list[0][1]
+        # print('LOF_list:', LOF_list[0], LOF_list[1], LOF_list[2], LOF_list[3])
 
-        if ind_predict_all[possible_coll_index] < threshold:
-            mask = [True] * num_data
-            # coll_node_id的位置 为false
-            mask[possible_coll_index] = False
-            new_ind_predict = ind_predict_all[mask].reshape(1, -1)
-        else:
+        # possible_coll_id = LOF_list[0][2]
+        # possible_coll_index = LOF_list[0][1]
+        # if ind_predict_all[possible_coll_index] < threshold:
+        #     mask = [True] * num_data
+        #     # coll_node_id的位置 为false
+        #     mask[possible_coll_index] = False
+        #     new_ind_predict = ind_predict_all[mask].reshape(1, -1)
+        # else:
+        #     possible_coll_id = -1
+        #     new_ind_predict = to_collusion_index
+
+        # 在前 kk LOF中寻找  pred_value要足够小
+        kk = 10
+        diff_value = 0.15
+        isFound = False
+        LOF_th = 300000
+        for i in range(kk):
+            pred_value = LOF_list[i][3]
+            LOF_value = LOF_list[i][0]
+            if pred_value < threshold - diff_value and LOF_value > LOF_th:
+                isFound = True
+                possible_coll_index = LOF_list[i][1]
+                possible_coll_id = LOF_list[i][2]
+                mask = [True] * num_data
+                # coll_node_id的位置 为false
+                mask[possible_coll_index] = False
+                new_ind_predict = ind_predict_all[mask].reshape(1, -1)
+                # print(LOF_list[i])
+                target = LOF_list[i]
+                break
+        if not isFound:
             possible_coll_id = -1
-            new_ind_predict = to_collusion_index
-        return possible_coll_id, new_ind_predict, LOF_list
+            new_ind_predict = ind_predict
+            target = ()
+        return possible_coll_id, new_ind_predict, LOF_list, target
 
 
     # 改变检测buffer的值
