@@ -1,2 +1,0 @@
-this 'model.h5' collect/keep the trained model by the 'MainTrainDetBlackhole_Ex_generator.py'.
-It will be used to detect the blackhole node when two nodes encountered in 'DTNScenario_Prophet_Blackhole_DetectandBan_Ex.py' 
