@@ -292,8 +292,8 @@ class Simulator(object):
     def init_scenario(self):
         self.scenaDict = {}
         # list_scena = self.init_scenario_testEric()
-        # list_scena = self.init_scenario_testv3()
-        list_scena = self.init_scenario_testOur()
+        list_scena = self.init_scenario_testv3()
+        # list_scena = self.init_scenario_testOur()
         return list_scena
 
     # 打印出结果
@@ -319,7 +319,7 @@ class Simulator(object):
             #                'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
             # config = {'ratio_bk_nodes': ratio_bk_nodes, 'drop_prob': 1}
             assert((len(res) == 3) or (len(res)==5))
-            res_file_object.write(str(res['succ_ratio'])+','+str(res['avg_delay'])+','+str(res['num_comm']))
+            res_file_object.write(str(res['succ_ratio'])+','+str(res['avg_delay'])+','+str(res['num_comm'])+',')
             res_file_object.write(str(config['ratio_bk_nodes']) + ',' +str(config['drop_prob']))
             if len(res) == 5:
                 res_file_object.write('\n' + str(res['DetectResult']) + '\n' + str(res['tmp_DetectResult']) + ',')
@@ -330,8 +330,8 @@ class Simulator(object):
         res_file_object.close()
 
 
-isRWPModel = False
-isShanghaiDataset = True
+isRWPModel = True
+isShanghaiDataset = False
 
 
 if __name__ == "__main__":
@@ -339,8 +339,6 @@ if __name__ == "__main__":
     print(datetime.datetime.now())
 
     simdurationlist = []
-    encohistdir = '..\\EncoHistData\\test'
-    filelist = os.listdir(encohistdir)
 
     # result file path
     short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -349,10 +347,11 @@ if __name__ == "__main__":
     if isRWPModel:
         # 1.真正的流程
         # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
-
+        encohistdir = '..\\EncoHistData\\test'
+        filelist = os.listdir(encohistdir)
         # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
         # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
-        genpkt_freqlist = [10 * 90]
+        genpkt_freqlist = [10 * 150]
         for filename in filelist:
             filepath = os.path.join(encohistdir, filename)
             for genpkt_freq in genpkt_freqlist:
@@ -371,14 +370,15 @@ if __name__ == "__main__":
     shanghaihist = 'D:\\Simulation_ONE\\EncoHistData_Shanghai\\encohist_shanghai_20200808182956.tmp'
     if isShanghaiDataset:
         # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
-        genpkt_freqlist = [10 * 30]
-        for genpkt_freq in genpkt_freqlist:
-            print(shanghaihist, genpkt_freq)
-            t_start = time.time()
-            theSimulator = Simulator(shanghaihist, genpkt_freq, result_file_path)
-            t_end = time.time()
-            print('running time:{}'.format(t_end - t_start))
-            simdurationlist.append(t_end - t_start)
+        genpkt_freqlist = [10 * 150]
+        for i in range(5):
+            for genpkt_freq in genpkt_freqlist:
+                print(shanghaihist, genpkt_freq)
+                t_start = time.time()
+                theSimulator = Simulator(shanghaihist, genpkt_freq, result_file_path)
+                t_end = time.time()
+                print('running time:{}'.format(t_end - t_start))
+                simdurationlist.append(t_end - t_start)
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())
 

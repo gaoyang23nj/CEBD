@@ -206,11 +206,11 @@ class Simulator(object):
                 tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
             self.scenaDict.update({tmp_senario_name: tmpscenario})
 
-            index += 1
-            tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_without_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Blackhole_our_coll_without(
-                tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
+            # index += 1
+            # tmp_senario_name = 'scenario' + str(index) + '_blackhole_coll_without_0_' + str(tmp)
+            # tmpscenario = DTNScenario_Prophet_Blackhole_our_coll_without(
+            #     tmp_senario_name, malicious_indices, new_normal_indices, new_coll_indices, coll_pairs, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+            # self.scenaDict.update({tmp_senario_name: tmpscenario})
 
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())
