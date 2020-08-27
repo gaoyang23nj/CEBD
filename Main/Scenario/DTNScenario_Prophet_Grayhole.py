@@ -25,6 +25,8 @@ class DTNScenario_Prophet_Grayhole(object):
             tmpBuffer = DTNNodeBuffer(self, node_id, buffer_size)
             self.listNodeBuffer.append(tmpBuffer)
         self.dropratio = dropratio
+        # 总的报文传输次数
+        self.num_comm = 0
         return
 
     def gennewpkt(self, pkt_id, src_id, dst_id, gentime, pkt_size):
@@ -96,6 +98,7 @@ class DTNScenario_Prophet_Grayhole(object):
             if tmp_pkt.dst_id == b_id:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.num_comm = self.num_comm + 1
             elif P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
@@ -103,6 +106,7 @@ class DTNScenario_Prophet_Grayhole(object):
                 rd = np.random.random()
                 if rd < self.dropratio:
                     self.listNodeBuffer[b_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.num_comm = self.num_comm + 1
 
     # 报文发送 a_id -> b_id
     def sendpkt(self, runningtime, a_id, b_id):
@@ -140,16 +144,17 @@ class DTNScenario_Prophet_Grayhole(object):
             if tmp_pkt.dst_id == b_id or P_a_any[tmp_pkt.dst_id] < P_b_any[tmp_pkt.dst_id]:
                 self.listNodeBuffer[b_id].receivepkt(runningtime, tmp_pkt)
                 self.listNodeBuffer[a_id].deletepktbyid(runningtime, tmp_pkt.pkt_id)
+                self.num_comm = self.num_comm + 1
 
     def print_res(self, listgenpkt):
         output_str_whole = self.print_res_whole(listgenpkt)
-        output_str_pure, succ_ratio, avg_delay = self.print_res_pure(listgenpkt)
+        output_str_pure, succ_ratio, avg_delay, num_comm = self.print_res_pure(listgenpkt)
         print(output_str_whole + output_str_pure)
 
         outstr = output_str_whole + output_str_pure
-        percent_selfish = len(self.list_selfish) / self.num_of_nodes
-        res = (succ_ratio, avg_delay)
-        config = (percent_selfish, self.dropratio)
+        res = {'succ_ratio':succ_ratio, 'avg_delay':avg_delay, 'num_comm':num_comm}
+        ratio_gh_nodes = len(self.list_selfish) / self.num_of_nodes
+        config = {'ratio_bk_nodes': ratio_gh_nodes, 'drop_prob':self.dropratio}
         return outstr, res, config
 
     def print_res_whole(self, listgenpkt):
@@ -206,12 +211,13 @@ class DTNScenario_Prophet_Grayhole(object):
         succ_ratio = total_succnum/num_purepkt
         if total_succnum != 0:
             avg_delay = total_delay/total_succnum
-            output_str += 'succ_ratio:{} avg_delay:{}\n'.format(succ_ratio, avg_delay)
+            output_str += 'succ_ratio:{} avg_delay:{} '.format(succ_ratio, avg_delay)
         else:
             avg_delay = ()
-            output_str += 'succ_ratio:{} avg_delay:null\n'.format(succ_ratio)
+            output_str += 'succ_ratio:{} avg_delay:null '.format(succ_ratio)
+        output_str += 'num_comm:{}\n'.format(self.num_comm)
         output_str += 'total_hold:{} total_gen:{}, total_succ:{}\n'.format(total_pkt_hold, num_purepkt, total_succnum)
-        return output_str, succ_ratio, avg_delay
+        return output_str, succ_ratio, avg_delay, self.num_comm
 
 class RoutingProphet(object):
     def __init__(self, node_id, num_of_nodes, p_init=0.75, gamma=0.98, beta=0.25):

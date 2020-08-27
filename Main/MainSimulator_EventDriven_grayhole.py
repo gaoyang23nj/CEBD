@@ -24,7 +24,7 @@ class Simulator(object):
 
         # 节点个数默认100个, id 0~99
         self.MAX_NODE_NUM = 100
-        # 最大运行时间 执行时间 36000*12个间隔, 即12hour; 应该根据 enco_hist 进行更新
+        # 最大运行时间 执行时间 36000*24个间隔, 即24hour; 应该根据 enco_hist 进行更新
         self.MAX_RUNNING_TIMES = 0
         # 每个间隔的时间长度 0.1s
         self.sim_TimeStep = 0.1
@@ -152,17 +152,8 @@ class Simulator(object):
         return (src_index, dst_index)
 
     # blackhole场景下 detect ban 检测抑制方法 的效果实验
-    def init_scenario_blackhole(self):
+    def init_scenario_grayhole(self):
         index = 0
-        # ===============================场景0 Epidemic ===================================
-        tmp_senario_name = 'scenario' + str(index)+'_Epidemic'
-        tmpscenario = DTNScenario_EP(tmp_senario_name, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
-        # ===============================场景1 Spary and Wait ===================================
-        index += 1
-        tmp_senario_name = 'scenario' + str(index)+'_SparyWait'
-        tmpscenario = DTNScenario_SandW(tmp_senario_name, self.MAX_NODE_NUM, 20000)
-        self.scenaDict.update({tmp_senario_name: tmpscenario})
         # ===============================场景2 Prophet ===================================
         index += 1
         tmp_senario_name = 'scenario' + str(index)+'_Prophet'
@@ -178,16 +169,20 @@ class Simulator(object):
             malicious_indices = indices[: int(percent_selfish * self.MAX_NODE_NUM)]
             normal_indices = indices[int(percent_selfish * self.MAX_NODE_NUM):]
 
-            index += 1
-            tmp_senario_name = 'scenario' + str(index)+'_grayhole_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Grayhole(tmp_senario_name, malicious_indices, 0.5, self.MAX_NODE_NUM, 20000)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
+            # drop_prob_list = [0.1, 0.3, 0.5, 0.7, 0.9]
+            drop_prob_list = [0.5]
+            for drop_prob in drop_prob_list:
+                index += 1
+                tmp_senario_name = 'scenario' + str(index) + '_grayhole_0_' + str(tmp)
+                tmpscenario = DTNScenario_Prophet_Grayhole(
+                    tmp_senario_name, malicious_indices, drop_prob, self.MAX_NODE_NUM, 20000)
+                self.scenaDict.update({tmp_senario_name: tmpscenario})
 
-            index += 1
-            tmp_senario_name = 'scenario' + str(index)+ '_grayhole_detectban_0_' + str(tmp)
-            tmpscenario = DTNScenario_Prophet_Grayhole_DectectandBan(
-                tmp_senario_name, malicious_indices, 0.5, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
-            self.scenaDict.update({tmp_senario_name: tmpscenario})
+                index += 1
+                tmp_senario_name = 'scenario' + str(index) + '_grayhole_our_0_' + str(tmp)
+                tmpscenario = DTNScenario_Prophet_Grayhole_DectectandBan(
+                    tmp_senario_name, malicious_indices, drop_prob, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+                self.scenaDict.update({tmp_senario_name: tmpscenario})
 
         # ===============================场景单个单个的实验吧===================================
         list_scena = list(self.scenaDict.keys())
@@ -195,7 +190,7 @@ class Simulator(object):
 
     def init_scenario(self):
         self.scenaDict = {}
-        list_scena = self.init_scenario_blackhole()
+        list_scena = self.init_scenario_grayhole()
         return list_scena
 
     # 打印出结果
@@ -216,13 +211,15 @@ class Simulator(object):
             file_object.write(outstr+'\n')
 
             res_file_object.write(str(self.THR_PKT_GEN_CNT)+',')
-            assert((len(res)==2) or (len(res)==4))
-            for i in range(2):
-                res_file_object.write(str(res[i])+',')
-            for i_config in config:
-                res_file_object.write(str(i_config) + ',')
-            if len(res) == 4:
-                res_file_object.write('\n' + str(res[2]) + '\n' + str(res[3]) + ',')
+            # 3个res 是 res = {'succ_ratio':succ_ratio, 'avg_delay':avg_delay, 'num_comm':num_comm}
+            # 5个res res = {'succ_ratio': succ_ratio, 'avg_delay': avg_delay, 'num_comm': num_comm,
+            #                'DetectResult':self.DetectResult, 'tmp_DetectResult':self.tmp_DetectResult}
+            # config = {'ratio_bk_nodes': ratio_bk_nodes, 'drop_prob': 1}
+            assert((len(res) == 3) or (len(res)==5))
+            res_file_object.write(str(res['succ_ratio'])+','+str(res['avg_delay'])+','+str(res['num_comm'])+',')
+            res_file_object.write(str(config['ratio_bk_nodes']) + ',' +str(config['drop_prob']))
+            if len(res) == 5:
+                res_file_object.write('\n' + str(res['DetectResult']) + '\n' + str(res['tmp_DetectResult']) + ',')
             res_file_object.write('\n')
 
         file_object.close()
@@ -230,40 +227,58 @@ class Simulator(object):
         res_file_object.close()
 
 
+isRWPModel = True
+isShanghaiDataset = False
+
+
 if __name__ == "__main__":
     t1 = datetime.datetime.now()
     print(datetime.datetime.now())
 
     simdurationlist = []
-    encohistdir = '..\\EncoHistData\\test'
-    filelist = os.listdir(encohistdir)
 
     # result file path
     short_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     result_file_path = "res_grayhole_" + short_time + ".csv"
 
-    # 1.真正的流程
-    # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
+    if isRWPModel:
+        # 1.真正的流程
+        # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
+        encohistdir = '..\\EncoHistData\\test'
+        filelist = os.listdir(encohistdir)
+        # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
+        # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
+        genpkt_freqlist = [10 * 150]
+        for filename in filelist:
+            filepath = os.path.join(encohistdir, filename)
+            for genpkt_freq in genpkt_freqlist:
+                print(filepath, genpkt_freq)
+                t_start = time.time()
+                theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
+                t_end = time.time()
+                print('running time:{}'.format(t_end - t_start))
+                simdurationlist.append(t_end - t_start)
 
-    genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
-    for filename in filelist:
-        filepath = os.path.join(encohistdir, filename)
-        for genpkt_freq in genpkt_freqlist:
-            print(filepath, genpkt_freq)
-            t_start = time.time()
-            theSimulator = Simulator(filepath, genpkt_freq, result_file_path)
-            t_end = time.time()
-            print('running time:{}'.format(t_end - t_start))
-            simdurationlist.append(t_end - t_start)
+        # or 2.简单测试的流程
+        # genpkt_freqlist = 10 * 30
+        # filepath = os.path.join(encohistdir, filelist[0])
+        # theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
 
-    # or 2.简单测试的流程
-
-    # genpkt_freqlist = 10 * 180
-    # filepath = os.path.join(encohistdir, filelist[0])
-    # theSimulator = Simulator(filepath, genpkt_freqlist, result_file_path)
-
+    shanghaihist = 'D:\\Simulation_ONE\\EncoHistData_Shanghai\\encohist_shanghai_20200808182956.tmp'
+    if isShanghaiDataset:
+        # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
+        genpkt_freqlist = [10 * 150]
+        for i in range(5):
+            for genpkt_freq in genpkt_freqlist:
+                print(shanghaihist, genpkt_freq)
+                t_start = time.time()
+                theSimulator = Simulator(shanghaihist, genpkt_freq, result_file_path)
+                t_end = time.time()
+                print('running time:{}'.format(t_end - t_start))
+                simdurationlist.append(t_end - t_start)
     t2 = datetime.datetime.now()
     print(datetime.datetime.now())
+
     winsound.Beep(500, 2000)
     print(t1)
     print(t2)
