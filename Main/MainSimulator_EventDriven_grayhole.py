@@ -5,16 +5,18 @@ import sys
 import winsound
 import os
 
-from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
-from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
 from Main.Multi_Scenario.DTNScenario_Prophet import DTNScenario_Prophet
 from Main.Scenario.DTNScenario_Prophet_Grayhole import DTNScenario_Prophet_Grayhole
-from Main.Scenario.DTNScenario_Prophet_Grayhole_DetectandBan import DTNScenario_Prophet_Grayhole_DectectandBan
 
 
 # 简化处理流程 传输速率无限
 
 # 事件驱动
+from Main.Scenario.DTNScenario_Prophet_Grayhole_Li import DTNScenario_Prophet_Grayhole_Li
+from Main.Scenario.DTNScenario_Prophet_Grayhole_SDBG import DTNScenario_Prophet_Grayhole_SDBG
+from Main.Scenario.DTNScenario_Prophet_Grayhole_our import DTNScenario_Prophet_Grayhole_our
+from Main.Scenario.DTNScenario_Prophet_Grayhole_MDS import DTNScenario_Prophet_Grayhole_MDS
+
 class Simulator(object):
     def __init__(self, enco_file, pktgen_freq, result_file_path):
         # 相遇记录文件
@@ -180,7 +182,25 @@ class Simulator(object):
 
                 index += 1
                 tmp_senario_name = 'scenario' + str(index) + '_grayhole_our_0_' + str(tmp)
-                tmpscenario = DTNScenario_Prophet_Grayhole_DectectandBan(
+                tmpscenario = DTNScenario_Prophet_Grayhole_our(
+                    tmp_senario_name, malicious_indices, drop_prob, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+                self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+                index += 1
+                tmp_senario_name = 'scenario' + str(index) + '_blackhole_Li_0_' + str(tmp)
+                tmpscenario = DTNScenario_Prophet_Grayhole_Li(
+                    tmp_senario_name, malicious_indices, drop_prob, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+                self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+                index += 1
+                tmp_senario_name = 'scenario' + str(index) + '_blackhole_SDBG_0_' + str(tmp)
+                tmpscenario = DTNScenario_Prophet_Grayhole_SDBG(
+                    tmp_senario_name, malicious_indices, drop_prob, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
+                self.scenaDict.update({tmp_senario_name: tmpscenario})
+
+                index += 1
+                tmp_senario_name = 'scenario' + str(index) + '_blackhole_MDS_0_' + str(tmp)
+                tmpscenario = DTNScenario_Prophet_Grayhole_MDS(
                     tmp_senario_name, malicious_indices, drop_prob, self.MAX_NODE_NUM, 20000, self.MAX_RUNNING_TIMES)
                 self.scenaDict.update({tmp_senario_name: tmpscenario})
 
@@ -248,7 +268,7 @@ if __name__ == "__main__":
         filelist = os.listdir(encohistdir)
         # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
         # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
-        genpkt_freqlist = [10 * 150]
+        genpkt_freqlist = [10 * 300]
         for filename in filelist:
             filepath = os.path.join(encohistdir, filename)
             for genpkt_freq in genpkt_freqlist:

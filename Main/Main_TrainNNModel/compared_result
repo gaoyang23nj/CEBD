@@ -1,0 +1,16 @@
+compare NN SVM CART ID3
+
+NN
+[direct_and_indirect_test over!] accuracy=0.93252 precision=0.9105669148111968 recall=0.8684979919678715
+
+
+SVM
+[direct_and_indirect_test over!] accuracy=0.7380871409138193 precision=1.0 recall=0.12911165064688862
+
+
+CART
+[direct_and_indirect_test over!] accuracy=0.7290449707929904 precision=0.5328066080086191 recall=0.5130723474892793
+
+
+ID3
+[direct_and_indirect_test over!] accuracy=0.74923 precision=0.5481168744136174 recall=0.5852803320333465

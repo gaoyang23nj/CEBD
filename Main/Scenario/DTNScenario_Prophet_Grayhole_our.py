@@ -322,8 +322,8 @@ class DTNScenario_Prophet_Grayhole_our(object):
         ind_attrs[0][9 * n: 10 * n] = tmp_receive_from_and_pktsrc[mask]
 
         new_x = np.hstack((d_attrs, ind_attrs))
-        # tf的调用次数 加1
-        self._tmpCallCnt = self._tmpCallCnt + 1
+        # # tf的调用次数 加1
+        # self._tmpCallCnt = self._tmpCallCnt + 1
 
         i_isSelfish = int(b_id in self.list_selfish)
 
@@ -400,7 +400,7 @@ class DTNScenario_Prophet_Grayhole_our(object):
         total_succnum = 0
         total_pkt_hold = 0
         for i_id in range(len(self.listNodeBuffer)):
-            if not isinstance(self.listRouter[i_id], RoutingBlackhole):
+            if not isinstance(self.listRouter[i_id], RoutingGrayhole):
                 list_succ = self.listNodeBuffer[i_id].getlistpkt_succ()
                 tmp_succnum = 0
                 for i_pkt in list_succ:

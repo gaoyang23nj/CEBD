@@ -467,20 +467,11 @@ def combine_test(lines_test, h5_combine_filepath):
     recall = matrix_conf[1, 1] / (matrix_conf[1, 1] + matrix_conf[1, 0])
     print('\n[combine_test over!] accuracy={} precision={} recall={}\n'.format(accuracy, precision, recall))
 
-if __name__ == "__main__":
-    # 获取所有GPU组成list
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    print(gpus)
-    cpus = tf.config.experimental.list_physical_devices('CPU')
-    print(cpus)
 
-    if len(gpus) > 0:
-        # 设置按需申请
-        # 由于我这里仅有一块GPU,multi-GPU需要for一下
-        tf.config.experimental.set_memory_growth(gpus[0], True)
-
-    # eve_dirs = ["E:\\collect_data_blackhole_time_shanghai", "E:\\collect_data_blackhole_time_shanghai1"]
+def train_for_shanghai_dataset():
+    #==========================    shanghai trace blackhole node 检测模型的训练 ====================================#
     eve_dirs = ["E:\\collect_data_blackhole_time_shanghai", "E:\\collect_data_blackhole_time_shanghai1"]
+    # eve_dirs = ["E:\\collect_data_blackhole_time_shanghai", "E:\\collect_data_blackhole_time_shanghai1"]
 
     annotation_dir = ".\\anno_blackhole_grayhole_time"
     if not os.path.exists(annotation_dir):
@@ -555,6 +546,84 @@ if __name__ == "__main__":
 
     direct_and_indirect_test(lines[num_train + num_val:], h5_direct_filepath, h5_indirect_filepath)
 
+
+def train_for_RWP_dataset():
+    #==========================    RWP trace blackhole node 检测模型的训练 ====================================#
+    eve_dirs = ["E:\\collect_data_blackhole_time"]
+
+    annotation_dir = ".\\anno_blackhole_grayhole_time"
+    if not os.path.exists(annotation_dir):
+        os.makedirs(annotation_dir)
+        print('add dir ' + annotation_dir)
+    else:
+        print(annotation_dir + ' exist')
+    anno_bk_filepath = os.path.join(annotation_dir, "anno_blackhole_1.txt")
+    if os.path.exists(anno_bk_filepath):
+        os.remove(anno_bk_filepath)
+    # print(eve_dirs, anno_bk_filepath)
+    build_anno(eve_dirs, anno_bk_filepath)
+
+    # anno_gk_filepath = os.path.join(annotation_dir, "anno_grayhole_shanghai.txt")
+    # if os.path.exists(anno_gk_filepath):
+    #     os.remove(anno_gk_filepath)
+    # print(eve_dirs[1], anno_gk_filepath)
+    # build_anno(eve_dirs[1], anno_gk_filepath)
+
+    anno_filepath = anno_bk_filepath
+
+    # 0.7:0.1:0.2 train val test
+    val_test_split = 0.2
+    # 0.1用于验证，0.9用于训练
+    val_val_split = 0.2
+    with open(anno_filepath) as f:
+        lines = f.readlines()
+    np.random.shuffle(lines)
+    num_test = int(len(lines) * val_test_split)
+    num_val = int(len(lines) * val_val_split)
+    num_train = len(lines) - num_val - num_test
+    # lines[:num_train] lines[num_train:num_val] lines[num_train+num_val:]
+
+    print("************************************")
+
+    # print("\tMethod-2:\t(1)train direct_model.h5 and indirect_model.h5 respectively;\t(2)use average as predict value.\n")
+    # ml_dir = "..\\ML_blackhole_time"
+    # if not os.path.exists(ml_dir):
+    #     os.makedirs(ml_dir)
+    #     print('add dir ' + ml_dir)
+    # else:
+    #     print(ml_dir + ' exist')
+    # # h5_direct_filepath = os.path.join(ml_dir, "our_direct_model.h5")
+    # # h5_indirect_filepath = os.path.join(ml_dir, "our_indirect_model.h5")
+    # h5_direct_filepath = os.path.join(ml_dir, "our_direct_model_1_NN.h5")
+    # h5_indirect_filepath = os.path.join(ml_dir, "our_indirect_model_1_NN.h5")
+    #
+    # # # 下面开始训练direct_model 和 indirect model
+    # if os.path.exists(h5_direct_filepath):
+    #     os.remove(h5_direct_filepath)
+    # if os.path.exists(h5_indirect_filepath):
+    #     os.remove(h5_indirect_filepath)
+    # train_indirect(lines[: num_train], lines[num_train : num_train + num_val], h5_indirect_filepath)
+    # train_direct(lines[: num_train], lines[num_train : num_train + num_val], h5_direct_filepath)
+
+    direct_and_indirect_test(lines[num_train + num_val:], h5_direct_filepath, h5_indirect_filepath)
+
+if __name__ == "__main__":
+    # 获取所有GPU组成list
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    print(gpus)
+    cpus = tf.config.experimental.list_physical_devices('CPU')
+    print(cpus)
+
+    if len(gpus) > 0:
+        # 设置按需申请
+        # 由于我这里仅有一块GPU,multi-GPU需要for一下
+        tf.config.experimental.set_memory_growth(gpus[0], True)
+
+    #==========================    shanghai trace blackhole node 检测模型的训练 ====================================#
+    # train_for_shanghai_dataset()
+
+    #==========================    RWP trace blackhole node 检测模型的训练 ====================================#
+    train_for_RWP_dataset()
 
 
 

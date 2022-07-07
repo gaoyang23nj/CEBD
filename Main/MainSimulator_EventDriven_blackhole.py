@@ -8,12 +8,12 @@ import os
 
 from Main.Multi_Scenario.DTNScenario_EP import DTNScenario_EP
 from Main.Multi_Scenario.DTNScenario_SandW import DTNScenario_SandW
-from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_combine import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_combine
-from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_refuseall
-from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_time import \
-    DTNScenario_Prophet_Blackhole_DectectandBan_time
+# from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_combine import \
+#     DTNScenario_Prophet_Blackhole_DectectandBan_combine
+# from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_refuseall import \
+#     DTNScenario_Prophet_Blackhole_DectectandBan_refuseall
+# from Main.backup_Scenario_2.DTNScenario_Prophet_Blackhole_DetectandBan_time import \
+#     DTNScenario_Prophet_Blackhole_DectectandBan_time
 
 from Main.Multi_Scenario.DTNScenario_Prophet import DTNScenario_Prophet
 # 简化处理流程 传输速率无限
@@ -58,6 +58,8 @@ class Simulator(object):
         self.list_enco_hist = []
         self.list_gen_eve = []
         # 读取相遇记录
+        print('begin read enco file!')
+        print(datetime.datetime.now())
         self.read_enco_hist_file()
         print('read enco file end!')
         print(datetime.datetime.now())
@@ -171,7 +173,8 @@ class Simulator(object):
         tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # 0.1 0.2 0.3 0.4 0.5
-        for j in range(5):
+        # for j in range(5):
+        for j in range(1):
             # ===============================场景3 Prophet + Blackhole 0.1 ===================================
             # # 随机生成序列
             tmp = j + 1
@@ -203,6 +206,7 @@ class Simulator(object):
         tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # 0.1 0.2 0.3 0.4 0.5
+        # for j in range(5):
         for j in range(5):
             # ===============================场景3 Prophet + Blackhole 0.1 ===================================
             # # 随机生成序列
@@ -241,7 +245,8 @@ class Simulator(object):
         tmpscenario = DTNScenario_Prophet(tmp_senario_name, self.MAX_NODE_NUM, 20000)
         self.scenaDict.update({tmp_senario_name: tmpscenario})
         # 0.1 0.2 0.3 0.4 0.5
-        for j in range(5):
+        # for j in range(5):
+        for j in range(1):
             # ===============================场景3 Prophet + Blackhole 0.1 ===================================
             # # 随机生成序列
             tmp = j + 1
@@ -291,8 +296,8 @@ class Simulator(object):
 
     def init_scenario(self):
         self.scenaDict = {}
-        # list_scena = self.init_scenario_testEric()
-        list_scena = self.init_scenario_testv3()
+        list_scena = self.init_scenario_testEric()
+        # list_scena = self.init_scenario_testv3()
         # list_scena = self.init_scenario_testOur()
         return list_scena
 
@@ -348,10 +353,12 @@ if __name__ == "__main__":
         # 1.真正的流程
         # 针对5个相遇记录 和 6个生成速率 分别进行实验（使用训练好的model进行自私blackhole节点判断 并 路由）
         encohistdir = '..\\EncoHistData\\test'
-        filelist = os.listdir(encohistdir)
+        # filelist = os.listdir(encohistdir)
+        filelist = ['encohist_20200402143415.tmp']
         # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150, 10 * 180]
+        # 120 40 24各个消息每小时
         # genpkt_freqlist = [10 * 30, 10 * 90, 10 * 150]
-        genpkt_freqlist = [10 * 150]
+        genpkt_freqlist = [10 * 30]
         for filename in filelist:
             filepath = os.path.join(encohistdir, filename)
             for genpkt_freq in genpkt_freqlist:
@@ -370,8 +377,8 @@ if __name__ == "__main__":
     shanghaihist = 'D:\\Simulation_ONE\\EncoHistData_Shanghai\\encohist_shanghai_20200808182956.tmp'
     if isShanghaiDataset:
         # genpkt_freqlist = [10 * 30, 10 * 60, 10 * 90, 10 * 120, 10 * 150]
-        genpkt_freqlist = [10 * 150]
-        for i in range(5):
+        genpkt_freqlist = [10 * 30]
+        for i in range(1):
             for genpkt_freq in genpkt_freqlist:
                 print(shanghaihist, genpkt_freq)
                 t_start = time.time()

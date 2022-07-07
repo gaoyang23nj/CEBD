@@ -1,0 +1,229 @@
+"D:\Program Files\Python37\python.exe" D:/Simulation_ONE/Main/Main_TrainNNModel/MainTrainDetBlackhole_our.py
+2021-03-21 18:31:02.345770: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library cudart64_100.dll
+2021-03-21 18:31:05.166655: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library nvcuda.dll
+[PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]
+[PhysicalDevice(name='/physical_device:CPU:0', device_type='CPU')]
+.\anno_blackhole_grayhole_time exist
+['E:\\collect_data_blackhole_time'] .\anno_blackhole_grayhole_time\anno_blackhole_1.txt
+2021-03-21 18:31:05.207843: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1618] Found device 0 with properties: 
+name: GeForce RTX 2060 SUPER major: 7 minor: 5 memoryClockRate(GHz): 1.65
+pciBusID: 0000:01:00.0
+2021-03-21 18:31:05.207975: I tensorflow/stream_executor/platform/default/dlopen_checker_stub.cc:25] GPU libraries are statically linked, skip dlopen check.
+2021-03-21 18:31:05.208756: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1746] Adding visible gpu devices: 0
+['E:\\collect_data_blackhole_time\\traindata_20200401065625_1200_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1200_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1200_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1200_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1200_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1500_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1500_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1500_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1500_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_1500_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_300_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_300_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_300_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_300_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_300_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_600_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_600_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_600_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_600_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_600_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_900_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_900_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_900_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_900_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401065625_900_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1200_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1200_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1200_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1200_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1200_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1500_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1500_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1500_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1500_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_1500_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_300_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_300_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_300_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_300_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_300_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_600_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_600_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_600_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_600_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_600_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_900_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_900_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_900_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_900_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401130556_900_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1200_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1200_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1200_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1200_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1200_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1500_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1500_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1500_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1500_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_1500_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_300_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_300_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_300_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_300_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_300_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_600_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_600_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_600_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_600_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_600_scenario8_blackhole_todetect_time_0_3', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_900_scenario10_blackhole_todetect_time_0_4', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_900_scenario12_blackhole_todetect_time_0_5', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_900_scenario4_blackhole_todetect_time_0_1', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_900_scenario6_blackhole_todetect_time_0_2', 'E:\\collect_data_blackhole_time\\traindata_20200401191848_900_scenario8_blackhole_todetect_time_0_3']
+************************************
+	Method-2:	(1)train direct_model.h5 and indirect_model.h5 respectively;	(2)use average as predict value.
+
+..\ML_blackhole_time exist
+num_train, num_val: 12225,4075
+2021-03-21 18:31:05.369390: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2
+2021-03-21 18:31:05.371586: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1618] Found device 0 with properties: 
+name: GeForce RTX 2060 SUPER major: 7 minor: 5 memoryClockRate(GHz): 1.65
+pciBusID: 0000:01:00.0
+2021-03-21 18:31:05.371707: I tensorflow/stream_executor/platform/default/dlopen_checker_stub.cc:25] GPU libraries are statically linked, skip dlopen check.
+2021-03-21 18:31:05.371972: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1746] Adding visible gpu devices: 0
+2021-03-21 18:31:07.272002: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1159] Device interconnect StreamExecutor with strength 1 edge matrix:
+2021-03-21 18:31:07.272088: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1165]      0 
+2021-03-21 18:31:07.272142: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1178] 0:   N 
+2021-03-21 18:31:07.274567: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1304] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 6310 MB memory) -> physical GPU (device: 0, name: GeForce RTX 2060 SUPER, pci bus id: 0000:01:00.0, compute capability: 7.5)
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+dense (Dense)                (None, 9)                 90        
+_________________________________________________________________
+dense_1 (Dense)              (None, 9)                 90        
+_________________________________________________________________
+dense_2 (Dense)              (None, 9)                 90        
+_________________________________________________________________
+output (Dense)               (None, 2)                 20        
+=================================================================
+Total params: 290
+Trainable params: 290
+Non-trainable params: 0
+_________________________________________________________________
+
+begin_i_n:0,12225
+Epoch 1/10
+2021-03-21 18:31:07.432306: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library cublas64_100.dll
+2021-03-21 18:31:07.978700: I tensorflow/core/profiler/lib/profiler_session.cc:184] Profiler session started.
+2021-03-21 18:31:07.989516: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library cupti64_100.dll
+2021-03-21 18:31:08.099996: I tensorflow/core/platform/default/device_tracer.cc:588] Collecting 125 kernel records, 22 memcpy records.
+
+begin_i_n:0,4075
+12225/12225 - 574s - loss: 0.4779 - accuracy: 0.7631 - val_loss: 0.4552 - val_accuracy: 0.7636
+Epoch 2/10
+12225/12225 - 611s - loss: 0.4463 - accuracy: 0.7657 - val_loss: 0.4464 - val_accuracy: 0.7640
+Epoch 3/10
+12225/12225 - 607s - loss: 0.4433 - accuracy: 0.7660 - val_loss: 0.4528 - val_accuracy: 0.7624
+Epoch 4/10
+12225/12225 - 611s - loss: 0.4417 - accuracy: 0.7664 - val_loss: 0.4474 - val_accuracy: 0.7619
+Epoch 5/10
+12225/12225 - 605s - loss: 0.4402 - accuracy: 0.7667 - val_loss: 0.4437 - val_accuracy: 0.7636
+Epoch 6/10
+12225/12225 - 578s - loss: 0.4397 - accuracy: 0.7668 - val_loss: 0.4612 - val_accuracy: 0.7528
+Epoch 7/10
+12225/12225 - 579s - loss: 0.4388 - accuracy: 0.7672 - val_loss: 0.4442 - val_accuracy: 0.7627
+Epoch 8/10
+12225/12225 - 580s - loss: 0.4372 - accuracy: 0.7676 - val_loss: 0.4399 - val_accuracy: 0.7653
+Epoch 9/10
+12225/12225 - 576s - loss: 0.4354 - accuracy: 0.7685 - val_loss: 0.4391 - val_accuracy: 0.7652
+Epoch 10/10
+12225/12225 - 578s - loss: 0.4334 - accuracy: 0.7693 - val_loss: 0.4384 - val_accuracy: 0.7665
+num_train, num_val: 12225,4075
+Model: "sequential_1"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+dense_3 (Dense)              (None, 8)                 72        
+_________________________________________________________________
+dense_4 (Dense)              (None, 8)                 72        
+_________________________________________________________________
+dense_5 (Dense)              (None, 8)                 72        
+_________________________________________________________________
+output (Dense)               (None, 2)                 18        
+=================================================================
+Total params: 234
+Trainable params: 234
+Non-trainable params: 0
+_________________________________________________________________
+
+begin_i_n:0,12225
+Epoch 1/10
+2021-03-21 20:09:26.000346: I tensorflow/core/profiler/lib/profiler_session.cc:184] Profiler session started.
+2021-03-21 20:09:26.016246: I tensorflow/core/platform/default/device_tracer.cc:588] Collecting 123 kernel records, 22 memcpy records.
+
+begin_i_n:0,4075
+12225/12225 - 385s - loss: 0.5720 - accuracy: 0.6995 - val_loss: 0.5531 - val_accuracy: 0.6983
+Epoch 2/10
+12225/12225 - 389s - loss: 0.5508 - accuracy: 0.6998 - val_loss: 0.5523 - val_accuracy: 0.6978
+Epoch 3/10
+12225/12225 - 390s - loss: 0.5489 - accuracy: 0.7002 - val_loss: 0.5505 - val_accuracy: 0.6987
+Epoch 4/10
+12225/12225 - 395s - loss: 0.5486 - accuracy: 0.7003 - val_loss: 0.5499 - val_accuracy: 0.6988
+Epoch 5/10
+12225/12225 - 391s - loss: 0.5480 - accuracy: 0.7003 - val_loss: 0.5522 - val_accuracy: 0.6986
+Epoch 6/10
+12225/12225 - 392s - loss: 0.5478 - accuracy: 0.7003 - val_loss: 0.5501 - val_accuracy: 0.6987
+Epoch 7/10
+12225/12225 - 391s - loss: 0.5479 - accuracy: 0.7004 - val_loss: 0.5496 - val_accuracy: 0.6987
+Epoch 8/10
+12225/12225 - 388s - loss: 0.5478 - accuracy: 0.7003 - val_loss: 0.5497 - val_accuracy: 0.6987
+Epoch 9/10
+12225/12225 - 391s - loss: 0.5476 - accuracy: 0.7003 - val_loss: 0.5496 - val_accuracy: 0.6989
+Epoch 10/10
+12225/12225 - 392s - loss: 0.5476 - accuracy: 0.7003 - val_loss: 0.5502 - val_accuracy: 0.6987
+2021-03-21 21:14:30.493619 begin direct_and_indirect_test
+
+test:100 (100)	 actually:100
+No. i:0 ll:1000 	 2021-03-21 21:14:30.941502
+0	 2021-03-21 21:14:33.384889
+No. i:1 ll:1000 	 2021-03-21 21:14:33.416223
+No. i:2 ll:1000 	 2021-03-21 21:14:35.721539
+No. i:3 ll:1000 	 2021-03-21 21:14:38.011306
+No. i:4 ll:1000 	 2021-03-21 21:14:40.301076
+No. i:5 ll:1000 	 2021-03-21 21:14:42.622086
+No. i:6 ll:1000 	 2021-03-21 21:14:44.943100
+No. i:7 ll:1000 	 2021-03-21 21:14:47.217248
+No. i:8 ll:1000 	 2021-03-21 21:14:49.538260
+No. i:9 ll:1000 	 2021-03-21 21:14:51.975149
+No. i:10 ll:1000 	 2021-03-21 21:14:54.716683
+No. i:11 ll:1000 	 2021-03-21 21:14:57.053316
+No. i:12 ll:1000 	 2021-03-21 21:14:59.358714
+No. i:13 ll:1000 	 2021-03-21 21:15:01.664111
+No. i:14 ll:1000 	 2021-03-21 21:15:03.991630
+No. i:15 ll:1000 	 2021-03-21 21:15:06.297023
+No. i:16 ll:1000 	 2021-03-21 21:15:08.718284
+No. i:17 ll:1000 	 2021-03-21 21:15:11.070548
+No. i:18 ll:1000 	 2021-03-21 21:15:13.413692
+No. i:19 ll:1000 	 2021-03-21 21:15:15.734718
+No. i:20 ll:1000 	 2021-03-21 21:15:18.055739
+No. i:21 ll:1000 	 2021-03-21 21:15:20.376758
+No. i:22 ll:1000 	 2021-03-21 21:15:22.713396
+No. i:23 ll:1000 	 2021-03-21 21:15:25.040921
+No. i:24 ll:1000 	 2021-03-21 21:15:27.361945
+No. i:25 ll:1000 	 2021-03-21 21:15:29.698591
+No. i:26 ll:1000 	 2021-03-21 21:15:32.157647
+No. i:27 ll:1000 	 2021-03-21 21:15:34.494278
+No. i:28 ll:1000 	 2021-03-21 21:15:36.784043
+No. i:29 ll:1000 	 2021-03-21 21:15:39.067302
+No. i:30 ll:1000 	 2021-03-21 21:15:41.379192
+No. i:31 ll:1000 	 2021-03-21 21:15:43.684582
+No. i:32 ll:1000 	 2021-03-21 21:15:46.021219
+No. i:33 ll:1000 	 2021-03-21 21:15:48.326608
+No. i:34 ll:1000 	 2021-03-21 21:15:50.632000
+No. i:35 ll:1000 	 2021-03-21 21:15:52.921768
+No. i:36 ll:1000 	 2021-03-21 21:15:55.242779
+No. i:37 ll:1000 	 2021-03-21 21:15:57.532544
+No. i:38 ll:1000 	 2021-03-21 21:15:59.837932
+No. i:39 ll:1000 	 2021-03-21 21:16:02.143325
+No. i:40 ll:1000 	 2021-03-21 21:16:04.448713
+No. i:41 ll:1000 	 2021-03-21 21:16:06.754100
+No. i:42 ll:1000 	 2021-03-21 21:16:09.106359
+No. i:43 ll:1000 	 2021-03-21 21:16:11.427370
+No. i:44 ll:1000 	 2021-03-21 21:16:13.717145
+No. i:45 ll:1000 	 2021-03-21 21:16:16.022536
+No. i:46 ll:1000 	 2021-03-21 21:16:18.312307
+No. i:47 ll:1000 	 2021-03-21 21:16:20.633323
+No. i:48 ll:1000 	 2021-03-21 21:16:22.954332
+No. i:49 ll:1000 	 2021-03-21 21:16:25.259721
+No. i:50 ll:1000 	 2021-03-21 21:16:27.533876
+No. i:51 ll:1000 	 2021-03-21 21:16:29.854888
+No. i:52 ll:1000 	 2021-03-21 21:16:32.144661
+No. i:53 ll:1000 	 2021-03-21 21:16:34.503427
+No. i:54 ll:1000 	 2021-03-21 21:16:36.808813
+No. i:55 ll:1000 	 2021-03-21 21:16:39.092077
+No. i:56 ll:1000 	 2021-03-21 21:16:41.413089
+No. i:57 ll:1000 	 2021-03-21 21:16:43.687235
+No. i:58 ll:1000 	 2021-03-21 21:16:46.023872
+No. i:59 ll:1000 	 2021-03-21 21:16:48.335791
+No. i:60 ll:1000 	 2021-03-21 21:16:50.619054
+No. i:61 ll:1000 	 2021-03-21 21:16:52.924447
+No. i:62 ll:1000 	 2021-03-21 21:16:55.298845
+No. i:63 ll:1000 	 2021-03-21 21:16:57.635483
+No. i:64 ll:1000 	 2021-03-21 21:16:59.940879
+No. i:65 ll:1000 	 2021-03-21 21:17:02.230647
+No. i:66 ll:1000 	 2021-03-21 21:17:04.536039
+No. i:67 ll:1000 	 2021-03-21 21:17:06.841433
+No. i:68 ll:1000 	 2021-03-21 21:17:09.146824
+No. i:69 ll:1000 	 2021-03-21 21:17:11.467835
+No. i:70 ll:1000 	 2021-03-21 21:17:13.788854
+No. i:71 ll:1000 	 2021-03-21 21:17:16.100751
+No. i:72 ll:1000 	 2021-03-21 21:17:18.421763
+No. i:73 ll:1000 	 2021-03-21 21:17:20.727156
+No. i:74 ll:1000 	 2021-03-21 21:17:23.048164
+No. i:75 ll:1000 	 2021-03-21 21:17:25.369173
+No. i:76 ll:1000 	 2021-03-21 21:17:27.674561
+No. i:77 ll:1000 	 2021-03-21 21:17:30.026816
+No. i:78 ll:1000 	 2021-03-21 21:17:32.338713
+No. i:79 ll:1000 	 2021-03-21 21:17:34.675347
+No. i:80 ll:1000 	 2021-03-21 21:17:36.980740
+No. i:81 ll:1000 	 2021-03-21 21:17:39.286130
+No. i:82 ll:1000 	 2021-03-21 21:17:41.591521
+No. i:83 ll:1000 	 2021-03-21 21:17:43.865661
+No. i:84 ll:1000 	 2021-03-21 21:17:46.271293
+No. i:85 ll:1000 	 2021-03-21 21:17:48.576683
+No. i:86 ll:1000 	 2021-03-21 21:17:50.913319
+No. i:87 ll:1000 	 2021-03-21 21:17:53.218713
+No. i:88 ll:1000 	 2021-03-21 21:17:55.524103
+No. i:89 ll:1000 	 2021-03-21 21:17:57.845115
+No. i:90 ll:1000 	 2021-03-21 21:18:00.181752
+No. i:91 ll:1000 	 2021-03-21 21:18:02.571774
+No. i:92 ll:1000 	 2021-03-21 21:18:04.892790
+No. i:93 ll:1000 	 2021-03-21 21:18:07.213807
+No. i:94 ll:1000 	 2021-03-21 21:18:09.525705
+No. i:95 ll:1000 	 2021-03-21 21:18:11.862340
+No. i:96 ll:1000 	 2021-03-21 21:18:14.183354
+No. i:97 ll:1000 	 2021-03-21 21:18:16.504364
+No. i:98 ll:1000 	 2021-03-21 21:18:18.825381
+No. i:99 ll:1000 	 2021-03-21 21:18:21.115157
+2021-03-21 21:18:23.404929 complete direct_and_indirect_test...
+
+tf.Tensor(
+[[66220  2655]
+ [ 4093 27032]], shape=(2, 2), dtype=int32)
+
+[direct_and_indirect_test over!] accuracy=0.93252 precision=0.9105669148111968 recall=0.8684979919678715
+
+
+Process finished with exit code 0

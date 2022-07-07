@@ -18,7 +18,8 @@ Detect_and_ban_time_q_output = multiprocessing.Queue()
 class DetectProcessManagerBkGk(object):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_the_instance'):
-            cls._the_instance = object.__new__(cls, *args, **kwargs)
+            # cls._the_instance = object.__new__(cls, *args, **kwargs)
+            cls._the_instance = object.__new__(cls)
         return cls._the_instance
 
     def __init__(self, direct_model_file_path, indirect_model_file_path):
